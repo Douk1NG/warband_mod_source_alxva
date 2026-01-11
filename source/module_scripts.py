@@ -65040,8 +65040,6 @@ scripts = [
     (assign, ":save_reg4", reg4),
     ##added section end
 
-     (display_message, "@Auto buying food"),
-
     (assign, ":customer_in_player_party", 0),#Always assumed true... re-write if you need to use for others
 
     (store_troop_gold, ":begin_gold", ":customer"),
