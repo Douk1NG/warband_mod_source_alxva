@@ -65040,6 +65040,8 @@ scripts = [
     (assign, ":save_reg4", reg4),
     ##added section end
 
+     (display_message, "@Auto buying food"),
+
     (assign, ":customer_in_player_party", 0),#Always assumed true... re-write if you need to use for others
 
     (store_troop_gold, ":begin_gold", ":customer"),
@@ -65049,7 +65051,8 @@ scripts = [
     (try_for_range, ":i_slot", 10, ":inv_cap"),
       (troop_get_inventory_slot, ":item", ":merchant_troop", ":i_slot"),
       (gt, ":item", -1),
-      (is_between, ":item", food_begin, food_end),
+      (is_between, ":item", itm_raw_date_fruit, food_end),
+      (neq, ":item", "itm_furs"),
       (troop_inventory_slot_get_item_amount, ":amount", ":merchant_troop", ":i_slot"),
       ##dplmc+: The next line required making a change to header_operations.py
       (troop_inventory_slot_get_item_max_amount, ":max_amount", ":merchant_troop", ":i_slot"),
@@ -65710,7 +65713,8 @@ scripts = [
 		   (display_message, "@{!}Initializing auto-loot.  This message should not appear more than once."),
       (try_end),
 		#Initialize
-		(try_for_range, ":cur_food", food_begin, food_end),
+		(try_for_range, ":cur_food", "itm_raw_date_fruit", food_end),
+			(neq, ":cur_food", "itm_furs"),
 			(item_set_slot, ":cur_food", dplmc_slot_item_food_portion, 1),
 		(try_end),
 
