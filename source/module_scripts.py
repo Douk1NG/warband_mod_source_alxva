@@ -64779,9 +64779,9 @@ scripts = [
 	  #dplmc+ begin added constraints
 	  (is_between, ":item", ":valid_items_begin", ":valid_items_end"),
 	  (neg|is_between, ":type", books_begin, books_end),
-	  (this_or_next|neg|is_between, ":type", food_begin, food_end),
+	  (this_or_next|neg|is_between, ":item", food_begin, food_end),
 	     (eq, ":imod", imod_rotten),
-	  (neg|is_between, ":type", trade_goods_begin, trade_goods_end),
+	  (neg|is_between, ":item", trade_goods_begin, trade_goods_end),
 	  (neq, ":imod", imod_lordly),#dplmc+: never sell "lordly" items
 	  #dplmc+ end added constraints
 
