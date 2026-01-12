@@ -44620,6 +44620,10 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
 ],
   "Sooner or later, friend. Victory will belong to us.", "close_window",[(assign, "$g_leave_encounter",1)]],
 
+ [anyone|plyr,"soldiers_interrogation",
+    [(check_quest_active, "qst_track_down_bandits"),
+    (neg|check_quest_succeeded, "qst_track_down_bandits"),
+ ], "I am hunting a group of bandits with the following description... Have you seen them?", "soldier_bandit_information",[]],
  [anyone|plyr,"soldiers_interrogation", [], "I am {playername}. Surrender or die.", "soldiers_interrogation_5",[(call_script, "script_encounter_agent_draw_weapon"),]],
  [anyone|plyr,"soldiers_interrogation", [], "I am {playername}. I am just passing through.", "soldiers_interrogation_4",[]],
 
@@ -44630,6 +44634,11 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
       (call_script, "script_make_kingdom_hostile_to_player", "$g_encountered_party_faction", -3),
       (encounter_attack),
  ]],
+
+[anyone,"soldier_bandit_information", [
+(call_script, "script_get_manhunt_information_to_s15", "qst_track_down_bandits"),
+], "{s15}", "soldiers_interrogation",[]],
+
 
 
 #SB : add in reinforcement encounter
