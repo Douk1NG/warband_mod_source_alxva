@@ -27361,7 +27361,6 @@ I will use this to make amends to those you have wronged, and I will let it be k
    (assign, ":is_female", "$character_gender"),
    (try_begin),
       (eq, ":is_female", 1),
-      (eq, "$g_nohomo", 0),
       (eq, "$g_nohomo", 1),
       (assign, ":continue", 0),
    (try_end),
@@ -27498,7 +27497,7 @@ I will use this to make amends to those you have wronged, and I will let it be k
 "lord_marriage_proposal_female_pc_reax",[
 ]],
 
-[anyone|plyr,"lord_marriage_proposal_female_pc_confirm", [(ge, "$g_disable_condescending_comments", 2),#dckplmc
+[anyone|plyr,"lord_marriage_proposal_female_pc_confirm", [(eq, "$g_nohomo", 0),#dckplmc
 ],
 "No, isn't there anyone else in your family eligible for marriage?",
 "lord_marriage_proposal_female_female",[
