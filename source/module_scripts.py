@@ -65010,6 +65010,8 @@ scripts = [
 		(ge, ":merchant_troop", 1),
 		(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", all_items_begin, all_items_end, 2),
 	 (else_try),
+        #Don't show an error for castles, since we wouldn't expect this to work there
+        (neg|is_between, ":center_no", castles_begin, castles_end),
 	    ##Error
 		(assign, reg0, ":center_no"),
 		(display_message, "@{!} ERROR FOR AUTOSELL for town ID {reg0}: Bad town or merchant was missing"),
