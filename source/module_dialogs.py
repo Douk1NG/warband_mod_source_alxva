@@ -27203,7 +27203,7 @@ I will use this to make amends to those you have wronged, and I will let it be k
 (is_between, "$g_talk_troop", pretenders_begin, pretenders_end),
 (neg|troop_slot_eq, "$g_talk_troop", slot_troop_playerparty_history, dplmc_pp_history_nonplayer_entry),
 
-(this_or_next|ge, "$g_disable_condescending_comments", 2),#allow same-sex marriage if "reduced prejudice" is enabled
+(this_or_next|eq, "$g_nohomo", 0),
 	(neq, reg65, "$character_gender"),
 (try_begin),
 	(troop_get_slot, ":original_faction", "$g_talk_troop", slot_troop_original_faction),
@@ -27221,7 +27221,7 @@ I will use this to make amends to those you have wronged, and I will let it be k
 (is_between, "$g_talk_troop", pretenders_begin, pretenders_end),
 (neg|troop_slot_eq, "$g_talk_troop", slot_troop_playerparty_history, dplmc_pp_history_nonplayer_entry),
 
-(this_or_next|ge, "$g_disable_condescending_comments", 2),#allow same-sex marriage if "reduced prejudice" is enabled
+(this_or_next|eq, "$g_nohomo", 0),
 	(neq, reg65, "$character_gender"),
 (try_begin),
 	(troop_get_slot, ":original_faction", "$g_talk_troop", slot_troop_original_faction),
@@ -33931,7 +33931,8 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
 	#(eq, ":is_female", 0), #dplmc+ removed
 
 	(this_or_next|neq, reg65, "$character_gender"),
-		(ge, "$g_disable_condescending_comments", 2),
+    (eq, "$g_nohomo", 0),
+		
 	##diplomacy end+
     (troop_slot_eq, "$g_talk_troop", slot_troop_met, 1),
 	(troop_slot_eq, "$g_talk_troop", slot_troop_spouse, -1),
