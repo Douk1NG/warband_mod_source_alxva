@@ -1,4 +1,4 @@
-from header_common import *
+﻿from header_common import *
 from header_operations import *
 from header_mission_templates import *
 from header_animations import *
@@ -6530,8 +6530,6 @@ mission_templates = [
       [],
       [
          (assign, "$pin_player_fallen", 0),
-         (get_player_agent_no, ":player_agent"),
-         (agent_get_team, ":agent_team", ":player_agent"),
          (str_store_string, s5, "str_retreat"),
          (call_script, "script_simulate_retreat", 5, 20, 0),
          (call_script, "script_count_mission_casualties_from_agents"),

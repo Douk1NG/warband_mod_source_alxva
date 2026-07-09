@@ -1,4 +1,4 @@
-from header_common import *
+﻿from header_common import *
 from header_operations import *
 from module_constants import *
 
@@ -108,7 +108,8 @@ scripts = [
     (try_end),
 
     #In order from highest level to lowest, remove troops from source party and add them to the destination party
-    (try_for_range_backwards, ":unused", ":start_pos", ":num_stacks"),
+    (try_for_range_backwards, ":sort_pass", ":start_pos", ":num_stacks"),
+      (ge, ":sort_pass", 0),
     
       #Get the highest level of the troops in source party
       (assign, ":max_level", 0),

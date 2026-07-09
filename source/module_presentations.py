@@ -1,4 +1,4 @@
-import string
+﻿import string
 from header_common import *
 from header_presentations import *
 from header_mission_templates import *
@@ -12106,14 +12106,14 @@ presentations = [
 		    (assign, ":net_profit", 0),
 
             (create_text_overlay, reg1, "str_under_sequestration", tf_right_align|tf_single_line),
-            (overlay_set_color, reg1, 0xFF0000),
+            (overlay_set_color, reg1, ":color"),
 		  (else_try),
 		    (ge, reg0, 0),
             (create_text_overlay, reg1, "str_reg0", tf_right_align|tf_single_line),
             (overlay_set_color, reg1, 0x00AA00),
           (else_try),
             (create_text_overlay, reg1, "str_reg0", tf_right_align|tf_single_line),
-            (overlay_set_color, reg1, 0xFF0000),
+            (overlay_set_color, reg1, ":color"),
           (try_end),
 
           (val_add, ":all_centers_accumulated_total", ":net_profit"),
@@ -12182,14 +12182,14 @@ presentations = [
 		    (assign, ":net_profit", 0),
 
             (create_text_overlay, reg1, "str_under_sequestration", tf_right_align|tf_single_line),
-            (overlay_set_color, reg1, 0xFF0000),
+            (overlay_set_color, reg1, ":color"),
 		  (else_try),
 		    (ge, reg0, 0),
             (create_text_overlay, reg1, "str_reg0", tf_right_align|tf_single_line),
             (overlay_set_color, reg1, 0x00AA00),
           (else_try),
             (create_text_overlay, reg1, "str_reg0", tf_right_align|tf_single_line),
-            (overlay_set_color, reg1, 0xFF0000),
+            (overlay_set_color, reg1, ":color"),
           (try_end),
 
           (val_add, ":all_centers_accumulated_total", ":net_profit"),
@@ -21820,10 +21820,6 @@ presentations = [
      [
       #(set_fixed_point_multiplier, 1000)
       #Troop Ratio Bar
-     (try_begin),
-     (ge, "$g_troop_ratio_bar", 1),
-      (store_trigger_param_1, ":var0"),
-      (try_end),
       #End Troop Ratio Bar
       (set_fixed_point_multiplier, 1000),
       #Troop Ratio Bar
@@ -22004,10 +22000,6 @@ presentations = [
     (ti_on_presentation_run,
      [
           #Troop Ratio Bar
-          (try_begin),
-          (ge, "$g_troop_ratio_bar", 1),
-           (store_trigger_param_1, ":var0"),
-           (try_end),
            #End Troop Ratio Bar
       (set_fixed_point_multiplier, 1000),
             (try_begin),

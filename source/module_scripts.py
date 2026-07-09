@@ -1,4 +1,4 @@
-# -*- coding: cp1254 -*-
+﻿# -*- coding: cp1254 -*-
 from header_common import *
 from header_operations import *
 from module_constants import *
@@ -5021,7 +5021,6 @@ scripts = [
   ("game_get_troop_wage",
     [
       (store_script_param_1, ":troop_id"),
-      (store_script_param_2, ":unused"), #party id
       (call_script, "script_initialize_exchange_screen_extensions", ":troop_id"), 
 	  (troop_set_slot, "trp_temp_array_d", slot_last_requested_troop, ":troop_id"),
 
@@ -39106,7 +39105,6 @@ scripts = [
   # OUTPUT: banner_mesh
   ("agent_troop_get_banner_mesh",
     [
-       (store_script_param, ":agent_no", 1),
        (store_script_param, ":troop_no", 2),
        (assign, ":banner_mesh", "mesh_banners_default_b"),
 
@@ -47005,8 +47003,6 @@ scripts = [
   # Output: none
   ("debug_variables",
     [
-      (store_script_param, ":unused", 1),
-      (store_script_param, ":unused_2", 2),
     ]),
 
 #lord recruitment scripts begin
@@ -54870,9 +54866,6 @@ scripts = [
 	(store_script_param, ":party", 1),
 	(store_script_param, ":attrition_rate", 2),
 #	(store_script_param, ":attrition_type", 3), #1 = desertion, 2 = sickness
-##diplomacy start+
-	(store_script_param, ":unused", 3), #1 = desertion, 2 = sickness
-##diplomacy end+
 
     (party_clear, "p_temp_casualties"),
 
@@ -67951,7 +67944,6 @@ Born at {s43}^Contact in {s44} of the {s45}.^\
      #output: reg0
     ("calculate_improvement_limit", [
         (store_script_param_1, ":troop_no"),
-        (store_script_param_2, ":center_no"),
         (assign, ":limit", dplmc_improvement_limit),
         (troop_get_slot, ":personality", ":troop_no", slot_lord_reputation_type),
         (try_begin), #bad personality, unlikely to ever build property
@@ -69979,8 +69971,6 @@ Born at {s43}^Contact in {s44} of the {s45}.^\
 # script param 1 = sender player no
 # script param 2 = event no
 ("wse_multiplayer_message_received", [
-	(store_script_param, ":player_no", 1),
-	(store_script_param, ":event_no", 2),
 ]),
 
 #script_wse_game_saved
@@ -69998,8 +69988,6 @@ Born at {s43}^Contact in {s44} of the {s45}.^\
 # trigger result = anything non-zero suppresses default chat behavior. Server will not even broadcast messages to clients.
 # result string = changes message text for default chat behavior (if not suppressed).
 ("wse_chat_message_received", [
-	(store_script_param, ":player_no", 1),
-	(store_script_param, ":chat_type", 2),
 ]),
 
 #script_wse_console_command_received
@@ -70011,7 +69999,6 @@ Born at {s43}^Contact in {s44} of the {s45}.^\
 # trigger result = anything non-zero if the command succeeded
 # result string = message to display on success (if empty, default message will be used)
 ("wse_console_command_received", [
-	(store_script_param, ":command_type", 1),
 ]),
 
 #script_wse_get_agent_scale
@@ -70024,10 +70011,6 @@ Born at {s43}^Contact in {s44} of the {s45}.^\
 # OUTPUT
 # trigger result = agent scale (fixed point)
 ("wse_get_agent_scale", [
-	(store_script_param, ":troop_no", 1),
-	(store_script_param, ":horse_item_no", 2),
-	(store_script_param, ":horse_item_modifier", 3),
-	(store_script_param, ":player_no", 4),
 
     # (set_fixed_point_multiplier, 100),
 
@@ -70075,9 +70058,6 @@ Born at {s43}^Contact in {s44} of the {s45}.^\
 # OUTPUT
 # trigger result = presentation that replaces the window (if not set or negative, window will open normally)
 ("wse_window_opened", [
-	(store_script_param, ":window_no", 1),
-	(store_script_param, ":window_param_1", 2),
-	(store_script_param, ":window_param_2", 3),
 ]),
 
 #script_game_missile_dives_into_water
@@ -70091,9 +70071,6 @@ Born at {s43}^Contact in {s44} of the {s45}.^\
 # script param 6 = missile no
 # pos1 = water impact position and rotation
 ("game_missile_dives_into_water", [
-	(store_script_param, ":missile_item_no", 1),
-	(store_script_param, ":missile_item_modifier", 2),
-	(store_script_param, ":launcher_item_no", 3),
 	# (store_script_param, ":launcher_item_modifier", 4),
 	# (store_script_param, ":shooter_agent_no", 5),
 	# (store_script_param, ":missile_no", 6),
@@ -78221,7 +78198,6 @@ Born at {s43}^Contact in {s44} of the {s45}.^\
   ("change_player_controversy",
     [
       (store_script_param_1, ":controversy_dif"),
-	  (troop_get_slot, ":controversy", "trp_player", slot_troop_controversy),
 	  (troop_set_slot, "trp_player", slot_troop_controversy, ":controversy_dif"),
       (try_begin),
         (lt, ":controversy_dif", 0),

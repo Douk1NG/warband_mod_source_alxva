@@ -1,4 +1,4 @@
-from header_game_menus import *
+﻿from header_game_menus import *
 from header_parties import *
 from header_items import *
 from header_mission_templates import *
@@ -14824,7 +14824,6 @@ TOTAL:  {reg5}"),
       ("dplmc_guild_master_meeting",
        [
        (party_slot_eq,"$current_town",slot_party_type, spt_town),
-	   (assign, ":can_meet_guild_master", 1),
 	   ],
        "Meet the Guild Master.",
         [
@@ -22641,8 +22640,6 @@ goods, and books will never be sold. ^^You can change some settings here freely.
     "Continue",
     "none",
     [
-        (troop_get_slot, ":dna", "trp_temp_array_c", 17),
-
         # (troop_set_slot, "trp_temp_array_a", 0, "trp_player"),
         # (troop_set_slot, "trp_temp_array_b", 0, -1),
         # (troop_set_slot, "trp_temp_array_a", 1, "$g_talk_troop"),
