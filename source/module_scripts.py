@@ -428,6 +428,16 @@ scripts = [
         # (party_set_slot,":town_no", slot_town_reinforcement_party_template, "pt_center_reinforcements"),
       (try_end),
 
+      #Zendar
+      (party_set_slot, "p_town_23", slot_town_center, "scn_town_11_center"),
+      (party_set_slot, "p_town_23", slot_town_castle, "scn_town_1_castle"),
+      (party_set_slot, "p_town_23", slot_town_tavern, "scn_town_1_tavern"),
+      (party_set_slot, "p_town_23", slot_town_store, "scn_town_1_store"),
+      (party_set_slot, "p_town_23", slot_town_arena, "scn_town_11_arena"),
+      (party_set_slot, "p_town_23", slot_town_prison, "scn_town_1_prison"),
+      (party_set_slot, "p_town_23", slot_town_walls, "scn_town_11_walls"),
+      (party_set_slot, "p_town_23", slot_town_alley, "scn_town_11_alley"),
+
       #ports
       (party_set_slot,"p_town_1", slot_town_port, "p_port_1"),
       (party_set_slot,"p_town_2", slot_town_port, "p_port_2"),
@@ -445,6 +455,15 @@ scripts = [
       (party_set_slot,"p_port_15", slot_port_town, "p_town_15"),
       (party_set_slot,"p_port_19", slot_port_town, "p_town_19"),
 
+      #Zendar
+      (party_set_slot, "p_town_23", slot_town_center, "scn_town_11_center"),
+      (party_set_slot, "p_town_23", slot_town_castle, "scn_town_1_castle"),
+      (party_set_slot, "p_town_23", slot_town_tavern, "scn_town_1_tavern"),
+      (party_set_slot, "p_town_23", slot_town_store, "scn_town_1_store"),
+      (party_set_slot, "p_town_23", slot_town_arena, "scn_town_11_arena"),
+      (party_set_slot, "p_town_23", slot_town_prison, "scn_town_1_prison"),
+      (party_set_slot, "p_town_23", slot_town_walls, "scn_town_11_walls"),
+      (party_set_slot, "p_town_23", slot_town_alley, "scn_town_11_alley"),
   #Duh Town Population for Land required // Linked to bank system
 
 	  (try_for_range, ":town_no", towns_begin, towns_end),
@@ -546,6 +565,10 @@ scripts = [
         (try_end),
         ##diplomacy end+
       (try_end),
+
+      #Zendar Villages
+      (party_set_slot, "p_village_111", slot_castle_exterior, "scn_village_80"),
+      (party_set_slot, "p_village_112", slot_castle_exterior, "scn_village_62"),
 
 # Troops:
 
@@ -669,6 +692,7 @@ scripts = [
 	  (call_script, "script_give_center_to_faction_aux", "p_town_20", "fac_kingdom_6"),
 	  (call_script, "script_give_center_to_faction_aux", "p_town_21", "fac_kingdom_6"),
 	  (call_script, "script_give_center_to_faction_aux", "p_town_22", "fac_kingdom_6"),
+    (call_script, "script_give_center_to_faction_aux", "p_town_23", "fac_kingdom_4"),
 
       (call_script, "script_give_center_to_faction_aux", "p_castle_1", "fac_kingdom_5"),
       (call_script, "script_give_center_to_faction_aux", "p_castle_2", "fac_kingdom_3"),
@@ -829,6 +853,7 @@ scripts = [
 	  (party_set_slot, "p_castle_46", slot_center_ex_faction, "fac_kingdom_5"), #rhodoks claim sarranid-held weyyah
 	  (party_set_slot, "p_castle_40", slot_center_ex_faction, "fac_kingdom_6"), #sarranids claim khergit-held uhhun
 	  (party_set_slot, "p_town_11",   slot_center_ex_faction, "fac_kingdom_3"), #Khergits claim vaegir-held curaw
+    (party_set_slot, "p_town_23",   slot_center_ex_faction, "fac_kingdom_2"), #vaegirs claim nords-held zendar
 
 	  #Swadians, being in the middle, will have additional claims on two of their neighhbors
 	  (party_set_slot, "p_castle_15", slot_center_ex_faction, "fac_kingdom_1"), #swadians claim vaegir-held tilbault
@@ -7504,6 +7529,17 @@ scripts = [
 
 	  #BARIYYE - 6 Routes
       #Tulga, Halmar, Narra, Shariz, Durquba, Ahmerrad
+
+    #ZENDAR - 8 Routes
+      #Sargoth, Tihr, Wercheg,Reyvadin, Curaw, Khudan, Rivacheg, Dhirim
+      (call_script, "script_set_trade_route_between_centers", "p_town_23", "p_town_1"), #Zendar - Sargoth
+      (call_script, "script_set_trade_route_between_centers", "p_town_23", "p_town_2"), #Zendar - Tihr
+      (call_script, "script_set_trade_route_between_centers", "p_town_23", "p_town_12"), #Zendar - Wercheg
+      (call_script, "script_set_trade_route_between_centers", "p_town_23", "p_town_8"), #Zendar - Reyvadin
+      (call_script, "script_set_trade_route_between_centers", "p_town_23", "p_town_11"), #Zendar - Curaw
+      (call_script, "script_set_trade_route_between_centers", "p_town_23", "p_town_9"), #Zendar - Khudan
+      (call_script, "script_set_trade_route_between_centers", "p_town_23", "p_town_13"), #Zendar - Rivacheg
+      (call_script, "script_set_trade_route_between_centers", "p_town_23", "p_town_16"), #Zendar - Dhirim
 	]),
 
 
@@ -8074,6 +8110,13 @@ scripts = [
       (party_set_slot,"p_town_22", slot_town_arena_melee_2_team_size,   4),
       (party_set_slot,"p_town_22", slot_town_arena_melee_3_num_teams,   2),
       (party_set_slot,"p_town_22", slot_town_arena_melee_3_team_size,   6),
+
+      (party_set_slot,"p_town_23", slot_town_arena_melee_1_num_teams,   2),
+      (party_set_slot,"p_town_23", slot_town_arena_melee_1_team_size,   8),
+      (party_set_slot,"p_town_23", slot_town_arena_melee_2_num_teams,   3),
+      (party_set_slot,"p_town_23", slot_town_arena_melee_2_team_size,   4),
+      (party_set_slot,"p_town_23", slot_town_arena_melee_3_num_teams,   3),
+      (party_set_slot,"p_town_23", slot_town_arena_melee_3_team_size,   6),
 	]),
 
 	("initialize_banner_info",
@@ -8396,6 +8439,13 @@ scripts = [
 	(party_set_slot, "p_town_22", slot_center_wine_presses, 0), 	#no alcohol (wine) in arabic region
 	(party_set_slot, "p_town_22", slot_center_pottery_kilns, 12),
 	(party_set_slot, "p_town_22", slot_center_salt_pans, 2),
+
+
+  #Zendar (iron, leatherwork, tools )
+  (party_set_slot, "p_town_23", slot_center_smithies, 19),
+	(party_set_slot, "p_town_23", slot_center_iron_deposits, 10),
+	(party_set_slot, "p_town_23", slot_center_tanneries, 5),
+
 	#also produces 50 spice
 
     (try_for_range, ":village_no", villages_begin, villages_end),
@@ -8652,6 +8702,12 @@ scripts = [
         (party_set_slot, ":village_no", slot_center_salt_pans, 1),
         (party_set_slot, ":village_no", slot_center_kirmiz_farms, 1500),
 
+      #Zendar (village productions : Hrafnvik and Vargdal)
+		(else_try),
+        (party_slot_eq, ":village_no", slot_village_market_town, "p_town_23"),
+		    (party_set_slot, ":village_no", slot_center_acres_flax, 4000),
+		    (party_set_slot, ":village_no", slot_center_fur_traps, 2),
+        (party_set_slot, ":village_no", slot_center_iron_deposits, 3),
 		(try_end),
     (try_end),
 
@@ -25416,19 +25472,23 @@ scripts = [
        (try_for_range, ":village_no", villages_begin, villages_end),
         ##CABA Fix
         (try_begin),
+          # Snow Check
           (this_or_next|is_between, ":village_no", "p_village_16", "p_village_23"), #Shapeshte through Shulus (up to Ilvia)
           (this_or_next|is_between, ":village_no", "p_village_49", "p_village_51"), #Tismirr and Karindi
           (this_or_next|eq, ":village_no", "p_village_75"), #Bhulaban
-          (is_between, ":village_no", "p_village_85", "p_village_87"), #Ismirala and Slezkh
+          (this_or_next|is_between, ":village_no", "p_village_85", "p_village_87"), #Ismirala and Slezkh
+          (eq, ":village_no", "p_village_112"),
           (assign, ":normal_village_icon", "icon_village_snow_a"),
           (assign, ":burnt_village_icon", "icon_village_snow_burnt_a"),
           (assign, ":deserted_village_icon", "icon_village_snow_deserted_a"),
         (else_try),
-          (is_between, ":village_no", "p_village_91", "p_salt_mine"), #Ayn Assuadi through Rushdigh
+          # Desert Check (Exclude your new villages from the catch-all group)
+          (is_between, ":village_no", "p_village_91", "p_village_111"), #Ayn Assuadi through Rushdigh
           (assign, ":normal_village_icon", "icon_village_c"),
           (assign, ":burnt_village_icon", "icon_village_burnt_c"),
           (assign, ":deserted_village_icon", "icon_village_deserted_c"),
         (else_try),
+          # Catch-all Default (This now handles standard plain villages
           (assign, ":normal_village_icon", "icon_village_a"),
           (assign, ":burnt_village_icon", "icon_village_burnt_a"),
           (assign, ":deserted_village_icon", "icon_village_deserted_a"),

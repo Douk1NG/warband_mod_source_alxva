@@ -1,4 +1,4 @@
-# Tournament Play Enhancements (1.5) by Windyplains
+﻿# Tournament Play Enhancements (1.5) by Windyplains
 
 from header_common import *
 from header_operations import *
@@ -31,6 +31,7 @@ scenes = [
 ("town_20_arena_alternate"			,sf_generate									,"none"								,"none"								,(0,0)			,(100,100)		,-100	,"0x00000002200005000005f57b00005885000046bd00006d9c"	,[]											,[]											,"outer_terrain_desert"				),
 ("town_21_arena_alternate"			,sf_generate									,"none"								,"none"								,(0,0)			,(100,100)		,-100	,"0x00000002200005000005f57b00005885000046bd00006d9c"	,[]											,[]											,"outer_terrain_desert"				),
 ("town_22_arena_alternate"			,sf_generate									,"none"								,"none"								,(0,0)			,(100,100)		,-100	,"0x00000002200005000005f57b00005885000046bd00006d9c"	,[]											,[]											,"outer_terrain_desert"				),
+("town_23_arena_alternate"			,sf_generate									,"none"								,"none"								,(0,0)			,(100,100)		,-100	,"0x40001d9300031ccb0000156f000048ba0000361c"			,[]											,[]											,"outer_terrain_snow"				),
 
 ]
 

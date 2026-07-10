@@ -1,4 +1,4 @@
-from header_common import *
+﻿from header_common import *
 from header_operations import *
 from header_triggers import *
 from header_scenes import *
@@ -253,8 +253,10 @@ scenes = [
   ("town_21_center",sf_generate,"none", "none",(0,0),(100,100),-100,"0x0000000150051a800004190400003f8c0000352b000014d8",
     [],[],"outer_terrain_desert"),
   ("town_22_center",sf_generate,"none", "none",(0,0),(100,100),-100,"0x000000025a03253200042d08000079d6000004fd00006910",
-    [],[],"outer_terrain_desert"), 
- 
+    [],[],"outer_terrain_desert"),
+ ("town_23_center",sf_generate,"none", "none",(0,0),(100,100),-100,"0x400790b20002c8b0000050d500006f8c00006dbd",
+    [],[],"outer_terrain_snow"),
+
   ("town_1_castle",sf_indoors,"viking_interior_keep_a", "bo_viking_interior_keep_a", (-100,-100),(100,100),-100,"0",
     ["exit"],["town_1_seneschal"]),
   ("town_2_castle",sf_indoors,"viking_interior_keep_a", "bo_viking_interior_keep_a", (-100,-100),(100,100),-100,"0",
@@ -299,7 +301,9 @@ scenes = [
     ["exit"],["town_21_seneschal"]),
   ("town_22_castle",sf_indoors, "arabian_interior_keep_a", "bo_arabian_interior_keep_a", (-100,-100),(100,100),-100,"0x00000007300005000002308c00004a840000624700004fda",
     ["exit"],["town_22_seneschal"]),
-  
+  ("town_23_castle",sf_indoors,"viking_interior_keep_a", "bo_viking_interior_keep_a", (-100,-100),(100,100),-100,"0",
+    ["exit"],["town_23_seneschal"]),
+
   ("town_1_tavern",sf_indoors,"viking_interior_tavern_a", "bo_viking_interior_tavern_a", (-100,-100),(100,100),-100,"0",
     ["exit"],[]),
   ("town_2_tavern",sf_indoors,"viking_interior_tavern_a", "bo_viking_interior_tavern_a", (-100,-100),(100,100),-100,"0",
@@ -344,7 +348,8 @@ scenes = [
     ["exit"],[]),
   ("town_22_tavern",sf_indoors, "interior_town_house_steppe_c", "bo_interior_town_house_steppe_c", (-100,-100),(100,100),-100,"0",
     ["exit"],[]),
-  
+  ("town_23_tavern",sf_indoors, "viking_interior_tavern_a", "bo_viking_interior_tavern_a", (-100,-100),(100,100),-100,"0",
+    ["exit"],[]),
   ("town_1_store",sf_indoors,"viking_interior_merchant_a", "bo_viking_interior_merchant_a", (-100,-100),(100,100),-100,"0",
     ["exit"],[]),
   ("town_2_store",sf_indoors,"viking_interior_merchant_a", "bo_viking_interior_merchant_a", (-100,-100),(100,100),-100,"0",
@@ -389,7 +394,9 @@ scenes = [
     ["exit"],[]),
   ("town_22_store",sf_indoors, "interior_town_house_steppe_d", "bo_interior_town_house_steppe_d", (-100,-100),(100,100),-100,"0",
     ["exit"],[]),
-  
+  ("town_23_store",sf_indoors,"viking_interior_merchant_a", "bo_viking_interior_merchant_a", (-100,-100),(100,100),-100,"0",
+    ["exit"],[]),
+
   ("town_1_arena",sf_generate,"none", "none", (0,0),(100,100),-100,"0xa0001d9300031ccb0000156f000048ba0000361c",
     [],[],"outer_terrain_plain"),
   ("town_2_arena",sf_generate,"none", "none", (0,0),(100,100),-100,"0xa0001d9300031ccb0000156f000048ba0000361c",
@@ -434,8 +441,9 @@ scenes = [
     [],[],"outer_terrain_desert"),
   ("town_22_arena",sf_generate,"none", "none", (0,0),(100,100),-100,"0x00000002200005000005f57b00005885000046bd00006d9c",
     [],[],"outer_terrain_desert"),
+  ("town_23_arena",sf_generate,"none", "none", (0,0),(100,100),-100,"0x40001d9300031ccb0000156f000048ba0000361c",
+    [],[],"outer_terrain_snow"),
 
-  
   ("town_1_prison",sf_indoors,"interior_prison_cell_a", "bo_interior_prison_cell_a", (-100,-100),(100,100),-100,"0",
     [],[]),
   ("town_2_prison",sf_indoors,"interior_prison_cell_a", "bo_interior_prison_cell_a", (-100,-100),(100,100),-100,"0",
@@ -480,7 +488,9 @@ scenes = [
     ["exit"],[]),
   ("town_22_prison",sf_indoors,"interior_prison_o", "bo_interior_prison_o", (-100,-100),(100,100),-100,"0",
     ["exit"],[]),
-  
+  ("town_23_prison",sf_indoors,"dungeon_a", "bo_dungeon_a", (-100,-100),(100,100),-100,"0",
+    ["exit"],[]),
+
   ("town_1_walls",sf_generate,"none", "none", (0,0),(100,100),-100,"0x00000001300010c800054d5c00004af000005d3f00002ca0",
     [],[],"outer_terrain_plain"),
   ("town_2_walls",sf_generate,"none", "none", (0,0),(100,100),-100,"0x00000001300010c800054d5c00004af000005d3f00002ca0",
@@ -541,7 +551,9 @@ scenes = [
     [],[],"outer_terrain_desert"),
   ("town_22_walls",sf_generate,"none", "none", (0,0),(100,100),-100,"0x000000025a00723200046d1b00003e020000147600004387",
     [],[],"outer_terrain_desert"),
-  
+  ("town_23_walls",sf_generate,"none", "none", (0,0),(100,100),-100,"0x0000000140015033000651900000159f0000619800006af6",
+    [],[],"outer_terrain_snow"),
+
   ("town_1_alley",sf_generate,"none", "none", (0,0),(100,100),-100,"0x300bc5430001e0780000448a0000049f00007932",
     [],[],"outer_terrain_plain"),
   ("town_2_alley",sf_generate,"none", "none", (0,0),(100,100),-100,"0x300bc5430001e0780000448a0000049f00007932",
@@ -602,7 +614,8 @@ scenes = [
     [],[],"outer_terrain_desert"),
   ("town_22_alley",sf_generate,"none", "none", (0,0),(100,100),-100,"0x000000025a00723200046d1b00003e0200001476000052ae",
     [],[],"outer_terrain_desert"),
-
+  ("town_23_alley",sf_generate,"none", "none", (0,0),(100,100),-100,"0x300bc5430001e0780000448a0000049f00007932",
+    [],[],"outer_terrain_snow"),
 #0x30054d228004050000005a768000688400002e3b
 #0x30054da28004050000005a76800022aa00002e3b
 #Castles:
@@ -1189,7 +1202,11 @@ scenes = [
 	("village_110",sf_generate,"none", "none", (0,0),(100,100),-100,"0x00000001500410320005a96800006b5300004edc00000d11",
     [],[],"outer_terrain_desert"),
 	
-	
+	("village_111",sf_generate,"none", "none", (0,0),(100,100),-100,"0x000000013001b21e0004f13e000042b2000058e400007fce",
+    [],[],"outer_terrain_plain"),
+
+  ("village_112",sf_generate,"none", "none", (0,0),(100,100),-100,"0x000000014007b26300059563000051e000001aa4000034ee",
+    [],[],"outer_terrain_snow"),
 
 
 	

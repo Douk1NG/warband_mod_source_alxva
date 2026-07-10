@@ -1,4 +1,4 @@
-# Tournament Play Enhancements (1.5) by Windyplains
+﻿# Tournament Play Enhancements (1.5) by Windyplains
 
 from header_common import *
 from header_operations import *
@@ -3409,6 +3409,8 @@ scripts = [
 			(eq, ":center_no", "p_town_22"),                 # Bariyye
 			(call_script, "script_tpe_define_city_native_settings", ":center_no", 50, 0, 60, 0, 30, 30, 0, 0),
 		(else_try),
+          	(eq, ":center_no", "p_town_23"), # Zendar
+			(call_script, "script_tpe_define_city_native_settings", ":center_no", 100, 0, 50, 0, 0, 20, 30, 0), # Zendar
 			(call_script, "script_tpe_define_city_native_settings", ":center_no", 50, 100, 100, 100, 100, 100, 100, 100), # Default Response
 		(try_end),
 		(party_set_slot, ":center_no", slot_town_arena_option, 0),
