@@ -5690,7 +5690,9 @@ TOTAL:  {reg5}"),
         (party_get_num_companion_stacks, ":num_stacks", "p_collective_enemy"),
         (try_for_range, ":i_stack", 0, ":num_stacks"),
           (party_stack_get_troop_id, ":stack_troop", "p_collective_enemy", ":i_stack"),
-          (is_between, ":stack_troop", lords_begin, lords_end),
+          ###(((add wounded kings to p_total_enemy_casualties FIX
+          (is_between, ":stack_troop", active_npcs_begin, active_npcs_end),
+          ###)))
           (troop_is_wounded, ":stack_troop"),
           (party_add_members, "p_total_enemy_casualties", ":stack_troop", 1),
         (try_end),
@@ -11463,7 +11465,7 @@ TOTAL:  {reg5}"),
           #(reset_item_probabilities,100),
 
           #begin of changes
-          (party_get_slot, ":bound_town", "$current_town", slot_village_bound_center),
+          (party_get_slot, ":bound_town", "$current_town", slot_village_market_town),
           #the above line is the culprit for divide by zero
           # (store_sub, ":item_to_price_slot", slot_town_trade_good_prices_begin, trade_goods_begin),
           (assign, ":item_to_price_slot", slot_town_trade_good_prices_begin),
@@ -11493,6 +11495,7 @@ TOTAL:  {reg5}"),
             # (str_store_item_name, s1, ":cur_goods"),
             # (display_message, "@{s1} price : {reg2} in slot {reg4}, probability: {reg3};{reg1} total"),
           (try_end),
+          (val_max, ":total_probability", 1),
           (assign, ":item_to_price_slot", slot_town_trade_good_prices_begin),
           (try_for_range, ":cur_goods", trade_goods_begin, trade_goods_end),
             (party_get_slot, ":cur_price", ":bound_town", ":item_to_price_slot"),
@@ -18153,6 +18156,14 @@ goods, and books will never be sold. ^^You can change some settings here freely.
              (eq, ":cur_faction", "$g_notification_menu_var1"),
              (call_script, "script_troop_change_relation_with_troop", ":cur_troop", "trp_player", 5),
            (try_end),
+           ###(((rebels_switch FIX
+           (try_for_range, ":cur_troop", kingdom_ladies_begin, kingdom_ladies_end),
+             (store_troop_faction, ":cur_faction", ":cur_troop"),
+             (eq, ":cur_faction", "fac_player_supporters_faction"),
+             (troop_set_faction, ":cur_troop", "$g_notification_menu_var1"),
+             (call_script, "script_troop_set_title_according_to_faction", ":cur_troop", "$g_notification_menu_var1"),
+           (try_end),
+           ###)))
 
            (try_for_parties, ":cur_party"),
              (store_faction_of_party, ":cur_faction", ":cur_party"),

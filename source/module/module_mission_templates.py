@@ -4577,7 +4577,11 @@ mission_templates = [
           (eq, "$talk_context", tc_prison_break),
           (agent_get_troop_id, ":troop_no", ":agent_no"),
           (troop_slot_eq, ":troop_no", slot_troop_will_join_prison_break, 1),
-          (agent_set_team, ":agent_no", 0),
+          ###(((prison_break FIX
+          (get_player_agent_no, ":player_agent"),
+          (agent_get_team, ":player_team", ":player_agent"),
+          (agent_set_team, ":agent_no", ":player_team"),
+          ###)))
           (agent_ai_set_aggressiveness, ":agent_no", 5),
           (agent_set_is_alarmed, ":agent_no", 1),
           (troop_set_slot, ":troop_no", slot_troop_will_join_prison_break, 0),
@@ -5759,6 +5763,28 @@ mission_templates = [
           random_mixed_gender,
       common_battle_init_banner,
 
+      ###(((village_raid FIX
+      (ti_on_agent_killed_or_wounded, 0, 0, [],
+       [
+        (store_trigger_param_1, ":dead_agent_no"),
+        # (store_trigger_param_2, ":killer_agent_no"),
+        (store_trigger_param_3, ":is_wounded"),
+
+        (try_begin),
+          (ge, ":dead_agent_no", 0),
+          (neg|agent_is_ally, ":dead_agent_no"),
+          (agent_is_human, ":dead_agent_no"),
+          (agent_get_troop_id, ":dead_agent_troop_id", ":dead_agent_no"),
+
+          (party_add_members, "p_total_enemy_casualties", ":dead_agent_troop_id", 1), #addition_to_p_total_enemy_casualties
+          (eq, ":is_wounded", 1),
+          (party_wound_members, "p_total_enemy_casualties", ":dead_agent_troop_id", 1), 
+        (try_end),
+
+        # (call_script, "script_apply_death_effect_on_courage_scores", ":dead_agent_no", ":killer_agent_no"),
+       ]),
+      ###)))
+
       (ti_question_answered, 0, 0, [],
        [(store_trigger_param_1,":answer"),
         (eq,":answer",0),
@@ -6637,7 +6663,10 @@ mission_templates = [
           (agent_get_troop_id, ":troop_no", ":agent_no"),
           (troop_get_slot, ":will_join_prison_break", ":troop_no", slot_troop_will_join_prison_break),
           (eq, ":will_join_prison_break", 1),
-          (agent_set_team, ":agent_no", 0),
+          ###(((prison_break FIX
+          (agent_get_team, ":player_team", ":player_agent"),
+          (agent_set_team, ":agent_no", ":player_team"),
+          ###)))
           (agent_ai_set_aggressiveness, ":agent_no", 5),
           (troop_set_slot, ":troop_no", slot_troop_will_join_prison_break, 0),
           (agent_set_is_alarmed, ":agent_no", 1),

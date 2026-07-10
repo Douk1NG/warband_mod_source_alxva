@@ -16858,6 +16858,27 @@ scripts = [
       (val_div, ":loot_probability", ":num_player_party_shares"),
 
       (party_get_num_companion_stacks, ":num_stacks",":enemy_party"),
+      ###(((sort troops of enemy_party by level
+      (assign, ":last_stack", ":num_stacks"),
+      (try_for_range, ":unused", 0, ":num_stacks"),
+        (assign, ":best_stack", -1),
+        (assign, ":best_level", -999999),
+        (try_for_range, ":cur_stack", 0, ":last_stack"),
+          (party_stack_get_troop_id, ":cur_troop", ":enemy_party", ":cur_stack"),
+          (neg|troop_is_hero, ":cur_troop"),
+          (store_character_level, ":cur_level", ":cur_troop"),
+          (gt, ":cur_level", ":best_level"),
+          (assign, ":best_level", ":cur_level"),
+          (assign, ":best_stack", ":cur_stack"),
+        (try_end),
+        (gt, ":best_stack", -1),
+        (party_stack_get_troop_id, ":stack_troop", ":enemy_party", ":best_stack"),
+        (party_stack_get_size, ":stack_size", ":enemy_party", ":best_stack"),
+        (party_remove_members, ":enemy_party", ":stack_troop", ":stack_size"),
+        (party_add_members, ":enemy_party", ":stack_troop", ":stack_size"),
+        (val_sub, ":last_stack", 1),
+      (try_end),
+      ###)))
       (try_for_range, ":i_stack", 0, ":num_stacks"),
         (party_stack_get_troop_id, ":stack_troop",":enemy_party",":i_stack"),
         (neg|troop_is_hero, ":stack_troop"),
@@ -31514,6 +31535,9 @@ scripts = [
         (agent_is_human, ":centered_agent_no"),
         (agent_is_alive, ":centered_agent_no"),
         (neq, ":centered_agent_no", ":player_agent"),
+        ###(((courage_scores NEW FIX
+        (agent_slot_eq, ":centered_agent_no", slot_agent_is_running_away, 1), 
+        ###)))
         (agent_get_position, pos0, ":centered_agent_no"),
         (try_begin),
           (agent_is_ally, ":centered_agent_no"),
@@ -31597,114 +31621,85 @@ scripts = [
             (end_try),
           (try_end),
 
+          ###(((courage_scores NEW FIX
           (try_begin),
-            (neq, ":agent_is_running_away_or_not", 1),
-            (val_mul, ":agent_delta_courage_score", 1),
-            (try_begin), # centered agent not running away cannot take positive courage score from one another agent not running away.
-              (agent_get_slot, ":agent_is_running_away_or_not", ":centered_agent_no", slot_agent_is_running_away),
-              (eq, ":agent_is_running_away_or_not", 0),
-              (val_mul, ":agent_delta_courage_score", 0),
-            (try_end),
+            (agent_get_troop_id, ":centered_troop_id", ":centered_agent_no"),
+            (troop_is_hero, ":centered_troop_id"),
+            (assign, ":agent_delta_courage_score_2", 4),
           (else_try),
-            (try_begin),
-              (agent_get_slot, ":agent_is_running_away_or_not", ":agent_no", slot_agent_is_running_away),
-              (eq, ":agent_is_running_away_or_not", 0),
-              (val_mul, ":agent_delta_courage_score", -2), # running away agent fears not running away agent more.
-            (else_try),
-              (val_mul, ":agent_delta_courage_score", -1),
-            (try_end),
+            (assign, ":agent_delta_courage_score_2", 2),
           (try_end),
-
-          (neq, ":agent_delta_courage_score", 0),
 
           (agent_get_position, pos1, ":agent_no"),
           (get_distance_between_positions, ":dist", pos0, pos1),
 
+          (assign, ":pos_effect", 0),
           (try_begin),
-            (ge, ":agent_delta_courage_score", 0),
-            (try_begin),
-              (lt, ":dist", 2000), #0-20 meter
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 50),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (else_try),
-              (lt, ":dist", 4000), #21-40 meter
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 40),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (else_try),
-              (lt, ":dist", 7000), #41-70 meter
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 30),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (else_try),
-              (lt, ":dist", 11000), #71-110 meter
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 20),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (else_try),
-              (lt, ":dist", 16000), # 111-160 meter, assumed that eye can see agents friendly at most 160 meters far while fighting.
-                                    # this is more than below limit (108 meters) because we hear that allies come from further.
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 10),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (try_end),
-          (else_try),                                               # negative effect of running agent on other ally agents are lower then positive effects above, to avoid starting
-            (try_begin),                                            # run away of all agents at a moment. I want to see agents running away one by one during battle, not all together.
-              (lt, ":dist", 200), #1-2 meter,                       # this would create better game play.
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 15),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (else_try),
-              (lt, ":dist", 400), #3-4 meter,
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 13),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (else_try),
-              (lt, ":dist", 600), #5-6 meter
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 11),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (else_try),
-              (lt, ":dist", 800), #7-8 meter
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 9),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (else_try),
-              (lt, ":dist", 1200), #9-12 meters
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 7),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (else_try),
-              (lt, ":dist", 2400), #13-24 meters
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 5),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (else_try),
-              (lt, ":dist", 4800), #25-48 meters
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 3),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (else_try),
-              (lt, ":dist", 9600), #49-98 meters, assumed that eye can see agents running away at most 98 meters far while fighting.
-              (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
-              (val_mul, ":agent_delta_courage_score", 1),
-              (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
-              (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
-            (try_end),
+            (lt, ":dist", 2000), #0-20 meter
+            (assign, ":pos_effect", 50),
+          (else_try),
+            (lt, ":dist", 4000), #21-40 meter
+            (assign, ":pos_effect", 40),
+          (else_try),
+            (lt, ":dist", 7000), #41-70 meter
+            (assign, ":pos_effect", 30),
+          (else_try),
+            (lt, ":dist", 11000), #71-110 meter
+            (assign, ":pos_effect", 20),
+          (else_try),      
+            (lt, ":dist", 16000), # 111-160 meter, assumed that eye can see agents friendly at most 160 meters far while fighting. 
+                                  # this is more than below limit (108 meters) because we hear that allies come from further.
+            (assign, ":pos_effect", 10),
           (try_end),
+
+          (assign, ":neg_effect", 0),                             # negative effect of running agent on other ally agents are lower then positive effects above, to avoid starting  
+          (try_begin),                                            # run away of all agents at a moment. I want to see agents running away one by one during battle, not all together.
+            (lt, ":dist", 200), #1-2 meter,                       # this would create better game play.
+            (assign, ":neg_effect", 15),
+          (else_try),
+            (lt, ":dist", 400), #3-4 meter, 
+            (assign, ":neg_effect", 13),
+          (else_try),
+            (lt, ":dist", 600), #5-6 meter
+            (assign, ":neg_effect", 11),
+          (else_try),
+            (lt, ":dist", 800), #7-8 meter
+            (assign, ":neg_effect", 9),
+          (else_try),
+            (lt, ":dist", 1200), #9-12 meters
+            (assign, ":neg_effect", 7),
+          (else_try),
+            (lt, ":dist", 2400), #13-24 meters
+            (assign, ":neg_effect", 5),
+          (else_try),
+            (lt, ":dist", 4800), #25-48 meters
+            (assign, ":neg_effect", 3),
+          (else_try),
+            (lt, ":dist", 9600), #49-98 meters, assumed that eye can see agents running away at most 98 meters far while fighting.
+            (assign, ":neg_effect", 1),
+          (try_end),   
+
+          (try_begin),
+            (neq, ":agent_is_running_away_or_not", 1),
+            (val_mul, ":agent_delta_courage_score", 1),
+            (val_mul, ":agent_delta_courage_score", ":pos_effect"),
+
+            (val_mul, ":agent_delta_courage_score_2", -2),
+            (val_mul, ":agent_delta_courage_score_2", ":neg_effect"),
+            (neq, ":agent_delta_courage_score_2", 0),
+            (agent_get_slot, ":agent_courage_score_2", ":agent_no", slot_agent_courage_score),
+            (val_add, ":agent_courage_score_2", ":agent_delta_courage_score_2"),
+            (agent_set_slot, ":agent_no", slot_agent_courage_score, ":agent_courage_score_2"),
+
+          (else_try),
+            (val_mul, ":agent_delta_courage_score", -1),
+            (val_mul, ":agent_delta_courage_score", ":neg_effect"),
+          (try_end),
+          (neq, ":agent_delta_courage_score", 0),
+          (agent_get_slot, ":agent_courage_score", ":centered_agent_no", slot_agent_courage_score),
+          (val_add, ":agent_courage_score", ":agent_delta_courage_score"),
+          (agent_set_slot, ":centered_agent_no", slot_agent_courage_score, ":agent_courage_score"),
+          ###)))
         (try_end),
       (try_end),
   ]), #ozan
@@ -34332,6 +34327,17 @@ scripts = [
 
       (assign, "$routed_party_added", 0), #new
       (party_clear, "p_total_enemy_casualties"), #new
+
+      ###(((add wounded troops of enemy to p_total_enemy_casualties
+      (party_get_num_companion_stacks, ":num_stacks", "p_collective_enemy"),
+      (try_for_range, ":stack_no", 0, ":num_stacks"),
+        (party_stack_get_troop_id, ":stack_troop", "p_collective_enemy", ":stack_no"),
+        (party_stack_get_num_wounded, ":stack_wounded_size", "p_collective_enemy", ":stack_no"),
+        (gt, ":stack_wounded_size", 0),
+        (party_add_members, "p_total_enemy_casualties", ":stack_troop", ":stack_wounded_size"),
+        (party_wound_members, "p_total_enemy_casualties", ":stack_troop", ":stack_wounded_size"),
+      (try_end),
+      ###)))
 
 #      (try_begin),
 #        (gt, "$g_ally_party", 0),
@@ -57982,6 +57988,9 @@ scripts = [
 	(try_for_range, ":center", centers_begin, centers_end), #transfer properties to liege
 		(party_slot_eq, ":center", slot_town_lord, ":troop_no"),
 		(party_set_slot, ":center", slot_town_lord, stl_unassigned),
+		###(((removing banner FIX
+		(party_set_banner_icon, ":center", 0),
+		###)))
 	(try_end),
 
 	(faction_get_slot, ":faction_leader", ":faction", slot_faction_leader),

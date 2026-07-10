@@ -1978,6 +1978,10 @@ If you would like to practice your horsemanship, you can take my horse here. The
   (try_begin), #random "good" imod
     (store_random_in_range, ":imod", imod_old, imod_exquisite),
     (gt, "$g_attacker_drawn_weapon", 0),
+    ###(((itm_sword_viking_1 FIX - check inventory capacity before adding weapon
+    (store_free_inventory_capacity, ":free_capacity", "trp_player"),
+    (gt, ":free_capacity", 0),
+    ###)))
     (troop_add_item, "trp_player", "$g_attacker_drawn_weapon", ":imod"), # SB: add attacker sword
   (try_end),
 (else_try),
@@ -1987,6 +1991,10 @@ If you would like to practice your horsemanship, you can take my horse here. The
   (str_store_string, s9, "str_you_never_let_him_draw_his_weapon_still_it_looked_like_he_was_going_to_kill_you_take_his_sword_and_purse_i_suppose_he_was_trouble_but_its_not_good_for_an_establishment_to_get_a_name_as_a_place_where_men_are_killed"),
 
   (try_begin),
+    ###(((itm_sword_viking_1 FIX - check inventory capacity before adding weapon
+    (store_free_inventory_capacity, ":free_capacity", "trp_player"),
+    (gt, ":free_capacity", 0),
+    ###)))
     (try_for_range, ":item_slot", ek_item_0, ek_head),
       (agent_get_item_slot, ":item_no", "$g_main_attacker_agent", ":item_slot"),
       (troop_add_item, "trp_player", ":item_no", 0), # SB: add attacker sword
@@ -1997,7 +2005,13 @@ If you would like to practice your horsemanship, you can take my horse here. The
 (else_try),
   (neg|agent_is_alive, "$g_main_attacker_agent"),
   (str_store_string, s9, "str_well_id_say_that_he_started_it_that_entitles_you_to_his_sword_and_purse_i_suppose_have_a_drink_on_the_house_as_i_daresay_youve_saved_a_patron_or_two_a_broken_skull_still_i_hope_he_still_has_a_pulse_its_not_good_for_an_establishment_to_get_a_name_as_a_place_where_men_are_killed"),
-  (troop_add_item, "trp_player", "$g_attacker_drawn_weapon", 0), # SB: add attacker sword
+  ###(((itm_sword_viking_1 FIX - check inventory capacity before adding weapon
+  (try_begin),
+    (store_free_inventory_capacity, ":free_capacity", "trp_player"),
+    (gt, ":free_capacity", 0),
+    (troop_add_item, "trp_player", "$g_attacker_drawn_weapon", 0), # SB: add attacker sword
+  (try_end),
+  ###)))
   (try_begin),
     (agent_is_wounded, "$g_main_attacker_agent"),
     (call_script, "script_change_player_relation_with_center", "$current_town", 1), #useless, increase with town instead
@@ -13969,6 +13983,7 @@ What kind of recruits do you want?", "dplmc_constable_recruit_select",
 
 (try_for_range, ":minister_quest", all_quests_begin, all_quests_end),
 (quest_slot_eq, ":minister_quest", slot_quest_giver_troop, "$g_talk_troop"),
+(check_quest_active, ":minister_quest"), ###(((minister_quest FIX)))
 (call_script, "script_abort_quest", ":minister_quest", 0),
 (try_end),
 ]],
@@ -22743,6 +22758,9 @@ I'll send some men to take him to our prison with due haste.", "lord_pretalk", [
 (try_end),
 
 (call_script, "script_change_troop_faction", "$g_talk_troop", "$players_kingdom"),
+###(((lord_recruit_pledge FIX
+(troop_set_slot, "$g_talk_troop", slot_lord_recruitment_candidate, ":recruitment_candidate"),
+###)))
 
 (try_begin), #Actually, perhaps do provocation rather than war
   (store_relation, ":relation", "$players_kingdom", "$g_talk_troop_faction"),
@@ -22826,7 +22844,12 @@ I'll send some men to take him to our prison with due haste.", "lord_pretalk", [
 [anyone,"lord_recruit_pledge_conclude",  [
 ],
 "Now... It is a momentous step I have taken. I will take my leave, as I may need some time prepare myself for what comes next.", "close_window",
-[(assign, "$g_leave_encounter", 1)]], #SB : dialog encounter fighting bugfix
+[
+###(((lord_recruit_pledge FIX
+(troop_set_slot, "$g_talk_troop", slot_lord_recruitment_candidate, 0),
+(assign, "$g_leave_encounter", 1)
+###)))
+]], #SB : dialog encounter fighting bugfix
 #lord recruitment changes end
 
 
@@ -31414,6 +31437,16 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
     ##diplomacy start+ load relation text into s0
     (call_script, "script_dplmc_print_player_spouse_says_my_husband_wife_to_s0", "$g_talk_troop", 0),
     ##diplomacy end+
+    ###(((escort_lady_spouse_talk FIX
+    (assign, ":continue",1),
+    (try_begin),
+      (check_quest_active, "qst_escort_lady"),
+      (eq, "$talk_context", tc_entering_center_quest_talk),
+      (quest_slot_eq, "qst_escort_lady", slot_quest_object_troop, "$g_talk_troop"),
+      (assign, ":continue",0),
+    (try_end),
+    (eq, ":continue",1),
+    ###)))
     ],
     ##diplomacy start+ use relation string
    "Yes, {s0}?", "spouse_talk",[
@@ -32020,6 +32053,7 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
 				(party_slot_eq, ":center", slot_town_lord, "$g_talk_troop"),
 			(assign, ":feast_venue", ":center"),
 		(try_end),
+        (gt, ":feast_venue", -1), ###(((spouse_feast_confirm_yes FIX)))
 	(else_try),
 		(is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
 		(assign, ":feast_venue", "$g_encountered_party"),
