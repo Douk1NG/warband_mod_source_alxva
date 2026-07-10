@@ -41,22 +41,23 @@ Extracting the most isolated systems to test the pipeline.
 - [x] **Morale & Courage** -> `native/scripts/morale/`
 - [x] **Banner & Heraldry** -> `native/scripts/heraldry/`
 
-### [ ] Phase 3: Complex Core Mechanics (Native)
+### [x] Phase 3: Complex Core Mechanics (Native) (Completed)
 Extracting deeply interconnected but well-defined Native logic domains.
-- [ ] **Tournament & Arena** -> `native/scripts/arena/`
-- [ ] **Encounters & Battle Setup** -> `native/scripts/encounters/`
-- [ ] **Party AI & Routing** -> `native/scripts/party_ai/`
-- [ ] **Center Management** (Prosperity, building, reinforcements) -> `native/scripts/centers/`
-- [ ] **NPC Logic & Conversations** (Companions, Lords) -> `native/scripts/npcs/`
-- [ ] **Faction AI & Politics** (War/Peace, Marshals) -> `native/scripts/faction_ai/`
+- [x] **Tournament & Arena** -> `native/scripts/arena/`
+- [x] **Encounters & Battle Setup** -> `native/scripts/encounters/`
+- [x] **Party AI & Routing** -> `native/scripts/party_ai/`
+- [x] **Center Management** (Prosperity, building, reinforcements) -> `native/scripts/centers/`
+- [x] **NPC Logic & Conversations** (Companions, Lords) -> `native/scripts/npcs/`
+- [x] **Faction AI & Politics** (War/Peace, Marshals) -> `native/scripts/faction_ai/`
 
-### [ ] Phase 4: The Core Loop & Remaining Native Scripts
-- [ ] **Core Game Loops** (Initialization, time progression, game start) -> `native/scripts/core/`
-- [ ] Anything remaining that is strictly Native Mount & Blade Warband.
+### [x] Phase 4: The Core Loop & Remaining Native Scripts (Completed)
+- [x] **Core Game Loops** (Initialization, time progression, game start) -> `native/scripts/core/`
+- [x] **Native Miscellaneous** (various unbound scripts) -> `native/scripts/misc/`
+- [x] **Native Miscellaneous Extra** (remaining native/mod mixed) -> `native/scripts/misc/misc_scripts_extra.py`
 
-### [ ] Phase 5: The Mod Content (Dickplomacy & Diplomacy)
-- [ ] **Diplomacy Mod Logic** -> `diplomacy/scripts/`
-- [ ] **Dickplomacy Mod Logic** (Adult content, extended features) -> `dickplomacy/scripts/`
+### [x] Phase 5: The Mod Content (Dickplomacy & Diplomacy) (Completed)
+- [x] **Diplomacy Mod Logic** -> `native/scripts/diplomacy/`
+- [x] **Dickplomacy Mod Logic** (Adult content, extended features) -> `native/scripts/dickplomacy/`
 
 ## Tracking Progress
-We are currently entering **Phase 3**. The assembly pattern has proven stable, and we are working our way down the file.
+We have completed all phases! `module_scripts.py` is now fully modularized into 19 domains. The 80k line monolith is now an assembly file of ~3k lines (primarily imports and helper functions), dramatically improving compile time and maintainability.
