@@ -5,6 +5,8 @@ if (sys.version_info[0] != 2) or (sys.version_info[1] < 6):
 	exit("\nYou're running Python version {0}.{1}.{2}.\nW.R.E.C.K. requires Python version 2.6.x or 2.7.x to run!\n".format(*sys.version_info[0:3]))
 sys.dont_write_bytecode = True
 
+import bootstrap_paths
+
 from time import time as gettime
 from os import makedirs
 
@@ -25,7 +27,7 @@ from compiler import *
 
 
 
-write_id_files = "ID_%s.py" # Where the compiler will write new iteration ID-files.
+write_id_files = "ids/ID_%s.py" # Where the compiler will write new iteration ID-files.
 show_performance_data = False # Set to true to display compiler performance data by default.
 export_filename = '%s.txt' # How to name export files (only used for some debugging purposes).
 

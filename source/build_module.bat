@@ -1,37 +1,39 @@
 @echo off
-python process_init.py
-python process_global_variables.py
-python process_strings.py
-python process_skills.py
-python process_music.py
-python process_animations.py
-python process_meshes.py
-python process_sounds.py
-python process_skins.py
-python process_map_icons.py
-python process_factions.py
-python process_items.py
-python process_scenes.py
-python process_troops.py
-python process_particle_sys.py
-python process_scene_props.py
-python process_tableau_materials.py
-python process_presentations.py
-python process_party_tmps.py
-python process_parties.py
-python process_quests.py
-python process_info_pages.py
-python process_scripts.py
-python process_mission_tmps.py
-python process_game_menus.py
-python process_simple_triggers.py
-python process_dialogs.py
-python process_global_variables_unused.py
-python process_postfx.py
-@del *.pyc
-echo.
-echo ______________________________
-echo.
-echo Script processing has ended.
-echo Press any key to exit. . .
-pause>nul
+cd /d %~dp0
+set PYTHONPATH=%CD%
+call python process\process_init.py
+call python process\process_global_variables.py
+call python process\process_strings.py
+call python process\process_skills.py
+call python process\process_music.py
+call python process\process_animations.py
+call python process\process_meshes.py
+call python process\process_sounds.py
+call python process\process_skins.py
+call python process\process_map_icons.py
+call python process\process_factions.py
+call python process\process_items.py
+call python process\process_scenes.py
+call python process\process_troops.py
+call python process\process_particle_sys.py
+call python process\process_scene_props.py
+call python process\process_tableau_materials.py
+call python process\process_presentations.py
+call python process\process_party_tmps.py
+call python process\process_parties.py
+call python process\process_quests.py
+call python process\process_info_pages.py
+call python process\process_scripts.py
+call python process\process_mission_tmps.py
+call python process\process_game_menus.py
+call python process\process_simple_triggers.py
+call python process\process_dialogs.py
+call python process\process_global_variables_unused.py
+call python process\process_postfx.py
+@del /s /q *.pyc 2>nul
+@echo.
+@echo ______________________________
+@echo.
+@echo Script processing has ended.
+@echo Press any key to exit. . .
+pause > nul
