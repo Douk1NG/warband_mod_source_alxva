@@ -1,13 +1,18 @@
 # Update 007 - Late Game Defeated King Recruitment and Auto Prisoner Selection
 
 ## Purpose
-This update documents two late-game and post-battle quality-of-life changes:
+This update documents branch 007 gameplay and quality-of-life changes:
 
 - Defeated rulers and claimants who have lost their realm and become commoners can now be recruited as player vassals through lord dialogue or the minister.
 - Captured enemy prisoners are automatically selected before the prisoner exchange screen opens, prioritizing quest targets and then the highest-level prisoners up to the player's prisoner capacity.
 - A lord suggestion cheat option can force a lord to accept recruitment into the player's kingdom.
+- While the player is hosting a feast, resting in the feast center now automatically improves relation with attending lords once per day when the feast quality is at least adequate.
+- Allied kingdom lords who fought alongside the player now receive a small post-battle relation increase, with martial lords receiving a larger boost.
+- Known lord personality/reputation type is now displayed on lord character pages after the player has met the lord, with cheat mode revealing it regardless of meeting state.
+- Kingdom lords defeated directly by the player no longer roll the normal post-defeat escape chance before capture.
+- Entering a castle court now temporarily switches the player to civilian body clothing.
 
-Both changes are behavior-affecting.
+These changes are behavior-affecting.
 
 ## File Changes
 
@@ -94,11 +99,103 @@ When a pretender wins a rebellion, the original kingdom is reactivated under the
 #### Reason
 The post-battle prisoner exchange can be tedious, especially when the player needs specific quest targets or wants the most valuable prisoners. This change preserves the manual exchange screen while pre-selecting the most useful prisoners first.
 
+### `source/module/module_triggers.py`
+
+#### Automatic Feast Relation Gain
+- Ported the Native1175 `auto change relations during feast` trigger.
+- The trigger checks once per hour while the player is resting/interacting inside the active player feast center.
+- It only runs when:
+  - `$players_kingdom` is currently using `sfai_feast`.
+  - The faction feast target is the currently encountered party.
+  - `qst_organize_feast` is active and targets that same center.
+  - The player is not map-free.
+- Before applying relation changes, it rates the feast with `script_internal_politics_rate_feast_to_s9`.
+- If the feast quality is at least `20`, every hero attached to the feast center is considered.
+- Each attending hero can gain `+1` relation toward the player once every 24 hours, using `slot_troop_last_talk_time` as the throttle.
+
+#### Reason
+Native feast dialogue already gives direct relation bumps when speaking to guests, but long rests during a player-hosted feast can pass time without naturally rewarding the player for keeping guests gathered and supplied. This adds the 1175 automatic relation drip while keeping the original feast quality gate and once-per-day limit.
+
+### `source/module/module_scripts.py`
+
+#### Allied Lord Post-Battle Relation Script
+- Ported the Native1175 `script_change_player_relation_with_lords_after_battle` helper.
+- The script scans `p_collective_friends` for active NPC kingdom heroes who were present in the player-side battle group.
+- Eligible allied lords gain:
+  - `+1` relation by default.
+  - `+2` relation if their lord personality is `lrep_martial`.
+  - `0` relation if their current player relation is below `-5`.
+
+#### Diplomacy Overlap
+Diplomacy already rewards the primary ally leader after victory through the existing `tc_ally_thanks` flow in `mnu_total_victory`. That existing reward is based on battle odds and can also improve the ally faction relation. The 1175 script is intentionally broader and smaller: it rewards every allied kingdom lord present in `p_collective_friends`. In qualifying battles, the main ally leader can therefore receive both the existing Diplomacy ally-leader reward and this new general allied-lord reward, matching the 1175 flow.
+
+### `source/module/native/scripts/core/core_scripts.py`
+
+#### Lord Personality Note Data
+- Ported the Native1175 lord personality note setup into the modular `script_game_get_troop_note` flow.
+- The note code now initializes `s61` to `unknown`.
+- For active NPC lords, `s61` is replaced with the matching `str_personality_archetypes` entry when either:
+  - cheat mode is enabled, or
+  - the player has met the lord.
+
+### `source/module/module_strings.py`
+
+#### Lord Personality Display
+- Updated `str_lord_info_string` to include `Personality: {s61}.`
+- Preserved existing Diplomacy additions in the same line, including marshal status and wealth display.
+
+### `source/module/native/scripts/encounters/encounters_scripts.py`
+
+#### Scripted Siege Capture Hook
+- Added the 1175 relation script call after the existing player-participated-in-siege log entry when the player was involved in a scripted center capture.
+
+#### Player Defeat Capture Override
+- Updated the immediate hero-defeat capture branch so that when `p_main_party` is the winning party, the defeated hero goes through the capture branch instead of rolling against `hero_escape_after_defeat_chance`.
+- Non-player winner parties still use the existing `hero_escape_after_defeat_chance` constant.
+
+### `source/module/native/scripts/npcs/npcs_scripts.py`
+
+#### Player-Defeated Lord Escape Check
+- Updated `script_cf_check_hero_can_escape_from_player` so regular active kingdom heroes defeated by the player fail the escape check and proceed to the capture/dialog path.
+- Preserved the existing quest-target rules:
+  - peace-quest targets remain non-escaping capture targets.
+  - bandit leaders still use their special quest/run behavior.
+- This does not change the later prisoner escape system for heroes already held in parties or centers.
+
+### `source/module/native/scripts/misc/misc_scripts.py`
+
+#### Automatic Civilian Clothes In Castle Courts
+- Ported the Native1175 `civilian cloth` behavior into the local modular `script_enter_court` flow.
+- When entering `mt_visit_town_castle`, player entry `0` now uses `af_override_all` and receives a temporary civilian body item.
+- The selection order is:
+  - the player's currently equipped body armor if it is already civilian,
+  - the first civilian body armor found in the player's inventory,
+  - `itm_tabard` as the fallback common clothing.
+- This is mission-entry override equipment only; it does not permanently change the player's real inventory or equipped armor.
+- The existing Diplomacy court setup, guard culture selection, spouse/minister/chamberlain visitors, and lord/lady visitor flow are unchanged.
+
+### `source/module/module_game_menus.py`
+
+#### Victory Menu Hooks
+- Added the 1175 relation script call in the major allied field battle branch where the player participated but provided less than 40 percent of allied strength.
+- Added the call when the player captures a center through the `mnu_castle_taken` path.
+- Added the call in the siege success path after the center is assigned and the player participation log is recorded.
+
 ## Verification
 - `compile.bat` was run after the defeated king recruitment dialogue change.
 - W.R.E.C.K. reported `COMPILATION SUCCESSFUL` after exporting with permission to write to the Warband module directory.
+- The feast relation trigger was syntax-checked with Python AST parsing only. `compile.bat` was not run for this task, per branch instruction.
+- The allied lord post-battle relation script and call sites were syntax-checked with Python AST parsing only. `compile.bat` was not run for this task, per branch instruction.
+- The lord personality display changes were syntax-checked with Python AST parsing only. `compile.bat` was not run for this task, per branch instruction.
+- The player-defeated lord escape changes were syntax-checked with Python AST parsing only. `compile.bat` was not run for this task, per branch instruction.
+- The automatic civilian-clothes court-entry change was syntax-checked with Python AST parsing only. `compile.bat` was not run for this task, per branch instruction.
 
 ## Notes
 - The defeated ruler dialogue intentionally uses direct faction change logic instead of the normal lord recruitment persuasion system, because this is meant to be a guaranteed late-game option.
 - The prisoner auto-selection logic deliberately runs before the exchange screen rather than replacing it, so the player keeps final control.
 - The cheat lord recruitment dialog deliberately reuses the existing final recruitment decision path rather than duplicating the pledge consequences.
+- The feast relation trigger is intentionally copied into `module_triggers.py` instead of `module_simple_triggers.py`, matching the 1175 source location and using existing local feast helper scripts.
+- The post-battle relation feature is not a replacement for Diplomacy's ally-leader thank-you reward. It layers the Native1175 all-allied-lords reward on top of the existing primary ally reward.
+- The root module already contained personality archetype strings and a cheat-mode conversation debug display. This task adds the player-facing character-page display.
+- The defeated-lord escape change is player-specific by design. It does not globally set lord escape chance to zero, so AI battles and ongoing prisoner escape behavior keep their existing balance.
+- The civilian-clothes feature is intentionally limited to indoor court entry. The local town-center, tavern, merchant, courtyard, and disguise routes already had Diplomacy/Dickplomacy override handling and were left alone.

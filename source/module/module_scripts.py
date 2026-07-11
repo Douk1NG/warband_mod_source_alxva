@@ -1871,6 +1871,28 @@ scripts = [
 	  (try_end),
 	]),
 
+  # 1175 feature: improve relation with allied lords who fought alongside the player.
+  ("change_player_relation_with_lords_after_battle",
+    [
+      (try_for_range, ":hero", active_npcs_begin, active_npcs_end),
+        (party_count_companions_of_type, ":hero_present", "p_collective_friends", ":hero"),
+        (gt, ":hero_present", 0),
+        (troop_slot_eq, ":hero", slot_troop_occupation, slto_kingdom_hero),
+        (troop_get_slot, ":reputation", ":hero", slot_lord_reputation_type),
+        (call_script, "script_troop_get_player_relation", ":hero"),
+        (assign, ":troop_relation", reg0),
+        (assign, ":relation_change", 1),
+        (try_begin),
+          (lt, ":troop_relation", -5),
+          (assign, ":relation_change", 0),
+        (else_try),
+          (eq, ":reputation", lrep_martial),
+          (assign, ":relation_change", 2),
+        (try_end),
+        (call_script, "script_change_player_relation_with_troop", ":hero", ":relation_change"),
+      (try_end),
+    ]),
+
    #script_initialize_tavern_variables
 ]
 scripts.extend(music_scripts)

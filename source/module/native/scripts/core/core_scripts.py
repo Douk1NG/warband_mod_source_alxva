@@ -4264,6 +4264,15 @@ core_scripts = [
           (troop_get_slot, reg16, ":troop_no", slot_troop_controversy),
           #SB : actually use this wealth in string
           (troop_get_slot, reg17, ":troop_no", slot_troop_wealth), #DEBUGS
+          (str_store_string, s61, "@unknown"),
+          (try_begin),
+            (is_between, ":troop_no", active_npcs_begin, active_npcs_end),
+            (this_or_next|neq, "$cheat_mode", 0),
+            (troop_slot_eq, ":troop_no", slot_troop_met, 1),
+            (troop_get_slot, ":reputation", ":troop_no", slot_lord_reputation_type),
+            (store_add, ":rep_string", ":reputation", "str_personality_archetypes"),
+            (str_store_string, s61, ":rep_string"),
+          (try_end),
           ##diplomacy start+ xxx remove third argument (was it doing anything?)
           #(str_store_string, s0, "str_lord_info_string", 0),
           (str_store_string, s0, "str_lord_info_string"),

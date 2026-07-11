@@ -463,6 +463,7 @@ encounters_scripts = [
               #SB : colorize
               (faction_get_color, ":color", ":defeated_troop_faction"),
               (try_begin),
+                (this_or_next|eq, ":nonempty_winner_party", "p_main_party"),
                 (ge, ":rand", hero_escape_after_defeat_chance),
 
                 #dckplmc
@@ -700,6 +701,7 @@ encounters_scripts = [
                (try_begin),
                  (eq, "$g_encountered_party", ":root_defeated_party"),
                  (call_script, "script_add_log_entry", logent_player_participated_in_siege, "trp_player",  "$g_encountered_party", 0, "$g_encountered_party_faction"),
+                 (call_script, "script_change_player_relation_with_lords_after_battle"),
                (try_end),
 
                (try_begin),

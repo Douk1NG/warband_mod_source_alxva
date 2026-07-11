@@ -1899,6 +1899,11 @@ npcs_scripts = [
       (assign, ":continue", 0),
       (try_begin),
         (eq, ":quest_target", 0), #if not quest target
+        (is_between, ":troop_no", active_npcs_begin, active_npcs_end),
+        (troop_slot_eq, ":troop_no", slot_troop_occupation, slto_kingdom_hero),
+        (assign, ":continue", 0),
+      (else_try),
+        (eq, ":quest_target", 0), #if not quest target
         (store_random_in_range, ":rand", 0, 100),
         (lt, ":rand", hero_escape_after_defeat_chance),
         (assign, ":continue", 1),
