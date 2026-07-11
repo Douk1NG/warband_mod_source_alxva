@@ -4,8 +4,12 @@ This folder contains sequential update summaries for the module source.
 
 ## Current entries
 
-- `update-00#.md` — [action] [title]
-  - Includes file-by-file, line-by-line explanations for the cleanup of unused script parameters, redundant logic, and the build notice noise reduction.
+- `update-001.md` - Initial documented source update.
+- `update-002.md` - Follow-up documented source update.
+- `update-003.md` - Follow-up documented source update.
+- `update-004.md` - Native 1175 bug fixes porting.
+- `update-006.md` - Modularizing `module_scripts.py`.
+- `update-007.md` - Late game defeated king recruitment and automatic captured prisoner selection.
 
 ## Usage
 
