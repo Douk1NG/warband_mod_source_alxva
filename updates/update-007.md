@@ -11,6 +11,7 @@ This update documents branch 007 gameplay and quality-of-life changes:
 - Known lord personality/reputation type is now displayed on lord character pages after the player has met the lord, with cheat mode revealing it regardless of meeting state.
 - Kingdom lords defeated directly by the player no longer roll the normal post-defeat escape chance before capture.
 - Entering a castle court now temporarily switches the player to civilian body clothing.
+- Autosell and autotrade sales no longer fail when the merchant runs out of money or inventory space.
 
 These changes are behavior-affecting.
 
@@ -174,6 +175,24 @@ Diplomacy already rewards the primary ally leader after victory through the exis
 - This is mission-entry override equipment only; it does not permanently change the player's real inventory or equipped armor.
 - The existing Diplomacy court setup, guard culture selection, spouse/minister/chamberlain visitors, and lord/lady visitor flow are unchanged.
 
+### `source/module/native/scripts/diplomacy/diplomacy_scripts.py`
+
+#### Autosell Direct Liquidation
+- Updated `script_dplmc_auto_sell` so autosold items are liquidated directly from the player inventory instead of being transferred into a merchant inventory.
+- Removed merchant-gold and merchant-free-space requirements from both dry-run quote calculation and actual sale execution.
+- The center autosell path now uses a cleanup mode that skips backup-equipment protection, so inventory items like spare armor, boots, bows, melee weapons, throwing stones, and horses can be sold when they meet the autosell price and range rules.
+- Cleanup mode starts from the first inventory slot after equipped items and the food slot, instead of skipping Diplomacy's four alternate-item reserve slots. This prevents items placed near the top of the inventory from being silently protected.
+- The existing price limit, item range, rotten-food exception, book/trade-good exclusions, and lordly-item protection are unchanged.
+- Merchant-dialog autosell still uses the conservative personal-equipment safety checks.
+
+### `source/module/native/scripts/misc/misc_scripts_extra.py`
+
+#### Autotrade Sell Direct Liquidation
+- Updated `script_auto_trade_sell_to_merchant` with the same direct-sale behavior for Custom Commander autotrade selling.
+- Removed merchant-gold and merchant-free-space requirements that could block otherwise valid trade-good sales.
+- Autotrade selling still respects enabled/disabled item settings, minimum quantities, full-stack checks, and configured sell-over prices.
+- Autotrade buying remains merchant-based and still depends on player funds, inventory space, item settings, and configured buy-under prices.
+
 ### `source/module/module_game_menus.py`
 
 #### Victory Menu Hooks
@@ -189,6 +208,7 @@ Diplomacy already rewards the primary ally leader after victory through the exis
 - The lord personality display changes were syntax-checked with Python AST parsing only. `compile.bat` was not run for this task, per branch instruction.
 - The player-defeated lord escape changes were syntax-checked with Python AST parsing only. `compile.bat` was not run for this task, per branch instruction.
 - The automatic civilian-clothes court-entry change was syntax-checked with Python AST parsing only. `compile.bat` was not run for this task, per branch instruction.
+- The autosell/autotrade sale changes were statically reviewed only. `compile.bat` was not run for this task, per branch instruction.
 
 ## Notes
 - The defeated ruler dialogue intentionally uses direct faction change logic instead of the normal lord recruitment persuasion system, because this is meant to be a guaranteed late-game option.
@@ -199,3 +219,5 @@ Diplomacy already rewards the primary ally leader after victory through the exis
 - The root module already contained personality archetype strings and a cheat-mode conversation debug display. This task adds the player-facing character-page display.
 - The defeated-lord escape change is player-specific by design. It does not globally set lord escape chance to zero, so AI battles and ongoing prisoner escape behavior keep their existing balance.
 - The civilian-clothes feature is intentionally limited to indoor court entry. The local town-center, tavern, merchant, courtyard, and disguise routes already had Diplomacy/Dickplomacy override handling and were left alone.
+- Autosell and autotrade sale prices still use the existing price-factor scripts; this change only removes merchant wallet and stock capacity as blockers for automatic selling.
+- Equipped items and the active food slot remain protected because cleanup mode still starts after those slots; the center cleanup mode only affects eligible items in the inventory.

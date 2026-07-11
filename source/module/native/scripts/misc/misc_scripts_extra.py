@@ -13566,9 +13566,6 @@ Born at {s43}^Contact in {s44} of the {s45}.^\
       (troop_inventory_slot_get_item_max_amount, ":max_amount", ":customer", ":i_slot"),
       (eq, ":amount", ":max_amount"),
 
-      (store_free_inventory_capacity, ":free_inv_cap", ":merchant_troop"),
-      (gt, ":free_inv_cap", 0),
-
       #Don't sell if player has disabled auto selling for this item
       (item_get_slot, ":sell_enabled", ":item", slot_item_auto_trade_sell_enabled),
       (gt, ":sell_enabled", 0),
@@ -13584,15 +13581,11 @@ Born at {s43}^Contact in {s44} of the {s45}.^\
       (val_mul, ":score", ":sell_price_factor"),
       (val_div, ":score", 100),
       (val_max, ":score", 1),
-      (store_troop_gold, ":merchant_gold", ":merchant_troop"),
-      (ge, ":merchant_gold", ":score"),
 
       (item_get_slot, ":sell_price", ":item", slot_item_auto_trade_sell_over_price),
       (gt, ":score", ":sell_price"),
 
-      (troop_add_item, ":merchant_troop", ":item"),
       (troop_set_inventory_slot, ":customer", ":i_slot", -1),
-      (troop_remove_gold, ":merchant_troop", ":score"),
       (troop_add_gold, ":customer", ":score"),
       (call_script, "script_game_event_sell_item", ":item", 0),
       (val_add, ":items_sold", 1),

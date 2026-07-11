@@ -10414,7 +10414,7 @@ TOTAL:  {reg5}"),
 		 (try_end),
 		 (try_begin),
 			(eq, "$g_dplmc_sell_items_when_leaving", 1),
-			(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", all_items_begin, all_items_end, 2),
+			(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", all_items_begin, all_items_end, 4),
 		 (try_end),
       #Automatically buy and sell with village elder, if enabled
       (try_begin),

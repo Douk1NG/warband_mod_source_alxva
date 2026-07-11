@@ -3956,7 +3956,8 @@ diplomacy_scripts = [
   #    arg3 :auto_sell_price_limit (only sell stuff less expensive than this)
   #    arg4 :valid_items_begin (use this to only sell a limited range of things)
   #    arg5 :valid_items_end   (use this to only sell a limited range of things)
-  #    arg6 :actually_sell_items (set to 0 for a "dry run"; set to 2 to print a descriptive message)
+  #    arg6 :actually_sell_items (set to 0 for a "dry run"; set to 2 to print a descriptive message;
+  #          set to 4 for center autosell cleanup that skips backup-equipment protection)
   #
   # OUTPUTS:
   #    reg0 amount of gold gained by customer (not actually gained if this was a dry run)
@@ -3990,11 +3991,14 @@ diplomacy_scripts = [
 	#(assign, ":most_expensive_sold_price", -1),
 	#dplmc+ added section end
 
-    (store_free_inventory_capacity, ":space", ":merchant"),
     (troop_get_inventory_capacity, ":inv_cap", ":customer"),
+    (assign, ":first_sell_slot", dplmc_ek_alt_items_end),
+    (try_begin),
+      (eq, ":actually_sell_items", 4),
+      (assign, ":first_sell_slot", dplmc_ek_alt_items_begin),
+    (try_end),
 	(set_show_messages, 0),#<-dplmc+ added
-	(store_troop_gold, ":m_gold", ":merchant"),#dplmc+: to support "dry runs", move this out of the loop
-    (try_for_range_backwards, ":i_slot", dplmc_ek_alt_items_end, ":inv_cap"),#we're reserving several "safe" slots in the beginning of the inventory
+    (try_for_range_backwards, ":i_slot", ":first_sell_slot", ":inv_cap"),#conservative autosell reserves several "safe" slots in the beginning of the inventory
       (troop_get_inventory_slot, ":item", ":customer", ":i_slot"),
       (troop_get_inventory_slot_modifier, ":imod", ":customer", ":i_slot"),
       (gt, ":item", -1),
@@ -4020,8 +4024,6 @@ diplomacy_scripts = [
 
 	  #dplmc+ start changed section
 	  (le, ":score", ":auto_sell_price_limit"),
-	  (le, ":score", ":m_gold"),
-	  (gt, ":space", 0),
 
 	  #For equipment, in general don't sell the item unless you have a better one,
 	  #or the item is useless to you.  (The idea is to stop from accidentally
@@ -4064,6 +4066,19 @@ diplomacy_scripts = [
 	  (assign, ":can_sell", 1),
 
 	  (try_begin),
+		 (eq, ":actually_sell_items", 4),
+	  (else_try),
+		 #Damaged or low-quality inventory items should not be preserved as backup gear.
+	     (this_or_next|eq, ":imod", imod_cracked),
+	     (this_or_next|eq, ":imod", imod_rusty),
+	     (this_or_next|eq, ":imod", imod_bent),
+	     (this_or_next|eq, ":imod", imod_chipped),
+	     (this_or_next|eq, ":imod", imod_battered),
+	     (this_or_next|eq, ":imod", imod_poor),
+	     (this_or_next|eq, ":imod", imod_crude),
+	     (this_or_next|eq, ":imod", imod_old),
+	     (eq, ":imod", imod_cheap),
+	  (else_try),
 		 #Ammunition type: arrows (if you have a bow you can use, don't sell the best 3 arrow packs you have)
 	     (eq, ":this_item_type", itp_type_arrows),
 		 (call_script, "script_dplmc_scan_for_best_item_of_type", ":customer", itp_type_bow, ":customer"),
@@ -4143,16 +4158,12 @@ diplomacy_scripts = [
 	  #(try_end),
 
 	  #Log the transaction even if in dry run mode
-	  (val_sub, ":m_gold", ":score"),
 	  (val_add, ":gold_gained", ":score"),
 	  (val_add, ":items_sold", 1),
-	  (val_sub, ":space", 1),
 
 	  #If not a dry run, apply the transaction
 	  (neq, ":actually_sell_items", 0),
-	  (troop_add_item, ":merchant", ":item", ":imod"),
 	  (troop_set_inventory_slot, ":customer", ":i_slot", -1),
-	  (troop_remove_gold, ":merchant", ":score"),
 	  (troop_add_gold, ":customer", ":score"),
       #dplmc+ end changed section
     (try_end),
@@ -4162,7 +4173,7 @@ diplomacy_scripts = [
 	#dplmc+ added section begin
 	#Print a message if appropriate
 	(try_begin),
-		(is_between, ":actually_sell_items", 2, 4),#2 or 3
+		(is_between, ":actually_sell_items", 2, 5),#2, 3, or 4
 		(this_or_next|ge, ":items_sold", 1),
 			(eq, ":actually_sell_items", 3),
 		(assign, reg0, ":gold_gained"),
@@ -4207,32 +4218,32 @@ diplomacy_scripts = [
 			#1. Selling weapons, shields, and ranged weapons to the weaponsmith
 		    (party_get_slot, ":merchant_troop", ":center_no", slot_town_weaponsmith),
 			(ge, ":merchant_troop", 1),
-			(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", weapons_begin, ranged_weapons_end, 2),
+			(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", weapons_begin, ranged_weapons_end, 4),
 		(try_end),
 		(try_begin),
 			#2. Selling armor to the armorer
 			(party_get_slot, ":merchant_troop", ":center_no", slot_town_armorer),
 			(ge, ":merchant_troop", 1),
-			(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", armors_begin, armors_end, 2),
+			(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", armors_begin, armors_end, 4),
  		(try_end),
 		(try_begin),
 			#3. Selling horses to the horse merchant
 			(party_get_slot, ":merchant_troop", ":center_no", slot_town_horse_merchant),
 			(ge, ":merchant_troop", 1),
-			(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", horses_begin, horses_end, 2),
+			(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", horses_begin, horses_end, 4),
 		(try_end),
 		(try_begin),
 			#4. Selling whatever may remain to the general merchant
 			(party_get_slot, ":merchant_troop", ":center_no", slot_town_merchant),
 			(ge, ":merchant_troop", 1),
-			(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", all_items_begin, all_items_end, 2),
+			(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", all_items_begin, all_items_end, 4),
 		(try_end),
 	 (else_try),
 		##For Villages:
 		(is_between, ":center_no", villages_begin, villages_end),
 		(party_get_slot, ":merchant_troop", ":center_no", slot_town_elder),
 		(ge, ":merchant_troop", 1),
-		(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", all_items_begin, all_items_end, 2),
+		(call_script, "script_dplmc_auto_sell", "trp_player", ":merchant_troop", "$g_dplmc_auto_sell_price_limit", all_items_begin, all_items_end, 4),
 	 (else_try),
         #Don't show an error for castles, since we wouldn't expect this to work there
         (neg|is_between, ":center_no", castles_begin, castles_end),
