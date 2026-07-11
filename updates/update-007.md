@@ -4,7 +4,10 @@
 This update documents branch 007 gameplay and quality-of-life changes:
 
 - Defeated rulers and claimants who have lost their realm and become commoners can now be recruited as player vassals through lord dialogue or the minister.
-- Captured enemy prisoners are automatically selected before the prisoner exchange screen opens, prioritizing quest targets and then the highest-level prisoners up to the player's prisoner capacity.
+- Captured enemy prisoners are automatically selected before the prisoner exchange screen opens, prioritizing quest targets and then the highest-level prisoners up to the player's prisoner capacity; the player prisoner capacity now gains a renown-based bonus.
+- When entering a player-owned castle or town, prisoners traveling with the player are automatically moved into that center's dungeon.
+- Constable prisoner selling now uses a direct sell-all flow for the current dungeon, avoiding the old temporary garrison-prisoner trade screen.
+- The constable can recruit eligible dungeon prisoners directly into the current garrison.
 - A lord suggestion cheat option can force a lord to accept recruitment into the player's kingdom.
 - While the player is hosting a feast, resting in the feast center now automatically improves relation with attending lords once per day when the feast quality is at least adequate.
 - Allied kingdom lords who fought alongside the player now receive a small post-battle relation increase, with martial lords receiving a larger boost.
@@ -80,6 +83,14 @@ When a pretender wins a rebellion, the original kingdom is reactivated under the
 - Selecting it makes the talked-to lord consider `trp_player` as the recruitment candidate, uses the claim argument, clears the fief expectation flag, and forces `$pledge_chance` to `100`.
 - The dialog reuses the normal final pledge flow, so the lord accepts through the existing faction-change and pledge consequences.
 
+#### Constable Prisoner Sale and Storage Flow
+- Replaced the old garrison-prisoner management route from the constable menu with an always-visible direct sell-all option for the current dungeon.
+- If the current dungeon has no sellable prisoners, the constable now says there are no prisoners here that can be sold.
+- The new sell-all route avoids moving dungeon prisoners through `p_main_party` and avoids opening the prisoner trade screen, which prevents the old temporary-transfer flow from losing prisoners or hiding the option when no party prisoners are present.
+- Added a direct option to recruit eligible prisoners from the current dungeon into the current garrison.
+- The recruitment option uses a confirmation prompt and reports when no prisoners are eligible to join.
+- After recruitment succeeds, a log message reports how many prisoners were added to the garrison.
+
 ### `source/module/module_game_menus.py`
 
 #### Automatic Captured Prisoner Selection
@@ -99,6 +110,13 @@ When a pretender wins a rebellion, the original kingdom is reactivated under the
 
 #### Reason
 The post-battle prisoner exchange can be tedious, especially when the player needs specific quest targets or wants the most valuable prisoners. This change preserves the manual exchange screen while pre-selecting the most useful prisoners first.
+
+#### Automatic Prisoner Dungeon Deposit
+- Added a `mnu_town` entry hook for player-owned walled centers.
+- When the player enters a castle or town where `slot_town_lord` is `trp_player`, any prisoners in `p_main_party` are moved into `$current_town`.
+- The transfer uses `$g_move_heroes = 1`, so captured lords and other hero prisoners are moved with regular prisoners.
+- The player receives a message reporting how many prisoners were moved.
+- This keeps post-battle captives from staying in the field party once the player reaches their own dungeon.
 
 ### `source/module/module_triggers.py`
 
@@ -131,6 +149,13 @@ Native feast dialogue already gives direct relation bumps when speaking to guest
 Diplomacy already rewards the primary ally leader after victory through the existing `tc_ally_thanks` flow in `mnu_total_victory`. That existing reward is based on battle odds and can also improve the ally faction relation. The 1175 script is intentionally broader and smaller: it rewards every allied kingdom lord present in `p_collective_friends`. In qualifying battles, the main ally leader can therefore receive both the existing Diplomacy ally-leader reward and this new general allied-lord reward, matching the 1175 flow.
 
 ### `source/module/native/scripts/core/core_scripts.py`
+
+#### Renown-Based Prisoner Capacity
+- Updated `script_game_get_party_prisoner_limit`, the engine callback used when Warband asks for a party's prisoner limit.
+- For `p_main_party`, the returned prisoner limit now adds `slot_troop_renown / 50`.
+- The existing base limit remains `skl_prisoner_management * 5`, so a maxed prisoner-management character still starts from the normal 50-prisoner cap before renown is applied.
+- The existing Diplomacy `$diplomacy_var2` override is preserved and the renown bonus is applied after that override.
+- Non-player parties keep the existing prisoner-limit behavior.
 
 #### Lord Personality Note Data
 - Ported the Native1175 lord personality note setup into the modular `script_game_get_troop_note` flow.
@@ -185,6 +210,19 @@ Diplomacy already rewards the primary ally leader after victory through the exis
 - The existing price limit, item range, rotten-food exception, book/trade-good exclusions, and lordly-item protection are unchanged.
 - Merchant-dialog autosell still uses the conservative personal-equipment safety checks.
 
+#### Party-Specific Sell-All Prisoner Script
+- Added `script_dplmc_sell_all_prisoners_from_party`.
+- The script mirrors the existing ransom-broker sell-all calculation, but takes a source party as its first parameter.
+- It only sells prisoners accepted by `script_game_check_prisoner_can_be_sold`, so hero prisoners and other unsellable prisoners remain in place.
+- The original `script_dplmc_sell_all_prisoners` now wraps the new party-specific script with `p_main_party`, preserving existing ransom-broker and Ramun behavior.
+- The constable uses the new party-specific script for current-dungeon prisoners.
+
+#### Recruit Dungeon Prisoners to Garrison
+- Added `script_dplmc_recruit_all_prisoners_to_garrison`.
+- The script scans a center's prisoner stacks and converts eligible regular prisoners into normal garrison members of the same troop type.
+- Eligibility follows `script_game_check_prisoner_can_be_sold`, so lord prisoners and other unsellable prisoners remain in the dungeon.
+- The script supports dry-run mode for dialog confirmation and execute mode for the actual conversion.
+
 ### `source/module/native/scripts/misc/misc_scripts_extra.py`
 
 #### Autotrade Sell Direct Liquidation
@@ -209,10 +247,17 @@ Diplomacy already rewards the primary ally leader after victory through the exis
 - The player-defeated lord escape changes were syntax-checked with Python AST parsing only. `compile.bat` was not run for this task, per branch instruction.
 - The automatic civilian-clothes court-entry change was syntax-checked with Python AST parsing only. `compile.bat` was not run for this task, per branch instruction.
 - The autosell/autotrade sale changes were statically reviewed only. `compile.bat` was not run for this task, per branch instruction.
+- The renown-based prisoner-capacity adjustment was statically reviewed only. `compile.bat` was not run for this task, per branch instruction.
+- The automatic dungeon deposit and constable sell-all prisoner changes were statically reviewed only. `compile.bat` was not run for this task, per branch instruction.
+- The constable recruit-prisoners-to-garrison change was statically reviewed only. `compile.bat` was not run for this task, per branch instruction.
 
 ## Notes
 - The defeated ruler dialogue intentionally uses direct faction change logic instead of the normal lord recruitment persuasion system, because this is meant to be a guaranteed late-game option.
 - The prisoner auto-selection logic deliberately runs before the exchange screen rather than replacing it, so the player keeps final control.
+- The renown prisoner-capacity bonus is added in the engine prisoner-limit callback, so it affects the player's actual prisoner capacity rather than only the auto-selection pass.
+- The automatic dungeon deposit only runs for centers directly owned by `trp_player`; allied or vassal-owned centers are not auto-filled.
+- The constable dungeon sell-all flow intentionally sells only regular sellable prisoners and leaves lord prisoners in the dungeon.
+- The constable dungeon recruit flow also leaves lord prisoners in the dungeon and only converts eligible regular prisoners into garrison troops.
 - The cheat lord recruitment dialog deliberately reuses the existing final recruitment decision path rather than duplicating the pledge consequences.
 - The feast relation trigger is intentionally copied into `module_triggers.py` instead of `module_simple_triggers.py`, matching the 1175 source location and using existing local feast helper scripts.
 - The post-battle relation feature is not a replacement for Diplomacy's ally-leader thank-you reward. It layers the Native1175 all-allied-lords reward on top of the existing primary ally reward.

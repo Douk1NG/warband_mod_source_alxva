@@ -7136,7 +7136,7 @@ core_scripts = [
   # OUTPUT: reg0 = prisoner_limit
   ("game_get_party_prisoner_limit",
     [
-#      (store_script_param_1, ":party_no"),
+      (store_script_param_1, ":party_no"),
       (assign, ":troop_no", "trp_player"),
 
       (assign, ":limit", 0),
@@ -7145,6 +7145,12 @@ core_scripts = [
       (try_begin), #SB : override with diplomacy_var2
         (eq, "$diplomacy_var", DPLMC_CURRENT_VERSION_CODE),
         (assign, ":limit", "$diplomacy_var2"),
+      (try_end),
+      (try_begin),
+        (eq, ":party_no", "p_main_party"),
+        (troop_get_slot, ":renown_prisoner_capacity_bonus", "trp_player", slot_troop_renown),
+        (val_div, ":renown_prisoner_capacity_bonus", 20),
+        (val_add, ":limit", ":renown_prisoner_capacity_bonus"),
       (try_end),
       (assign, reg0, ":limit"),
       (set_trigger_result, reg0),

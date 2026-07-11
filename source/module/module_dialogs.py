@@ -8836,25 +8836,90 @@ What kind of recruits do you want?", "dplmc_constable_recruit_select",
 []],
 
 ##prisoner
-[anyone|plyr,"dplmc_constable_talk",
-[(store_num_regular_prisoners,":prisoners", "p_main_party"),(ge,":prisoners",1)],
-"I have some prisoners -- can you sell them for me?", "dplmc_constable_prisoner",[]],
 
 ##SB : convenience feature of selling prisoners in garrison
 [anyone|plyr,"dplmc_constable_talk",
-[(store_num_regular_prisoners,":prisoners", "$current_town"),(ge,":prisoners",1)],
-"We have prisoners in the dungeon -- let's have a look over them.", "dplmc_constable_garrison_prisoner_manage",[
-#move prisoner
-(party_clear, "p_temp_party"),
-(assign, "$g_move_heroes", 1),
-(call_script, "script_party_prisoners_add_party_prisoners", "p_temp_party", "p_main_party"),
-(call_script, "script_party_remove_all_prisoners", "p_main_party"),
-#mark global variable here to allow player to hold all the prisoners
-(party_get_num_prisoners, "$diplomacy_var2", "$current_town"),
-(assign, "$diplomacy_var", DPLMC_CURRENT_VERSION_CODE),
-(call_script, "script_party_prisoners_add_party_prisoners", "p_main_party", "$current_town"),
-(assign, "$g_move_heroes", 0),
+[],
+"Sell all prisoners held in this dungeon.", "dplmc_constable_garrison_prisoner_sell_all",[]],
+
+[anyone|plyr,"dplmc_constable_talk",
+[],
+"Recruit all willing prisoners into this garrison.", "dplmc_constable_garrison_prisoner_recruit_all",[]],
+
+[anyone,"dplmc_constable_prisoner_sell_all", [
+  (call_script, "script_dplmc_print_subordinate_says_sir_madame_to_s0"),
+  (call_script, "script_dplmc_sell_all_prisoners_from_party", "p_main_party", 0, 0),
+  (assign, reg2, reg1),
+  (gt, reg1, 0),
+],
+"I can sell {reg2} prisoners from your party for {reg0} denars. Shall I arrange it, {s0}?", "dplmc_constable_prisoner_sell_all_confirm", []],
+
+[anyone,"dplmc_constable_prisoner_sell_all", [
+  (call_script, "script_dplmc_print_subordinate_says_sir_madame_to_s0"),
+  (call_script, "script_dplmc_sell_all_prisoners_from_party", "p_main_party", 0, 0),
+  (le, reg1, 0),
+],
+"You have no prisoners to sell, {s0}.", "dplmc_constable_pretalk", []],
+
+[anyone|plyr,"dplmc_constable_prisoner_sell_all_confirm", [],
+"Yes, sell them.", "dplmc_constable_pretalk",
+[
+  (call_script, "script_dplmc_sell_all_prisoners_from_party", "p_main_party", 1, 0),
+  (call_script, "script_objectionable_action", tmt_humanitarian, "str_sell_slavery"),
 ]],
+
+[anyone|plyr,"dplmc_constable_prisoner_sell_all_confirm", [],
+"No, leave them with me.", "dplmc_constable_pretalk", []],
+
+[anyone,"dplmc_constable_garrison_prisoner_sell_all", [
+  (call_script, "script_dplmc_print_subordinate_says_sir_madame_to_s0"),
+  (call_script, "script_dplmc_sell_all_prisoners_from_party", "$current_town", 0, 0),
+  (assign, reg2, reg1),
+  (gt, reg1, 0),
+],
+"I can sell {reg2} prisoners from this dungeon for {reg0} denars. Shall I arrange it, {s0}?", "dplmc_constable_garrison_prisoner_sell_all_confirm", []],
+
+[anyone,"dplmc_constable_garrison_prisoner_sell_all", [
+  (call_script, "script_dplmc_print_subordinate_says_sir_madame_to_s0"),
+  (call_script, "script_dplmc_sell_all_prisoners_from_party", "$current_town", 0, 0),
+  (le, reg1, 0),
+],
+"There are no prisoners here that can be sold, {s0}.", "dplmc_constable_pretalk", []],
+
+[anyone|plyr,"dplmc_constable_garrison_prisoner_sell_all_confirm", [],
+"Yes, sell them.", "dplmc_constable_pretalk",
+[
+  (call_script, "script_dplmc_sell_all_prisoners_from_party", "$current_town", 1, 0),
+  (call_script, "script_objectionable_action", tmt_humanitarian, "str_sell_slavery"),
+]],
+
+[anyone|plyr,"dplmc_constable_garrison_prisoner_sell_all_confirm", [],
+"No, keep them in the dungeon.", "dplmc_constable_pretalk", []],
+
+[anyone,"dplmc_constable_garrison_prisoner_recruit_all", [
+  (call_script, "script_dplmc_print_subordinate_says_sir_madame_to_s0"),
+  (call_script, "script_dplmc_recruit_all_prisoners_to_garrison", "$current_town", 0),
+  (assign, reg2, reg0),
+  (gt, reg0, 0),
+],
+"I can recruit {reg2} prisoners into this garrison. Shall I arrange it, {s0}?", "dplmc_constable_garrison_prisoner_recruit_all_confirm", []],
+
+[anyone,"dplmc_constable_garrison_prisoner_recruit_all", [
+  (call_script, "script_dplmc_print_subordinate_says_sir_madame_to_s0"),
+  (call_script, "script_dplmc_recruit_all_prisoners_to_garrison", "$current_town", 0),
+  (le, reg0, 0),
+],
+"There are no prisoners here willing to join the garrison, {s0}.", "dplmc_constable_pretalk", []],
+
+[anyone|plyr,"dplmc_constable_garrison_prisoner_recruit_all_confirm", [],
+"Yes, recruit them.", "dplmc_constable_pretalk",
+[
+  (call_script, "script_dplmc_recruit_all_prisoners_to_garrison", "$current_town", 1),
+  (display_message, "@{reg0} prisoners added to the garrison."),
+]],
+
+[anyone|plyr,"dplmc_constable_garrison_prisoner_recruit_all_confirm", [],
+"No, keep them as prisoners.", "dplmc_constable_pretalk", []],
 
 [anyone,"dplmc_constable_garrison_prisoner_manage", [
 (call_script, "script_dplmc_print_subordinate_says_sir_madame_to_s0"),

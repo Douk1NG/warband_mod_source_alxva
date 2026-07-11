@@ -4793,17 +4793,34 @@ diplomacy_scripts = [
    [
     (store_script_param_1, ":actually_remove"),
     (store_script_param_2, ":fixed_price"),
+    (call_script, "script_dplmc_sell_all_prisoners_from_party", "p_main_party", ":actually_remove", ":fixed_price"),
+  ]),
+
+# "script_dplmc_sell_all_prisoners_from_party"
+#
+#INPUT:
+#Arg 1: party to sell regular prisoners from
+#Arg 2: actually remove (positive for yes, zero or negative for no)
+#Arg 3: if positive, use this as a fixed price instead of calculating dynamically
+#OUTPUT:
+#reg0: amount of gold gained (or would have been gained if the sale occurred)
+#reg1: number of prisoners sold (or would have been sold if the sale occurred)
+  ("dplmc_sell_all_prisoners_from_party",
+   [
+    (store_script_param_1, ":source_party"),
+    (store_script_param_2, ":actually_remove"),
+    (store_script_param, ":fixed_price", 3),
 
     (assign, ":total_removed", 0),
     (assign, ":total_income", 0),
-    (party_get_num_prisoner_stacks, ":num_stacks", "p_main_party"),
+    (party_get_num_prisoner_stacks, ":num_stacks", ":source_party"),
     (try_for_range_backwards, ":i_stack", 0, ":num_stacks"),
-      (party_prisoner_stack_get_troop_id, ":troop_no", "p_main_party", ":i_stack"),
+      (party_prisoner_stack_get_troop_id, ":troop_no", ":source_party", ":i_stack"),
       #SB : correction to use game script
       (call_script, "script_game_check_prisoner_can_be_sold", ":troop_no"),
       (eq, reg0, 1),
       # (neg|troop_is_hero, ":troop_no"),
-      (party_prisoner_stack_get_size, ":stack_size", "p_main_party", ":i_stack"),
+      (party_prisoner_stack_get_size, ":stack_size", ":source_party", ":i_stack"),
       (try_begin),
          (gt, ":fixed_price", 0),
          (assign, ":sell_price", ":fixed_price"),
@@ -4815,7 +4832,7 @@ diplomacy_scripts = [
       (val_add, ":total_income", ":stack_total_price"),
       (val_add, ":total_removed", ":stack_size"),
       (gt, ":actually_remove", 0),#Stop short if this is a dry run
-      (party_remove_prisoners, "p_main_party", ":troop_no", ":stack_size"),
+      (party_remove_prisoners, ":source_party", ":troop_no", ":stack_size"),
     (try_end),
     (try_begin),
       (gt, ":actually_remove", 0),#Stop short if this is a dry run
@@ -4823,6 +4840,33 @@ diplomacy_scripts = [
     (try_end),
     (assign, reg0, ":total_income"),
     (assign, reg1, ":total_removed"),
+  ]),
+
+# "script_dplmc_recruit_all_prisoners_to_garrison"
+#
+#INPUT:
+#Arg 1: center party
+#Arg 2: actually recruit (positive for yes, zero or negative for no)
+#OUTPUT:
+#reg0: number of prisoners recruited (or would have been recruited if dry run)
+  ("dplmc_recruit_all_prisoners_to_garrison",
+   [
+    (store_script_param_1, ":center_party"),
+    (store_script_param_2, ":actually_recruit"),
+
+    (assign, ":total_recruited", 0),
+    (party_get_num_prisoner_stacks, ":num_stacks", ":center_party"),
+    (try_for_range_backwards, ":i_stack", 0, ":num_stacks"),
+      (party_prisoner_stack_get_troop_id, ":troop_no", ":center_party", ":i_stack"),
+      (call_script, "script_game_check_prisoner_can_be_sold", ":troop_no"),
+      (eq, reg0, 1),
+      (party_prisoner_stack_get_size, ":stack_size", ":center_party", ":i_stack"),
+      (val_add, ":total_recruited", ":stack_size"),
+      (gt, ":actually_recruit", 0),
+      (party_remove_prisoners, ":center_party", ":troop_no", ":stack_size"),
+      (party_add_members, ":center_party", ":troop_no", ":stack_size"),
+    (try_end),
+    (assign, reg0, ":total_recruited"),
   ]),
 
 #"script_dplmc_translate_inactive_player_supporter_faction_2"
