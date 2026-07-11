@@ -29613,6 +29613,18 @@ Hand over my {reg19} denars, if you please, and end our business together.", "lo
      (assign, "$g_recalculate_ais", 1),
    ]],
 
+  [anyone|plyr, "lord_suggest_action",
+    [
+      (faction_get_slot, ":players_liege", "$players_kingdom", slot_faction_leader),
+      (eq, ":players_liege", "trp_player"),
+    ],
+    "{!}CHEAT: I ask for your support for the throne of Calradia", "lord_recruit_7_decision",
+    [
+      (troop_set_slot, "$g_talk_troop", slot_lord_recruitment_candidate, "trp_player"),
+      (troop_set_slot, "$g_talk_troop", slot_lord_recruitment_argument, argument_claim),
+      (assign, "$lord_expects_fief", 0),
+      (assign, "$pledge_chance", 100),
+  ]],
   [anyone|plyr,"lord_suggest_action", [(neq, "$talk_context", tc_siege_commander)],
    "{!}CHEAT: Let us attack an enemy town or castle.", "lord_suggest_attack_enemy_castle",[]],
   [anyone|plyr,"lord_suggest_action", [(neq, "$talk_context", tc_siege_commander)],

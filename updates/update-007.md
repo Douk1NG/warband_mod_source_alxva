@@ -5,6 +5,7 @@ This update documents two late-game and post-battle quality-of-life changes:
 
 - Defeated rulers and claimants who have lost their realm and become commoners can now be recruited as player vassals through lord dialogue or the minister.
 - Captured enemy prisoners are automatically selected before the prisoner exchange screen opens, prioritizing quest targets and then the highest-level prisoners up to the player's prisoner capacity.
+- A lord suggestion cheat option can force a lord to accept recruitment into the player's kingdom.
 
 Both changes are behavior-affecting.
 
@@ -67,6 +68,12 @@ When a pretender wins a rebellion, the original kingdom is reactivated under the
 - The related claimant for the defeated kingdom is also moved to `fac_commoners` when the kingdom falls and that claimant is not the currently supported pretender.
 - The recruitment eligibility also accepts an existing-save fallback where a claimant is still in their original faction while that original faction is already `sfs_defeated`. This handles saves created before the cleanup fix, where the daily defeat trigger will not run again for that faction.
 
+#### Cheat Lord Recruitment Dialog
+- Added a cheat recruitment option under the lord suggestion cheat menu.
+- The option appears when the player is the leader of `$players_kingdom`.
+- Selecting it makes the talked-to lord consider `trp_player` as the recruitment candidate, uses the claim argument, clears the fief expectation flag, and forces `$pledge_chance` to `100`.
+- The dialog reuses the normal final pledge flow, so the lord accepts through the existing faction-change and pledge consequences.
+
 ### `source/module/module_game_menus.py`
 
 #### Automatic Captured Prisoner Selection
@@ -94,3 +101,4 @@ The post-battle prisoner exchange can be tedious, especially when the player nee
 ## Notes
 - The defeated ruler dialogue intentionally uses direct faction change logic instead of the normal lord recruitment persuasion system, because this is meant to be a guaranteed late-game option.
 - The prisoner auto-selection logic deliberately runs before the exchange screen rather than replacing it, so the player keeps final control.
+- The cheat lord recruitment dialog deliberately reuses the existing final recruitment decision path rather than duplicating the pledge consequences.
