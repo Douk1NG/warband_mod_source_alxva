@@ -3,8 +3,9 @@
 #
 # This file lives in the repository's `compiler/` folder. REPO_ROOT is the
 # repo root; SOURCE_ROOT points at the `source/` folder that holds the
-# module_*.py files, the `scripts` package, and the headers/ids/process/lib/mods
-# folders. The W.R.E.C.K. compiler package lives at REPO_ROOT/compiler.
+# module_*.py files, the `scripts` package, and the headers/ids/process/modmerger
+# folders. `modmerger` holds the modmerger framework plus its `mods/` input set.
+# The W.R.E.C.K. compiler package lives at REPO_ROOT/compiler.
 
 import os
 import sys
@@ -17,7 +18,7 @@ _SOURCE_PATHS = (
 	"headers",
 	"ids",
 	"process",
-	"lib",
+	"modmerger",
 )
 
 
@@ -34,7 +35,7 @@ def setup_paths(source_root=None):
 		_ensure_path(os.path.join(root, name))
 	# W.R.E.C.K. compiler package lives at REPO_ROOT/compiler.
 	_ensure_path(os.path.join(REPO_ROOT, "compiler"))
-	mods_root = os.path.join(root, "mods")
+	mods_root = os.path.join(root, "modmerger", "mods")
 	if os.path.isdir(mods_root):
 		for mod_name in os.listdir(mods_root):
 			mod_path = os.path.join(mods_root, mod_name)
