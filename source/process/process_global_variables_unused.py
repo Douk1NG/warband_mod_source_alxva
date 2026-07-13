@@ -1,4 +1,5 @@
 import bootstrap_paths
+import os
 from module_info import *
 from process_common import *
 from process_operations import *
@@ -7,7 +8,7 @@ import re
 
 imported_variables = []
 try:
-  file = open("variables.txt","r")
+  file = open(os.path.join(bootstrap_paths.REPO_ROOT, "variables.txt"),"r")
   var_list = file.readlines()
   file.close()
   for v in var_list:

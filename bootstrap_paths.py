@@ -1,15 +1,20 @@
 # Shared import-path setup for W.R.E.C.K. and legacy process pipeline.
 # Import this module before any module/header/ID/mod imports.
+#
+# This file lives at the repository root. REPO_ROOT is the repo root;
+# SOURCE_ROOT points at the `source/` folder that holds the module_*.py
+# files, the `scripts` package, and the compiler/headers/ids/process/lib/mods
+# folders.
 
 import os
 import sys
 
-SOURCE_ROOT = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+SOURCE_ROOT = os.path.join(REPO_ROOT, "source")
 
 _STANDARD_PATHS = (
 	"compiler",
 	"headers",
-	"module",
 	"ids",
 	"process",
 	"lib",
@@ -23,6 +28,8 @@ def _ensure_path(path):
 
 def setup_paths(source_root=None):
 	root = source_root or SOURCE_ROOT
+	# The `source/` root itself holds module_*.py and the `scripts` package.
+	_ensure_path(root)
 	for name in _STANDARD_PATHS:
 		_ensure_path(os.path.join(root, name))
 	mods_root = os.path.join(root, "mods")

@@ -8,6 +8,7 @@ sys.dont_write_bytecode = True
 import bootstrap_paths
 
 from time import time as gettime
+import os
 from os import makedirs
 
 from traceback import extract_tb
@@ -27,7 +28,7 @@ from compiler import *
 
 
 
-write_id_files = "ids/ID_%s.py" # Where the compiler will write new iteration ID-files.
+write_id_files = os.path.join(bootstrap_paths.SOURCE_ROOT, "ids", "ID_%s.py") # Where the compiler will write new iteration ID-files.
 show_performance_data = False # Set to true to display compiler performance data by default.
 export_filename = '%s.txt' # How to name export files (only used for some debugging purposes).
 

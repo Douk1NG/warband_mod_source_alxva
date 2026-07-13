@@ -1,11 +1,15 @@
-import bootstrap_paths
 import os
+import sys
+# bootstrap_paths now lives at the repository root; make it importable
+# regardless of the current working directory.
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+import bootstrap_paths
 
-file = open(os.path.join(bootstrap_paths.SOURCE_ROOT, "module", "module_scripts.py"),"r")
+file = open(os.path.join(bootstrap_paths.SOURCE_ROOT, "module_scripts.py"),"r")
 lines = file.readlines()
 file.close()
 
-file = open(os.path.join(bootstrap_paths.SOURCE_ROOT, "module", "module_scripts.py"),"w")
+file = open(os.path.join(bootstrap_paths.SOURCE_ROOT, "module_scripts.py"),"w")
 level = 0
 for line in lines:
   line = line.strip()
