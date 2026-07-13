@@ -355,7 +355,7 @@ def insert_quick_string_with_auto_id(sentence,quick_strings):
   if not done:
     number = 1
     new_auto_id = auto_id + str(number)
-    while quick_strings.has_key(new_auto_id):
+    while search_quick_string_keys(new_auto_id, quick_strings) >= 0:
       number += 1
       new_auto_id = auto_id + str(number)
     auto_id = new_auto_id

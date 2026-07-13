@@ -795,6 +795,7 @@ npcs_scripts = [
         (troop_set_slot, ":troop_no", slot_troop_cur_center, -1), #dckplmc
       (try_end),
       (troop_set_auto_equip, ":troop_no", 0),
+      (troop_set_slot, ":troop_no", slot_troop_not_auto_equip, 1),
       (party_add_members, "p_main_party", ":troop_no", 1),
       (str_store_troop_name_link, s6, ":troop_no"),
       (display_log_message, "@{s6} has joined your party.", message_alert), #SB : colourize

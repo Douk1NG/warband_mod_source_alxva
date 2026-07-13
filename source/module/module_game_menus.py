@@ -642,7 +642,7 @@ game_menus = [
     ]
   ),
 
-  ("reports",mnf_enable_hot_keys,
+  ("reports",mnf_scale_picture|mnf_enable_hot_keys,
    "Character Renown: {reg5}^Honor Rating: {reg6}^Party Morale: {reg8}^Party Size Limit: {reg7}^",
    "none",
    [(call_script, "script_game_get_party_companion_limit"),
@@ -671,17 +671,58 @@ game_menus = [
     ##diplomacy end
    ],
     [
-      ("cheat_faction_orders",[(ge,"$cheat_mode",1)],"{!}Cheat: Faction orders.",
-       [(jump_to_menu, "mnu_faction_orders"),
+      ("reports_cheat",[(ge,"$cheat_mode",1)],"{!}Cheat Reports.",
+       [(jump_to_menu, "mnu_cheat_reports"),
         ]
        ),
 
-	  ("action_view_world_map",[],"View the world map.",
+      ("action_view_world_map",[],"View the world map.",
        [
            (start_presentation, "prsnt_world_map"),
         ]
        ),
 
+      ###(((reports_character
+      ("reports_character",[],"View character/party reports.",
+       [(jump_to_menu, "mnu_reports_character"),
+        ]
+       ),
+      ###)))
+
+      ###(((reports_faction
+      ("reports_faction",[],"View faction/relations reports.",
+       [(jump_to_menu, "mnu_reports_faction"),
+        ]
+       ),
+      ###)))
+
+      ###(((reports_economy
+      ("reports_economy",[],"View economic reports.",
+       [(jump_to_menu, "mnu_reports_economy"),
+        ]
+       ),
+      ###)))
+
+      ###(((all_items
+      ("all_items",[],"View all items.",
+        [
+          (assign, "$temp", 0),
+          (start_presentation, "prsnt_all_items"),
+        ]),
+      ###)))
+
+      ("resume_travelling",[],"Resume travelling.",
+       [(change_screen_return),
+        ]
+       ),
+      ]
+  ),
+  ###(((reports_character
+  ("reports_character",mnf_enable_hot_keys,
+   "Select a report:",
+   "none",
+   [],
+    [
       ("view_character_report",[],"View character report.",
        [(jump_to_menu, "mnu_character_report"),
         ]
@@ -690,58 +731,98 @@ game_menus = [
        [(jump_to_menu, "mnu_party_size_report"),
         ]
        ),
-
       ("view_npc_mission_report",[],"View companion mission report.",
        [(jump_to_menu, "mnu_companion_report"),
-        #SB : we modified this, reset the global to the player so it shows up first
         (assign, "$g_player_troop", "trp_player"),
-        #could also jump to presentation directly
         ]
        ),
-
-      ("view_weekly_budget_report",[],"View weekly budget report.",
-       [
-         (assign, "$g_apply_budget_report_to_gold", 0),
-         (start_presentation, "prsnt_budget_report"),
-        ]
-       ),
-
       ("view_morale_report",[],"View party morale report.",
        [(jump_to_menu, "mnu_morale_report"),
         ]
        ),
-
-#NPC companion changes begin
-##diplomacy start
+      ("rtr_reports_character",[],"Return.",
+       [(jump_to_menu, "mnu_reports"),
+        ]
+       ),
+      ]
+  ),
+  ###)))
+  ###(((reports_faction
+  ("reports_faction",mnf_enable_hot_keys,
+   "Select a report:",
+   "none",
+   [],
+    [
       ("lord_relations",[],"View list of known lords by relation.",
        [
-         #(jump_to_menu, "mnu_lord_relations"),
-         (assign, "$g_jrider_pres_called_from_menu", 1),
-         (assign, "$g_character_presentation_type", 1),
-         (start_presentation, "prsnt_jrider_character_relation_report"),
+        (assign, "$g_jrider_pres_called_from_menu", 1),
+        (assign, "$g_character_presentation_type", 1),
+        (start_presentation, "prsnt_jrider_character_relation_report"),
         ]
        ),
-##diplomacy end
-
-	##diplomacy start+ see dplmc_affiliated_family_report
-     ("view_affiliated_family_report",[
-		#(this_or_next|troop_slot_ge, "trp_player", slot_troop_spouse, 1),
-        (this_or_next|ge,"$cheat_mode",1),
-		(is_between, "$g_player_affiliated_troop", kingdoms_begin, kingdoms_end),
-		], "View affiliated family member / spouse report.",
-       [
-           (jump_to_menu, "mnu_dplmc_affiliated_family_report"),
-        ]
-       ),
-	##diplomacy end+
-
       ("courtship_relations",[],"View courtship relations.",
        [
-		(jump_to_menu, "mnu_courtship_relations"),
+        (jump_to_menu, "mnu_courtship_relations"),
+        ]
+       ),
+      ("view_affiliated_family_report",[
+        (this_or_next|ge,"$cheat_mode",1),
+        (is_between, "$g_player_affiliated_troop", kingdoms_begin, kingdoms_end),
+        ], "View affiliated family member / spouse report.",
+       [
+        (jump_to_menu, "mnu_dplmc_affiliated_family_report"),
+        ]
+       ),
+      ("view_faction_relations_report",[],"View faction relations report.",
+       [
+        (start_presentation, "prsnt_jrider_faction_relations_report"),
+        ]
+       ),
+      ("rtr_reports_faction",[],"Return.",
+       [(jump_to_menu, "mnu_reports"),
+        ]
+       ),
+      ]
+  ),
+  ###)))
+  ###(((reports_economy
+  ("reports_economy",mnf_enable_hot_keys,
+   "Select a report:",
+   "none",
+   [],
+    [
+      ("view_weekly_budget_report",[],"View weekly budget report.",
+       [
+        (assign, "$g_apply_budget_report_to_gold", 0),
+        (start_presentation, "prsnt_budget_report"),
+        ]
+       ),
+      ("view_bank_report",[],"View Financial Report",
+       [(start_presentation, "prsnt_bank_quickview"),]),
+      ("dplmc_show_economic_report",[],"View prosperity report.",
+       [
+        (jump_to_menu, "mnu_dplmc_economic_report"),
+        ]
+       ),
+      ("rtr_reports_economy",[],"Return.",
+       [(jump_to_menu, "mnu_reports"),
+        ]
+       ),
+      ]
+  ),
+  ###)))
+  ###(((cheat_reports
+  ("cheat_reports",mnf_enable_hot_keys,
+   "Select a cheat report:",
+   "none",
+   [],
+    [
+      ("cheat_faction_orders",[],"{!}Cheat: Faction orders.",
+       [(jump_to_menu, "mnu_faction_orders"),
         ]
        ),
 
-      ("status_check",[(eq,"$cheat_mode",1)],"{!}NPC status check.",
+      ("status_check",[],"{!}NPC status check.",
        [
         (try_for_range, ":npc", companions_begin, companions_end),
             (main_party_has_troop, ":npc"),
@@ -756,42 +837,13 @@ game_menus = [
         ]
        ),
 
-		# Moneylending
-		("view_bank_report",[],"View Financial Report",
-			[(start_presentation, "prsnt_bank_quickview"),]),
-
-#NPC companion changes end
-
-	   ##diplomacy begin
-     ("view_faction_relations_report",[],"View faction relations report.",
-       [
-           # Jrider + REPORTS PRESENTATIONS 1.2, comment to hook faction report presentation
-           ##(jump_to_menu, "mnu_faction_relations_report"),
-           (start_presentation, "prsnt_jrider_faction_relations_report"),
-           # Jrider -
-        ]
-       ),
-
-     ("dplmc_show_economic_report",[],"View prosperity report.",
-       [
-           (jump_to_menu, "mnu_dplmc_economic_report"),
-        ]
-       ),
-
-     # Debug helper kept for fallen ruler / pretender recruitment investigations.
-     # ("dplmc_show_fallen_ruler_debug_report",[],"View fallen ruler debug report.",
-     #   [
-     #       (jump_to_menu, "mnu_dplmc_fallen_ruler_debug_report"),
-     #    ]
-     #   ),
-       ##diplomacy end
-
-      ("resume_travelling",[],"Resume travelling.",
-       [(change_screen_return),
+      ("rtr_cheat_reports",[],"Return.",
+       [(jump_to_menu, "mnu_reports"),
         ]
        ),
       ]
   ),
+  ###)))
 
   (
     "custom_battle_scene",menu_text_color(0xFF000000)|mnf_disable_all_keys,
@@ -3522,6 +3574,32 @@ TOTAL:  {reg5}"),
 ###################################################################################
 
 ##diplomacy end
+
+      ###(((toggle_weapons
+      ("toggle_weapons",
+        [
+          (try_begin),
+            (eq, "$g_weapons_set_no", 0),
+            (assign, reg1, 2),
+          (else_try),
+            (assign, reg1, 1),
+          (try_end),
+        ],
+        "Toggle weapons to set {reg1} for all heroes.",
+        [
+          (val_add, "$g_weapons_set_no", 1),
+          (val_mod, "$g_weapons_set_no", 2),
+          # strict_mode
+          (call_script, "script_all_toggle_weapons_set", 1),
+        ]),
+      ###)))
+      ###(((manage_inventory
+      ("camp_manage_inventory",[],"Manage your inventory.",
+        [
+          (assign, "$g_prsnt_param_1", "trp_player"),
+          (start_presentation, "prsnt_manage_inventory"),
+        ]),
+      ###)))
 
       ("camp_action_1",[],"Walk around the campsite.", #dckplmc
        [(set_jump_mission,"mt_camp"),

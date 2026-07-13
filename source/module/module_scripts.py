@@ -33,6 +33,7 @@ from native.scripts.misc.misc_scripts_extra import misc_scripts_extra
 from native.scripts.misc.misc_scripts_extra2 import misc_scripts_extra2
 from native.scripts.diplomacy.diplomacy_scripts import diplomacy_scripts
 from native.scripts.dickplomacy.dickplomacy_scripts import dickplomacy_scripts
+from native.scripts.feats import feats_scripts
 ##diplomacy start+
 from module_factions import dplmc_factions_begin, dplmc_factions_end, dplmc_non_generic_factions_begin
 ##diplomacy end+
@@ -1916,6 +1917,7 @@ scripts.extend(misc_scripts_extra)
 scripts.extend(misc_scripts_extra2)
 scripts.extend(diplomacy_scripts)
 scripts.extend(dickplomacy_scripts)
+scripts.extend(feats_scripts)
 
 # modmerger_start version=201 type=2
 try:

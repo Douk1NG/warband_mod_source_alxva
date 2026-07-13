@@ -2128,6 +2128,12 @@ troops = [
   ["temp_array_e","{!}temp_array_e","{!}temp_array_e",tf_hero|tf_inactive, 0,reserved,  fac_neutral,[],def_attrib|level(18),wp(60),knows_common, 0],
   ["temp_array_f","{!}temp_array_f","{!}temp_array_f",tf_hero|tf_inactive, 0,reserved,  fac_neutral,[],def_attrib|level(18),wp(60),knows_common, 0],
 #Autotrade end
+###(((manage_inventory
+  ["temp_array_x","{!}temp_array_x","{!}temp_array_x",tf_hero|tf_inactive, 0,reserved,  fac_neutral,[],def_attrib|level(18),wp(60),knows_common, 0],
+  ["temp_array_y","{!}temp_array_y","{!}temp_array_y",tf_hero|tf_inactive, 0,reserved,  fac_neutral,[],def_attrib|level(18),wp(60),knows_common, 0],
+  ["temp_array_lock","{!}temp_array_lock","{!}temp_array_lock",tf_hero|tf_inactive, 0,reserved,  fac_neutral,[],def_attrib|level(18),wp(60),knows_common|knows_inventory_management_10, 0],
+  ["temp_array_sort","{!}temp_array_sort","{!}temp_array_sort",tf_hero|tf_inactive, 0,reserved,  fac_neutral,[],def_attrib|level(18),wp(60),knows_common|knows_inventory_management_10, 0],
+###)))
 
   ["stack_selection_amounts","{!}stack_selection_amounts","{!}stack_selection_amounts",tf_hero|tf_inactive,0,reserved,fac_neutral,[],def_attrib,0,knows_common,0],
   ["stack_selection_ids","{!}stack_selection_ids","{!}stack_selection_ids",tf_hero|tf_inactive,0,reserved,fac_neutral,[],def_attrib,0,knows_common,0],

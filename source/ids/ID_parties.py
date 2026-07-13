@@ -250,3 +250,4 @@ p_port_13 = 248
 p_port_15 = 249
 p_port_19 = 250
 p_ports_end = 251
+p_main_party_heros = 252

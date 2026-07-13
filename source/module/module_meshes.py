@@ -760,6 +760,10 @@ meshes = [
   ("poker_black_joker", 0, "poker_11", 0, 0, 0, 0, 0, 0, 1, 1, 1),
   ("poker_back", 0, "poker_back", 0, 0, 0, 0, 0, 0, 1, 1, 1),
   ("wood_table", 0, "wood_table", 0, 0, 0, 0, 0, 0, 1, 1, 1),
+  ("inventory_window", 0, "inventory_window_b", 0, 0, 0, 0, 0, 0, 1, 1, 1),
+  ("inventory_slot", 0, "inventory_slot", 0, 0, 0, 0, 0, 0, 1, 1, 1),
+  ("checkbox_lock_on", 0, "checkbox_lock_on", 0, 0, 0, 0, 0, 0, 1, 1, 1),
+  ("checkbox_lock_off", 0, "checkbox_lock_off", 0, 0, 0, 0, 0, 0, 1, 1, 1),
 
 ]
 # modmerger_start version=201 type=2

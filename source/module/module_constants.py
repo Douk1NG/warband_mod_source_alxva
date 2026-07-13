@@ -2704,6 +2704,18 @@ slot_adv_transfer_mode = 12 #10 for prisoners, 12 for fiefs
 slot_beers_for_the_day = 420
 slot_last_beers_time   = 421
 #-## TBS - Beer drinking end
+
+# 1175 feat: manage_inventory
+slot_troop_not_auto_equip      = 422
+slot_item_modifier_multiplier  = 71
+
+# 1175 feat: toggle_weapons
+slot_2nd_weapons_1             = 423
+slot_2nd_weapons_2             = 424
+slot_2nd_weapons_3             = 425
+slot_2nd_weapons_4             = 426
+slot_troop_weapons_set_no      = 427
+
 # modmerger_start version=201 type=1
 try:
     from util_common import logger

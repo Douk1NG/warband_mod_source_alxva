@@ -7637,6 +7637,21 @@ simple_triggers = [
   ###)))
 
   ##diplomacy end
+
+  ###(((manage_inventory
+  (0,
+  [
+    (map_free),
+    (try_begin),
+      (eq, "$game_key_manage_inventory", 0),
+      (assign, "$game_key_manage_inventory", key_m),
+    (try_end),
+    (key_clicked, "$game_key_manage_inventory"),
+    (assign, "$g_prsnt_param_1", "trp_player"),
+    (start_presentation, "prsnt_manage_inventory"),
+  ]),
+  ###)))
+
 ]# modmerger_start version=201 type=2
 try:
     component_name = "simple_triggers"

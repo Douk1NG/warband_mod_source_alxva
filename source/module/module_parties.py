@@ -351,6 +351,8 @@ parties = [
   ("port_19"                  ,"Shariz",    pf_disabled|pf_is_static, no_menu, pt_none, fac_commoners,0,ai_bhvr_hold,0,(6.7, -108),[(trp_looter,15,0)]),
   
   ("ports_end"                  ,"{!}last_port",    pf_disabled|pf_is_static, no_menu, pt_none, fac_commoners,0,ai_bhvr_hold,0,(0., 0),[(trp_looter,15,0)]),
+
+  ("main_party_heros","{!}main_party_heros",pf_disabled, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(1,1),[]),
   ]
 # modmerger_start version=201 type=2
 try:
