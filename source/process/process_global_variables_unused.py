@@ -8,7 +8,7 @@ import re
 
 imported_variables = []
 try:
-  file = open(os.path.join(bootstrap_paths.REPO_ROOT, "variables.txt"),"r")
+  file = open(os.path.join(bootstrap_paths.SOURCE_ROOT, "variables.txt"),"r")
   var_list = file.readlines()
   file.close()
   for v in var_list:

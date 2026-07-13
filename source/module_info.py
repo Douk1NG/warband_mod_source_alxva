@@ -6,4 +6,4 @@
 
 #export_dir = "test/"
 #export_dir = "C:\Program Files (x86)\Steam\steamapps\common\MountBlade Warband\Modules\Diplomacy"
-export_dir = "C:/Program Files (x86)/Steam/steamapps/common/MountBlade Warband/Modules/Dickplomacy Reloaded"
+export_dir = "C:/Program Files (x86)/Steam/steamapps/common/MountBlade Warband/Modules/Dickplomacy Reloaded/"

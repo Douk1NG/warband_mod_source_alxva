@@ -13,16 +13,40 @@ You may edit, modify, and redistribute under the following conditions:
 * (c) You obligate them to share their work using this license. 
 This project does not provide any warranty or warranty related services.
 ### End of License ###
+
 - - - -
- ### Compiling the module  ###
 
-Step 1: Download and install Python 2.7 https://www.python.org/downloads/release/python-2714/ make sure that you install it to the directory "C:\Python27"
+## Credits
 
-Step 2: Setup the environment variables
-![picture alt](https://i.imgur.com/7iaGdag.jpg "https://i.imgur.com/7iaGdag.jpg")
+Included OSPs and credits:
 
-Step 3: Replace the source folder in this modules main folder with the new one you download from here.
-
-Step 4: In the source folder, double-click compile.bat
-
-If you find any bugs, please open a bug report on the Issues section of this Github project. 
+- new female faces
+- jacobhinds - routing code
+- zfarisal, wahiti, somebody: diplomacy team
+- caba'drin - Pre-Battle Orders and Deployment
+- WSE - k700, cmp
+- shik - weapons replacement
+- ibotlax - face pack
+- broken_one - jewellery pack
+- modified custom banner code of dunde/rucchi
+- Lav - WRECK
+- Lav - banners codes
+- Lav - native expansions siege scenes
+- The Bowman - town scenes
+- panpiper - female sounds
+- dejawolf - viking
+- RNE - tent mesh
+- SWUP - talak
+- LDKSoldier - reworked armors
+- adorno - arena scenes
+- psiphoon - animations
+- faradon - weapons
+- motomataru - formations
+- 1453 - some sounds
+- papa lazarou - animations
+- shredzorz - 15th c weapons
+- corprus - faces, armors, skeleton, shaders, hairs
+- slamowir of aaarghh - tavern animations, map icons
+- Leonion - Advanced Soldier Management in Exchange Screens
+- 1175 mod
+- Custom Commander mod
