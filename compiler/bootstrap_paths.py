@@ -1,19 +1,19 @@
 # Shared import-path setup for W.R.E.C.K. and legacy process pipeline.
 # Import this module before any module/header/ID/mod imports.
 #
-# This file lives at the repository root. REPO_ROOT is the repo root;
-# SOURCE_ROOT points at the `source/` folder that holds the module_*.py
-# files, the `scripts` package, and the compiler/headers/ids/process/lib/mods
-# folders.
+# This file lives in the repository's `compiler/` folder. REPO_ROOT is the
+# repo root; SOURCE_ROOT points at the `source/` folder that holds the
+# module_*.py files, the `scripts` package, and the headers/ids/process/lib/mods
+# folders. The W.R.E.C.K. compiler package lives at REPO_ROOT/compiler.
 
 import os
 import sys
 
-REPO_ROOT = os.path.dirname(os.path.abspath(__file__))
+REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE_ROOT = os.path.join(REPO_ROOT, "source")
 
-_STANDARD_PATHS = (
-	"compiler",
+# Folders under source/ that hold module-system code/headers/IDs.
+_SOURCE_PATHS = (
 	"headers",
 	"ids",
 	"process",
@@ -30,8 +30,10 @@ def setup_paths(source_root=None):
 	root = source_root or SOURCE_ROOT
 	# The `source/` root itself holds module_*.py and the `scripts` package.
 	_ensure_path(root)
-	for name in _STANDARD_PATHS:
+	for name in _SOURCE_PATHS:
 		_ensure_path(os.path.join(root, name))
+	# W.R.E.C.K. compiler package lives at REPO_ROOT/compiler.
+	_ensure_path(os.path.join(REPO_ROOT, "compiler"))
 	mods_root = os.path.join(root, "mods")
 	if os.path.isdir(mods_root):
 		for mod_name in os.listdir(mods_root):

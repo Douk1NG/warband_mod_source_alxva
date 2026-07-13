@@ -1,5 +1,5 @@
 set -e
-cd "$(dirname "$0")/source"
+cd "$(dirname "$0")/../source"
 export PYTHONPATH="$(pwd):$(dirname "$0")"
 python process/process_init.py
 python process/process_global_variables.py

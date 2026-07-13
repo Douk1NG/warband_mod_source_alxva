@@ -1,4 +1,5 @@
 scn_random_scene = 0
+scn_none = 0
 scn_conversation_scene = 1
 scn_water = 2
 scn_random_scene_steppe = 3
@@ -606,3 +607,4 @@ scn_town_20_arena_alternate = 604
 scn_town_21_arena_alternate = 605
 scn_town_22_arena_alternate = 606
 scn_town_23_arena_alternate = 607
+scn_exit = 100000

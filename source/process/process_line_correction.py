@@ -1,8 +1,8 @@
 import os
 import sys
-# bootstrap_paths now lives at the repository root; make it importable
-# regardless of the current working directory.
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")))
+# bootstrap_paths now lives in the repository's `compiler/` folder; make it
+# importable regardless of the current working directory.
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "compiler")))
 import bootstrap_paths
 
 file = open(os.path.join(bootstrap_paths.SOURCE_ROOT, "module_scripts.py"),"r")

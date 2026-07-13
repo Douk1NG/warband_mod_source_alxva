@@ -1,3 +1,4 @@
+cd /d %~dp0
 :repeat
 @py compile.py
 @echo Script processing has ended as of %TIME%

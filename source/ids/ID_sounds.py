@@ -193,5 +193,3 @@ snd_card_drop = 191
 snd_card_flip = 192
 snd_dealing_cards = 193
 snd_get_coins = 194
-
-

@@ -1,5 +1,5 @@
 @echo off
-cd /d %~dp0source
+cd /d %~dp0..\source
 set PYTHONPATH=%CD%;%~dp0
 call python process\process_init.py
 call python process\process_global_variables.py

@@ -673,5 +673,3 @@ mesh_pic_soldier_desert = 671
 mesh_tpe_golden_coins = 672
 mesh_tournament_design_panel = 673
 mesh_tournament_menu = 674
-
-
