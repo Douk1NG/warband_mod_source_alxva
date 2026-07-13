@@ -1084,5 +1084,3 @@ script_c3_create_player_party = 1082
 script_c3_vassal_in = 1083
 script_c3_reset_profiency = 1084
 script_c3_increase_proficiency = 1085
-
-

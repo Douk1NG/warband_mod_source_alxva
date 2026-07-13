@@ -424,16 +424,30 @@ try:
 			'tableau_materials': (WRECK.tableau, 'tableau_'),
 			'troops': (WRECK.trp, 'trp_'),
 		}
-		try:
-			for entity_name, (entity, prefix) in export.iteritems():
-				contents = '\n'.join(['%s%s = %d' % (prefix, ref, index) for ref, index in sorted(map(lambda i:(i[0],int(i[1]&0xFFFFFFFF)), entity[0].iteritems()), lambda x,y:cmp(x[1],y[1]))])
-				with open(write_id_files % entity_name, 'w+b') as f:
-					f.write(contents)
-					f.write('\n')
-		except Exception, e:
-			print '{1}FAILED.\nCOMPILER INTERNAL ERROR WHILE WRECKING {module!s}:\n{error!s}{0}'.format(*COLORAMA, module = write_id_files % entity_name, error = formatted_exception())
-			WRECK.time_export = gettime()
-			raise MSException()
+		# Each ID file is written independently. A single transiently-locked
+		# helper (e.g. left open in an editor / held by an antivirus scan)
+		# must NOT abort the entire build -- the module .txt data was
+		# already exported successfully above. Retry briefly, then warn.
+		id_errors = []
+		for entity_name, (entity, prefix) in export.iteritems():
+			contents = '\n'.join(['%s%s = %d' % (prefix, ref, index) for ref, index in sorted(map(lambda i:(i[0],int(i[1]&0xFFFFFFFF)), entity[0].iteritems()), lambda x,y:cmp(x[1],y[1]))])
+			target = write_id_files % entity_name
+			for _attempt in xrange(4):
+				try:
+					with open(target, 'w+b') as f:
+						f.write(contents)
+						f.write('\n')
+					break
+				except IOError, _err:
+					if _attempt < 3:
+						import time as _wreck_time
+						_wreck_time.sleep(0.25)
+					else:
+						id_errors.append(target)
+						print '{1}WARNING: could not (re)write ID file {f!s}: {err!s}{0}'.format(*COLORAMA, f = target, err = _err)
+						print '{6}  The module .txt data was already exported successfully; this only affects regenerating the source id_*.py constants.{0}'.format(*COLORAMA)
+		if id_errors:
+			print '{1}\nWARNING: {n} ID file(s) could not be written (listed above). Close the file in your editor / disable the scan, then rebuild.{0}'.format(*COLORAMA, n = len(id_errors))
 
 	print '{2}DONE.{0}'.format(*COLORAMA)
 	WRECK.time_export = gettime()
