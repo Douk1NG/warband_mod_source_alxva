@@ -100,4 +100,21 @@ toggle_weapons_scripts = [
       (try_end),
       (assign, reg0, ":num_backup_weapons"),
     ]),
+
+  ("get_num_heroes_of_party",
+    [
+      (store_script_param, ":party_no", 1),
+      (store_script_param_2, ":exclude_wounded"),
+
+      (assign, ":num_of_heroes", 0),
+      (party_get_num_companion_stacks, ":num_stacks", ":party_no"),
+      (try_for_range, ":i_stack", 0, ":num_stacks"),
+        (party_stack_get_troop_id, ":stack_troop", ":party_no", ":i_stack"),
+        (troop_is_hero, ":stack_troop"),
+        (val_add, ":num_of_heroes", 1),
+        (troop_is_wounded, ":stack_troop"),
+        (val_sub, ":num_of_heroes", ":exclude_wounded"),
+      (try_end),
+      (assign, reg0, ":num_of_heroes"),
+    ]),
 ]

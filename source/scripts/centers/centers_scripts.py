@@ -7462,7 +7462,7 @@ centers_scripts = [
 			(try_end),
 			(try_begin),
 			   (ge, ":has_good", 1),
-				(val_max, ":price_factor", ":best_foreign_price"),
+				(val_min, ":price_factor", ":best_foreign_price"),
 			(else_try),
   		      #Make it so that lack of supply will not make the price lower
 			   (lt, ":has_good", 1),

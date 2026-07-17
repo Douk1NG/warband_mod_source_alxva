@@ -515,6 +515,7 @@ dickplomacy_scripts = [
       (agent_is_human, ":attacker_agent_id"),
       (gt, ":weapon_id", 0),
 	  (get_player_agent_no,":player"),
+	  (agent_get_troop_id, ":player_troop", ":player"),
 
       ### Probability ###
       #BASE: 5
@@ -545,7 +546,7 @@ dickplomacy_scripts = [
           #Player bonus
         (else_try),
 		  (eq,":attacker_agent_id",":player"),
-		  (store_attribute_level, ":skill", ":player", ca_strength),
+		  (store_attribute_level, ":skill", ":player_troop", ca_strength),
           (val_add, ":base_chance", ":skill"),
           (try_begin),
             (neq, ":horse_id", -1),

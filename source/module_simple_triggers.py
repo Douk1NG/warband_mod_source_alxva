@@ -35,7 +35,31 @@ simple_triggers = [
 # This trigger is deprecated. Use "script_game_event_simulate_battle" in module_scripts.py instead
   (ti_simulate_battle,
    [
-    ]),
+     ]),
+
+
+  # Re-apply enterprise economy item slots (input/output/overhead, demands, food bonuses) shortly
+  # after a game is loaded, so saved games pick up retuned values without requiring a new game.
+  # script_initialize_item_info is also called from script_game_start on a new game; this covers loaded
+  # saves, whose item slots are frozen at first start. Runs once per session via the guard flag.
+  # (1.0,
+  #  [
+  #    (eq, "$g_enterprise_init_done", 0),
+  #    (call_script, "script_initialize_item_info"),
+  #    (assign, "$g_enterprise_init_done", 1),
+  #  ]),
+
+  # Repair TPE tournament state on loaded saves (game_start only runs on new games, so a loaded
+  # save can boot with stale/missing TPE design state). Mirrors the script_initialize_item_info
+  # load-fix above. Runs once per loaded save via the guard flag; harmless on healthy saves.
+  # (1.0,
+  #  [
+  #    (eq, "$g_tpe_save_repaired", 0),
+  #    (neq, "$g_wp_tpe_active", 0),
+  #    (call_script, "script_tpe_fix_save"),
+  #    (assign, "$g_tpe_save_repaired", 1),
+  #  ]),
+
 
 
   (1,
@@ -1741,16 +1765,30 @@ simple_triggers = [
        # (assign, "$g_fix_pretender_titles", 1),
    # (try_end),
    
-   (try_begin),
-      (neg|main_party_has_troop, "trp_player"),
-      (party_add_members, "p_main_party", "trp_player", 1),
-      (display_message, "@DEBUG: PLAYER CHARACTER RESTORED TO PARTY",0xFF2222),
-   (try_end),
+    # EMERGENCY WORKAROUND - root cause NOT yet found.
+    # Bug: trp_player (a legitimate member of p_main_party in this mod) leaks into
+    # foreign garrisons / other lords' parties after castle sieges (native battle merge).
+    # This strips trp_player from any non-p_main_party party where it is a member,
+    # while keeping it in p_main_party so siege/garrison leadership works.
+    # TODO: find the actual siege merge/split path and remove this once fixed.
+    # (try_begin),
+         # (main_party_has_troop, "trp_player"),
+         # Strip trp_player from any OTHER party it may be stuck in after a siege merge.
+         # (try_for_parties, ":party_no"),
+            # (neg|eq, ":party_no", "p_main_party"),
+            # (party_count_members_of_type, ":count", ":party_no", "trp_player"),
+            # (gt, ":count", 0),
+            # (party_remove_members, ":party_no", "trp_player", ":count"),
+         # (try_end),
+      # (else_try),
+         # (party_add_members, "p_main_party", "trp_player", 1),
+         # (display_message, "@DEBUG: PLAYER CHARACTER RESTORED TO PARTY",0xFF2222),
+      # (try_end),
    
-     #(call_script, "script_process_kingdom_parties_ai"), #moved to below trigger (per 1 hour) in order to allow it processed more frequent.
-   ]),
+      #(call_script, "script_process_kingdom_parties_ai"), #moved to below trigger (per 1 hour) in order to allow it processed more frequent.
+    ]),
 
-  # Process alarms - perhaps break this down into several groups, with a modula
+   # Process alarms - perhaps break this down into several groups, with a modula
    (1, #this now calls 1/3 of all centers each time, thus hopefully lightening the CPU load
    [
     (call_script, "script_process_alarms"),
@@ -5978,14 +6016,18 @@ simple_triggers = [
                (store_faction_of_party, ":village_current_faction", ":village"),
                (assign, ":faction_relation", 100),
                (try_begin),
-                  (neq, ":village_current_faction", "$players_kingdom"),    # faction relation will be checked only if the village doesn't belong to the player's current faction
-                  (store_relation, ":faction_relation", "$players_kingdom", ":village_current_faction"),
-               (try_end),
+                   (gt, ":village_current_faction", -1),
+                   (gt, "$players_kingdom", -1),
+                   (neq, ":village_current_faction", "$players_kingdom"),    # faction relation will be checked only if the village doesn't belong to the player's current faction
+                   (store_relation, ":faction_relation", "$players_kingdom", ":village_current_faction"),
+                (try_end),
                (ge, ":faction_relation", 0),
                (party_get_slot, ":village_relation", ":village", slot_center_player_relation),
                (ge, ":village_relation", 0),
                (party_get_slot, ":volunteers_in_village", ":village", slot_center_volunteer_troop_amount),
                (gt, ":volunteers_in_village", 0),
+               (party_get_slot, ":village_volunteer_type", ":village", slot_center_volunteer_troop_type),
+               (gt, ":village_volunteer_type", 0),
             #daedalus begin
                (party_get_slot, ":village_faction", ":village", slot_center_original_faction),
                (assign,":stop",1),
@@ -6019,10 +6061,12 @@ simple_triggers = [
       (try_begin),
          (store_faction_of_party, ":target_current_faction", ":target"),
          (assign, ":faction_relation", 100),
-         (try_begin),
-            (neq, ":target_current_faction", "$players_kingdom"),    # faction relation will be checked only if the target doesn't belong to the player's current faction
-            (store_relation, ":faction_relation", "$players_kingdom", ":target_current_faction"),
-         (try_end),
+          (try_begin),
+             (gt, ":target_current_faction", -1),
+             (gt, "$players_kingdom", -1),
+             (neq, ":target_current_faction", "$players_kingdom"),    # faction relation will be checked only if the target doesn't belong to the player's current faction
+             (store_relation, ":faction_relation", "$players_kingdom", ":target_current_faction"),
+          (try_end),
          (ge, ":faction_relation", 0),
          (party_get_slot, ":target_relation", ":target", slot_center_player_relation),
          (ge, ":target_relation", 0),
@@ -6047,9 +6091,13 @@ simple_triggers = [
 
          #debug recruiters adding player character
          (try_begin),
-            (le, ":target_volunteer_type", 0),
-            (display_message, "@ERROR IN THE RECRUITER KIT SIMPLE TRIGGERS!",0xFF2222),
-            (party_set_slot, ":target", dplmc_slot_village_reserved_by_recruiter, 0),
+             (le, ":target_volunteer_type", 0),
+             (display_message, "@ERROR IN THE RECRUITER KIT SIMPLE TRIGGERS!",0xFF2222),
+             (party_set_slot, ":target", dplmc_slot_village_reserved_by_recruiter, 0),
+             (party_set_ai_behavior, ":party_no", ai_bhvr_hold),
+             (party_set_slot, ":party_no", slot_party_ai_object, -1),
+             (party_set_ai_behavior, ":party_no", ai_bhvr_hold),
+             (party_set_slot, ":party_no", slot_party_ai_object, -1),
          (else_try),
             (gt, ":volunteers_in_target", ":still_needed"),
             (assign, ":santas_little_helper", ":volunteers_in_target"),
