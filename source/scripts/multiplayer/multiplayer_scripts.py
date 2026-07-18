@@ -2935,4 +2935,1510 @@ multiplayer_scripts = [
 	]
   ),
 
-  ]
+  
+("get_army_size_from_slider_value",
+    [
+     (store_script_param, ":slider_value", 1),
+     (assign, ":army_size", ":slider_value"),
+     (try_begin),
+       (gt, ":slider_value", 25),
+       (store_sub, ":adder_value", ":slider_value", 25),
+       (val_add, ":army_size", ":adder_value"),
+       (try_begin),
+         (gt, ":slider_value", 50),
+         (store_sub, ":adder_value", ":slider_value", 50),
+         (val_mul, ":adder_value", 3),
+         (val_add, ":army_size", ":adder_value"),
+       (try_end),
+     (try_end),
+     (assign, reg0, ":army_size"),
+  ]),
+
+("add_kill_death_counts",
+   [
+      (store_script_param, ":killer_agent_no", 1),
+      (store_script_param, ":dead_agent_no", 2),
+
+      (try_begin),
+        (ge, ":killer_agent_no", 0),
+        (agent_get_team, ":killer_agent_team", ":killer_agent_no"),
+      (else_try),
+        (assign, ":killer_agent_team", -1),
+      (try_end),
+
+      (try_begin),
+        (ge, ":dead_agent_no", 0),
+        (agent_get_team, ":dead_agent_team", ":dead_agent_no"),
+      (else_try),
+        (assign, ":dead_agent_team", -1),
+      (try_end),
+
+      #adjusting kill counts of players/bots
+      (try_begin),
+        (try_begin),
+          (ge, ":killer_agent_no", 0),
+          (ge, ":dead_agent_no", 0),
+          (agent_is_human, ":killer_agent_no"),
+          (agent_is_human, ":dead_agent_no"),
+          (neq, ":killer_agent_no", ":dead_agent_no"),
+
+          (this_or_next|neq, ":killer_agent_team", ":dead_agent_team"),
+          (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_deathmatch),
+          (eq, "$g_multiplayer_game_type", multiplayer_game_type_duel),
+
+          (agent_get_player_id, ":killer_agent_player", ":killer_agent_no"),
+          (try_begin),
+            (agent_is_non_player, ":killer_agent_no"), #if killer agent is bot then increase bot kill counts of killer agent's team by one.
+            (agent_get_team, ":killer_agent_team", ":killer_agent_no"),
+            (team_get_bot_kill_count, ":killer_agent_team_bot_kill_count", ":killer_agent_team"),
+            (val_add, ":killer_agent_team_bot_kill_count", 1),
+            (team_set_bot_kill_count, ":killer_agent_team", ":killer_agent_team_bot_kill_count"),
+          (else_try), #if killer agent is not bot then increase kill counts of killer agent's player by one.
+            (player_is_active, ":killer_agent_player"),
+            (player_get_kill_count, ":killer_agent_player_kill_count", ":killer_agent_player"),
+            (val_add, ":killer_agent_player_kill_count", 1),
+            (player_set_kill_count, ":killer_agent_player", ":killer_agent_player_kill_count"),
+          (try_end),
+        (try_end),
+
+        (try_begin),
+          (ge, ":dead_agent_no", 0),
+          (agent_is_human, ":dead_agent_no"),
+          (try_begin),
+            (agent_is_non_player, ":dead_agent_no"), #if dead agent is bot then increase bot kill counts of dead agent's team by one.
+            (agent_get_team, ":dead_agent_team", ":dead_agent_no"),
+            (team_get_bot_death_count, ":dead_agent_team_bot_death_count", ":dead_agent_team"),
+            (val_add, ":dead_agent_team_bot_death_count", 1),
+            (team_set_bot_death_count, ":dead_agent_team", ":dead_agent_team_bot_death_count"),
+          (else_try), #if dead agent is not bot then increase death counts of dead agent's player by one.
+            (agent_get_player_id, ":dead_agent_player", ":dead_agent_no"),
+            (player_is_active, ":dead_agent_player"),
+            (player_get_death_count, ":dead_agent_player_death_count", ":dead_agent_player"),
+            (val_add, ":dead_agent_player_death_count", 1),
+            (player_set_death_count, ":dead_agent_player", ":dead_agent_player_death_count"),
+          (try_end),
+
+          (try_begin),
+            (assign, ":continue", 0),
+
+            (try_begin),
+              (this_or_next|lt, ":killer_agent_no", 0), #if he killed himself (1a(team change) or 1b(self kill)) then decrease kill counts of killer player by one.
+              (eq, ":killer_agent_no", ":dead_agent_no"),
+              (assign, ":continue", 1),
+            (try_end),
+
+            (try_begin),
+              (eq, ":killer_agent_team", ":dead_agent_team"), #if he killed a teammate and game mod is not deathmatch then decrease kill counts of killer player by one.
+              (neq, "$g_multiplayer_game_type", multiplayer_game_type_deathmatch),
+              (neq, "$g_multiplayer_game_type", multiplayer_game_type_duel),
+              (assign, ":continue", 1),
+            (try_end),
+
+            (eq, ":continue", 1),
+
+            (try_begin),
+              (ge, ":killer_agent_no", 0),
+              (assign, ":responsible_agent", ":killer_agent_no"),
+            (else_try),
+              (assign, ":responsible_agent", ":dead_agent_no"),
+            (try_end),
+
+            (try_begin),
+              (ge, ":responsible_agent", 0),
+              (neg|agent_is_non_player, ":responsible_agent"),
+              (agent_get_player_id, ":responsible_player", ":responsible_agent"),
+              (ge, ":responsible_player", 0),
+              (player_get_kill_count, ":dead_agent_player_kill_count", ":responsible_player"),
+              (val_add, ":dead_agent_player_kill_count", -1),
+              (player_set_kill_count, ":responsible_player", ":dead_agent_player_kill_count"),
+            (try_end),
+          (try_end),
+        (try_end),
+      (try_end),
+    ]),
+
+("warn_player_about_auto_team_balance",
+   [
+     (assign, "$g_multiplayer_message_type", multiplayer_message_type_auto_team_balance_next),
+     (start_presentation, "prsnt_multiplayer_message_2"),
+     ]),
+
+("check_team_balance",
+   [
+     (try_begin),
+       (multiplayer_is_server),
+
+       (assign, ":number_of_players_at_team_1", 0),
+       (assign, ":number_of_players_at_team_2", 0),
+       (get_max_players, ":num_players"),
+       (try_for_range, ":cur_player", 0, ":num_players"),
+         (player_is_active, ":cur_player"),
+         (player_get_team_no, ":player_team", ":cur_player"),
+         (try_begin),
+           (eq, ":player_team", 0),
+           (val_add, ":number_of_players_at_team_1", 1),
+         (else_try),
+           (eq, ":player_team", 1),
+           (val_add, ":number_of_players_at_team_2", 1),
+         (try_end),
+       (try_end),
+
+       (store_sub, ":difference_of_number_of_players", ":number_of_players_at_team_1", ":number_of_players_at_team_2"),
+       (assign, ":number_of_players_will_be_moved", 0),
+       (try_begin),
+         (try_begin),
+           (store_mul, ":checked_value", "$g_multiplayer_auto_team_balance_limit", -1),
+           (le, ":difference_of_number_of_players", ":checked_value"),
+           (store_div, ":number_of_players_will_be_moved", ":difference_of_number_of_players", -2),
+           (assign, ":team_with_more_players", 1),
+           (assign, ":team_with_less_players", 0),
+         (else_try),
+           (ge, ":difference_of_number_of_players", "$g_multiplayer_auto_team_balance_limit"),
+           (store_div, ":number_of_players_will_be_moved", ":difference_of_number_of_players", 2),
+           (assign, ":team_with_more_players", 0),
+           (assign, ":team_with_less_players", 1),
+         (try_end),
+       (try_end),
+       #team balance checks are done
+       (try_begin),
+         (gt, ":number_of_players_will_be_moved", 0),
+         (try_begin),
+           (eq, "$g_team_balance_next_round", 1), #if warning is given
+
+           #auto team balance starts
+           (try_for_range, ":unused", 0, ":number_of_players_will_be_moved"),
+             (assign, ":max_player_join_time", 0),
+             (assign, ":latest_joined_player_no", -1),
+             (get_max_players, ":num_players"),
+             (try_for_range, ":player_no", 0, ":num_players"),
+               (player_is_active, ":player_no"),
+               (player_get_team_no, ":player_team", ":player_no"),
+               (eq, ":player_team", ":team_with_more_players"),
+               (player_get_slot, ":player_join_time", ":player_no", slot_player_join_time),
+               (try_begin),
+                 (gt, ":player_join_time", ":max_player_join_time"),
+                 (assign, ":max_player_join_time", ":player_join_time"),
+                 (assign, ":latest_joined_player_no", ":player_no"),
+               (try_end),
+             (try_end),
+             (try_begin),
+               (ge, ":latest_joined_player_no", 0),
+               (try_begin),
+                 #if player is living add +1 to his kill count because he will get -1 because of team change while living.
+                 (player_get_agent_id, ":latest_joined_agent_id", ":latest_joined_player_no"),
+                 (ge, ":latest_joined_agent_id", 0),
+                 (agent_is_alive, ":latest_joined_agent_id"),
+
+                 (player_get_kill_count, ":player_kill_count", ":latest_joined_player_no"), #adding 1 to his kill count, because he will lose 1 undeserved kill count for dying during team change
+                 (val_add, ":player_kill_count", 1),
+                 (player_set_kill_count, ":latest_joined_player_no", ":player_kill_count"),
+
+                 (player_get_death_count, ":player_death_count", ":latest_joined_player_no"), #subtracting 1 to his death count, because he will gain 1 undeserved death count for dying during team change
+                 (val_sub, ":player_death_count", 1),
+                 (player_set_death_count, ":latest_joined_player_no", ":player_death_count"),
+
+                 (player_get_score, ":player_score", ":latest_joined_player_no"), #adding 1 to his score count, because he will lose 1 undeserved score for dying during team change
+                 (val_add, ":player_score", 1),
+                 (player_set_score, ":latest_joined_player_no", ":player_score"),
+
+                 (try_for_range, ":player_no", 1, ":num_players"), #0 is server so starting from 1
+                   (player_is_active, ":player_no"),
+                   (multiplayer_send_4_int_to_player, ":player_no", multiplayer_event_set_player_score_kill_death, ":latest_joined_player_no", ":player_score", ":player_kill_count", ":player_death_count"),
+                 (try_end),
+
+                 (player_get_value_of_original_items, ":old_items_value", ":latest_joined_player_no"),
+                 (player_get_gold, ":player_gold", ":latest_joined_player_no"),
+                 (val_add, ":player_gold", ":old_items_value"),
+                 (player_set_gold, ":latest_joined_player_no", ":player_gold", multi_max_gold_that_can_be_stored),
+               (end_try),
+
+               (player_set_troop_id, ":latest_joined_player_no", -1),
+               (player_set_team_no, ":latest_joined_player_no", ":team_with_less_players"),
+               (multiplayer_send_message_to_player, ":latest_joined_player_no", multiplayer_event_force_start_team_selection),
+             (try_end),
+           (try_end),
+
+           #for only server itself-----------------------------------------------------------------------------------------------
+           (call_script, "script_show_multiplayer_message", multiplayer_message_type_auto_team_balance_done, 0), #0 is useless here
+           #for only server itself-----------------------------------------------------------------------------------------------
+           (get_max_players, ":num_players"),
+           (try_for_range, ":player_no", 1, ":num_players"),
+             (player_is_active, ":player_no"),
+             (multiplayer_send_int_to_player, ":player_no", multiplayer_event_show_multiplayer_message, multiplayer_message_type_auto_team_balance_done),
+           (try_end),
+           (assign, "$g_team_balance_next_round", 0),
+           #auto team balance done
+         (else_try),
+           #tutorial message (next round there will be auto team balance)
+           (assign, "$g_team_balance_next_round", 1),
+
+           #for only server itself-----------------------------------------------------------------------------------------------
+           (call_script, "script_show_multiplayer_message", multiplayer_message_type_auto_team_balance_next, 0), #0 is useless here
+           #for only server itself-----------------------------------------------------------------------------------------------
+           (get_max_players, ":num_players"),
+           (try_for_range, ":player_no", 1, ":num_players"),
+             (player_is_active, ":player_no"),
+             (multiplayer_send_int_to_player, ":player_no", multiplayer_event_show_multiplayer_message, multiplayer_message_type_auto_team_balance_next),
+           (try_end),
+         (try_end),
+       (else_try),
+         (assign, "$g_team_balance_next_round", 0),
+       (try_end),
+     (try_end),
+   ]),
+
+("money_management_after_agent_death",
+   [
+     (store_script_param, ":killer_agent_no", 1),
+     (store_script_param, ":dead_agent_no", 2),
+
+     (assign, ":dead_agent_player_id", -1),
+
+     (try_begin),
+       (multiplayer_is_server),
+       (ge, ":killer_agent_no", 0),
+       (ge, ":dead_agent_no", 0),
+       (agent_is_human, ":dead_agent_no"), #if dead agent is not horse
+       (agent_is_human, ":killer_agent_no"), #if killer agent is not horse
+       (agent_get_team, ":killer_agent_team", ":killer_agent_no"),
+       (agent_get_team, ":dead_agent_team", ":dead_agent_no"),
+
+       (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_deathmatch),
+       (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_duel),
+       (neq, ":killer_agent_team", ":dead_agent_team"), #if these agents are enemies
+
+       (neq, ":dead_agent_no", ":killer_agent_no"), #if agents are different, do not remove it is needed because in deathmatch mod, self killing passes here because of this or next.
+
+       (try_begin),
+         (neg|agent_is_non_player, ":dead_agent_no"),
+         (agent_get_player_id, ":dead_player_no", ":dead_agent_no"),
+         (player_get_slot, ":dead_agent_equipment_value", ":dead_player_no", slot_player_total_equipment_value),
+       (else_try),
+         (assign, ":dead_agent_equipment_value", 0),
+       (try_end),
+
+       (assign, ":dead_agent_team_human_players_count", 0),
+       (get_max_players, ":num_players"),
+       (try_for_range, ":player_no", 0, ":num_players"),
+         (player_is_active, ":player_no"),
+         (player_get_team_no, ":player_team", ":player_no"),
+         (eq, ":player_team", ":dead_agent_team"),
+         (val_add, ":dead_agent_team_human_players_count", 1),
+       (try_end),
+
+       (try_for_range, ":player_no", 0, ":num_players"),
+         (player_is_active, ":player_no"),
+
+         (try_begin),
+           (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_battle),
+           (eq, "$g_multiplayer_game_type", multiplayer_game_type_destroy),
+           (assign, ":one_spawn_per_round_game_type", 1),
+         (else_try),
+           (assign, ":one_spawn_per_round_game_type", 0),
+         (try_end),
+
+         (this_or_next|eq, ":one_spawn_per_round_game_type", 0),
+         (this_or_next|player_slot_eq, ":player_no", slot_player_spawned_this_round, 0),
+         (player_slot_eq, ":player_no", slot_player_spawned_this_round, 1),
+
+         (player_get_agent_id, ":agent_no", ":player_no"),
+         (try_begin),
+           (eq, ":agent_no", ":dead_agent_no"), #if this agent is dead agent then get share from total loot. (20% of total equipment value)
+           (player_get_gold, ":player_gold", ":player_no"),
+
+           (assign, ":dead_agent_player_id", ":player_no"),
+
+           #dead agent loot share (32%-48%-64%, norm : 48%)
+           (store_mul, ":share_of_dead_agent", ":dead_agent_equipment_value", multi_dead_agent_loot_percentage_share),
+           (val_div, ":share_of_dead_agent", 100),
+           (val_mul, ":share_of_dead_agent", "$g_multiplayer_battle_earnings_multiplier"),
+           (val_div, ":share_of_dead_agent", 100),
+           (try_begin),
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_deathmatch), #(4/3x) share if current mod is deathmatch
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_duel), #(4/3x) share if current mod is duel
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_team_deathmatch), #(4/3x) share if current mod is team_deathmatch
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_capture_the_flag), #(4/3x) share if current mod is capture the flag
+             (eq, "$g_multiplayer_game_type", multiplayer_game_type_headquarters), #(4/3x) share if current mod is headquarters
+             (val_mul, ":share_of_dead_agent", 4),
+             (val_div, ":share_of_dead_agent", 3),
+             (val_add, ":player_gold", ":share_of_dead_agent"),
+           (else_try),
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_battle), #(2/3x) share if current mod is battle
+             (eq, "$g_multiplayer_game_type", multiplayer_game_type_destroy), #(2/3x) share if current mod is fight and destroy
+             (val_mul, ":share_of_dead_agent", 2),
+             (val_div, ":share_of_dead_agent", 3),
+             (val_add, ":player_gold", ":share_of_dead_agent"),
+           (else_try),
+             (val_add, ":player_gold", ":share_of_dead_agent"), #(3/3x) share if current mod is siege
+           (try_end),
+           (player_set_gold, ":player_no", ":player_gold", multi_max_gold_that_can_be_stored),
+         (else_try),
+           (eq, ":agent_no", ":killer_agent_no"), #if this agent is killer agent then get share from total loot. (10% of total equipment value)
+           (player_get_gold, ":player_gold", ":player_no"),
+
+           #killer agent standart money (100-150-200, norm : 150)
+           (assign, ":killer_agent_standard_money_addition", multi_killer_agent_standard_money_add),
+           (val_mul, ":killer_agent_standard_money_addition", "$g_multiplayer_battle_earnings_multiplier"),
+           (val_div, ":killer_agent_standard_money_addition", 100),
+           (try_begin),
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_deathmatch), #(4/3x) share if current mod is deathmatch
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_duel), #(4/3x) share if current mod is duel
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_team_deathmatch), #(4/3x) share if current mod is team_deathmatch
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_capture_the_flag), #(4/3x) share if current mod is capture the flag
+             (eq, "$g_multiplayer_game_type", multiplayer_game_type_headquarters), #(4/3x) share if current mod is headquarters
+             (val_mul, ":killer_agent_standard_money_addition", 4),
+             (val_div, ":killer_agent_standard_money_addition", 3),
+             (val_add, ":player_gold", ":killer_agent_standard_money_addition"),
+           (else_try),
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_battle), #(2/3x) share if current mod is battle
+             (eq, "$g_multiplayer_game_type", multiplayer_game_type_destroy), #(2/3x) share if current mod is fight and destroy
+             (val_mul, ":killer_agent_standard_money_addition", 2),
+             (val_div, ":killer_agent_standard_money_addition", 3),
+             (val_add, ":player_gold", ":killer_agent_standard_money_addition"),
+           (else_try),
+             (val_add, ":player_gold", ":killer_agent_standard_money_addition"), #(3/3x) share if current mod is siege
+           (try_end),
+
+           #killer agent loot share (8%-12%-16%, norm : 12%)
+           (store_mul, ":share_of_killer_agent", ":dead_agent_equipment_value", multi_killer_agent_loot_percentage_share),
+           (val_div, ":share_of_killer_agent", 100),
+           (val_mul, ":share_of_killer_agent", "$g_multiplayer_battle_earnings_multiplier"),
+           (val_div, ":share_of_killer_agent", 100),
+           (try_begin),
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_deathmatch), #(4/3x) share if current mod is deathmatch
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_duel), #(4/3x) share if current mod is duel
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_team_deathmatch), #(4/3x) share if current mod is team_deathmatch
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_capture_the_flag), #(4/3x) share if current mod is capture the flag
+             (eq, "$g_multiplayer_game_type", multiplayer_game_type_headquarters), #(4/3x) share if current mod is headquarters
+             (val_mul, ":share_of_killer_agent", 4),
+             (val_div, ":share_of_killer_agent", 3),
+             (val_add, ":player_gold", ":share_of_killer_agent"),
+           (else_try),
+             (this_or_next|eq, "$g_multiplayer_game_type", multiplayer_game_type_battle), #(2/3x) share if current mod is battle
+             (eq, "$g_multiplayer_game_type", multiplayer_game_type_destroy), #(2/3x) share if current mod is fight and destroy
+             (val_mul, ":share_of_killer_agent", 2),
+             (val_div, ":share_of_killer_agent", 3),
+             (val_add, ":player_gold", ":share_of_killer_agent"),
+           (else_try),
+             (val_add, ":player_gold", ":share_of_killer_agent"), #(3/3x) share if current mod is siege
+           (try_end),
+           (player_set_gold, ":player_no", ":player_gold", multi_max_gold_that_can_be_stored),
+         (try_end),
+       (try_end),
+     (try_end),
+
+     #(below lines added new at 25.11.09 after Armagan decided new money system)
+     (try_begin),
+       (multiplayer_is_server),
+       (neq, "$g_multiplayer_game_type", multiplayer_game_type_battle),
+       (neq, "$g_multiplayer_game_type", multiplayer_game_type_destroy),
+
+       (ge, ":dead_agent_no", 0),
+       (agent_is_human, ":dead_agent_no"), #if dead agent is not horse
+       (agent_get_player_id, ":dead_agent_player_id", ":dead_agent_no"),
+       (ge, ":dead_agent_player_id", 0),
+
+       (player_get_gold, ":player_gold", ":dead_agent_player_id"),
+       (try_begin),
+         (store_mul, ":minimum_gold", "$g_multiplayer_initial_gold_multiplier", 10),
+         (lt, ":player_gold", ":minimum_gold"),
+         (assign, ":player_gold", ":minimum_gold"),
+       (try_end),
+       (player_set_gold, ":dead_agent_player_id", ":player_gold"),
+     (try_end),
+     #new money system addition end
+     ]),
+
+("use_item",
+   [
+     (store_script_param, ":instance_id", 1),
+     (store_script_param, ":user_id", 2),
+
+     (try_begin),
+       (game_in_multiplayer_mode),
+       (prop_instance_get_scene_prop_kind, ":scene_prop_id", ":instance_id"),
+       (eq, ":scene_prop_id", "spr_winch_b"),
+
+       (multiplayer_get_my_player, ":my_player_no"),
+
+       (this_or_next|gt, ":my_player_no", 0),
+       (neg|multiplayer_is_dedicated_server),
+
+       (ge, ":my_player_no", 0),
+       (player_get_agent_id, ":my_agent_id", ":my_player_no"),
+       (ge, ":my_agent_id", 0),
+       (agent_is_active, ":my_agent_id"),
+       (agent_get_team, ":my_team_no", ":my_agent_id"),
+       (eq, ":my_team_no", 0),
+
+       (scene_prop_get_slot, ":opened_or_closed", ":instance_id", scene_prop_open_or_close_slot),
+       (ge, ":user_id", 0),
+       (agent_is_active, ":user_id"),
+       (agent_get_player_id, ":user_player", ":user_id"),
+       (str_store_player_username, s7, ":user_player"),
+
+       (try_begin),
+         (eq, ":opened_or_closed", 0),
+         (display_message, "@{s7} opened the gate"),
+       (else_try),
+         (display_message, "@{s7} closed the gate"),
+       (try_end),
+     (try_end),
+
+     (prop_instance_get_scene_prop_kind, ":scene_prop_id", ":instance_id"),
+
+     (try_begin),
+       (this_or_next|eq, ":scene_prop_id", "spr_winch_b"),
+       (eq, ":scene_prop_id", "spr_winch"),
+       (assign, ":effected_object", "spr_portcullis"),
+     (else_try),
+       (this_or_next|eq, ":scene_prop_id", "spr_door_destructible"),
+       (this_or_next|eq, ":scene_prop_id", "spr_castle_f_door_b"),
+       (this_or_next|eq, ":scene_prop_id", "spr_castle_e_sally_door_a"),
+       (this_or_next|eq, ":scene_prop_id", "spr_castle_f_sally_door_a"),
+       (this_or_next|eq, ":scene_prop_id", "spr_earth_sally_gate_left"),
+       (this_or_next|eq, ":scene_prop_id", "spr_earth_sally_gate_right"),
+       (this_or_next|eq, ":scene_prop_id", "spr_viking_keep_destroy_sally_door_left"),
+       (this_or_next|eq, ":scene_prop_id", "spr_viking_keep_destroy_sally_door_right"),
+       (this_or_next|eq, ":scene_prop_id", "spr_castle_f_door_a"),
+       (this_or_next|eq, ":scene_prop_id", "spr_siege_ladder_move_6m"),
+       (this_or_next|eq, ":scene_prop_id", "spr_siege_ladder_move_8m"),
+       (this_or_next|eq, ":scene_prop_id", "spr_siege_ladder_move_10m"),
+       (this_or_next|eq, ":scene_prop_id", "spr_siege_ladder_move_12m"),
+       (eq, ":scene_prop_id", "spr_siege_ladder_move_14m"),
+       (assign, ":effected_object", ":scene_prop_id"),
+     (try_end),
+
+     (assign, ":smallest_dist", -1),
+     (prop_instance_get_position, pos0, ":instance_id"),
+     (scene_prop_get_num_instances, ":num_instances_of_effected_object", ":effected_object"),
+     (try_for_range, ":cur_instance", 0, ":num_instances_of_effected_object"),
+       (scene_prop_get_instance, ":cur_instance_id", ":effected_object", ":cur_instance"),
+       (prop_instance_get_position, pos1, ":cur_instance_id"),
+       (get_sq_distance_between_positions, ":dist", pos0, pos1),
+       (this_or_next|eq, ":smallest_dist", -1),
+       (lt, ":dist", ":smallest_dist"),
+       (assign, ":smallest_dist", ":dist"),
+       (assign, ":effected_object_instance_id", ":cur_instance_id"),
+     (try_end),
+
+     (try_begin),
+       (ge, ":instance_id", 0),
+       (ge, ":smallest_dist", 0),
+
+       (try_begin),
+         (eq, ":effected_object", "spr_portcullis"),
+         (scene_prop_get_slot, ":opened_or_closed", ":instance_id", scene_prop_open_or_close_slot),
+
+         (try_begin),
+           (eq, ":opened_or_closed", 0), #open gate
+
+           (scene_prop_enable_after_time, ":instance_id", 400), #4 seconds
+           (try_begin),
+             (this_or_next|multiplayer_is_server),
+             (neg|game_in_multiplayer_mode),
+             (prop_instance_get_position, pos0, ":effected_object_instance_id"),
+             (position_move_z, pos0, 375),
+             (prop_instance_animate_to_position, ":effected_object_instance_id", pos0, 400),
+           (try_end),
+           (scene_prop_set_slot, ":instance_id", scene_prop_open_or_close_slot, 1),
+
+           (try_begin),
+             (eq, ":scene_prop_id", "spr_winch_b"),
+             (this_or_next|multiplayer_is_server),
+             (neg|game_in_multiplayer_mode),
+             (prop_instance_get_position, pos1, ":instance_id"),
+             (prop_instance_rotate_to_position, ":instance_id", pos1, 400, 72000),
+           (try_end),
+         (else_try), #close gate
+           (scene_prop_enable_after_time, ":instance_id", 400), #4 seconds
+           (try_begin),
+             (this_or_next|multiplayer_is_server),
+             (neg|game_in_multiplayer_mode),
+             (prop_instance_get_position, pos0, ":effected_object_instance_id"),
+             (position_move_z, pos0, -375),
+             (prop_instance_animate_to_position, ":effected_object_instance_id", pos0, 400),
+           (try_end),
+           (scene_prop_set_slot, ":instance_id", scene_prop_open_or_close_slot, 0),
+
+           (try_begin),
+             (eq, ":scene_prop_id", "spr_winch_b"),
+             (this_or_next|multiplayer_is_server),
+             (neg|game_in_multiplayer_mode),
+             (prop_instance_get_position, pos1, ":instance_id"),
+             (prop_instance_rotate_to_position, ":instance_id", pos1, 400, -72000),
+           (try_end),
+         (try_end),
+       (else_try),
+         (this_or_next|eq, ":effected_object", "spr_siege_ladder_move_6m"),
+         (this_or_next|eq, ":effected_object", "spr_siege_ladder_move_8m"),
+         (this_or_next|eq, ":effected_object", "spr_siege_ladder_move_10m"),
+         (this_or_next|eq, ":effected_object", "spr_siege_ladder_move_12m"),
+         (eq, ":effected_object", "spr_siege_ladder_move_14m"),
+
+         (try_begin),
+           (eq, ":effected_object", "spr_siege_ladder_move_6m"),
+           (assign, ":animation_time_drop", 120),
+           (assign, ":animation_time_elevate", 240),
+         (else_try),
+           (eq, ":effected_object", "spr_siege_ladder_move_8m"),
+           (assign, ":animation_time_drop", 140),
+           (assign, ":animation_time_elevate", 280),
+         (else_try),
+           (eq, ":effected_object", "spr_siege_ladder_move_10m"),
+           (assign, ":animation_time_drop", 160),
+           (assign, ":animation_time_elevate", 320),
+         (else_try),
+           (eq, ":effected_object", "spr_siege_ladder_move_12m"),
+           (assign, ":animation_time_drop", 190),
+           (assign, ":animation_time_elevate", 360),
+         (else_try),
+           (eq, ":effected_object", "spr_siege_ladder_move_14m"),
+           (assign, ":animation_time_drop", 230),
+           (assign, ":animation_time_elevate", 400),
+         (try_end),
+
+         (scene_prop_get_slot, ":opened_or_closed", ":instance_id", scene_prop_open_or_close_slot),
+
+         (try_begin),
+           (scene_prop_enable_after_time, ":effected_object_instance_id", ":animation_time_elevate"), #3 seconds in average
+           (eq, ":opened_or_closed", 0), #ladder at ground
+           (prop_instance_get_starting_position, pos0, ":effected_object_instance_id"),
+           (prop_instance_enable_physics, ":effected_object_instance_id", 0),
+           (prop_instance_animate_to_position, ":effected_object_instance_id", pos0, 300),
+           (scene_prop_set_slot, ":effected_object_instance_id", scene_prop_open_or_close_slot, 1),
+         (else_try), #ladder at wall
+           (scene_prop_enable_after_time, ":effected_object_instance_id", ":animation_time_drop"), #1.5 seconds in average
+           (prop_instance_get_position, pos0, ":instance_id"),
+
+           (assign, ":smallest_dist", -1),
+           (try_for_range, ":entry_point_no", multi_entry_points_for_usable_items_start, multi_entry_points_for_usable_items_end),
+             (entry_point_get_position, pos1, ":entry_point_no"),
+             (get_sq_distance_between_positions, ":dist", pos0, pos1),
+             (this_or_next|eq, ":smallest_dist", -1),
+             (lt, ":dist", ":smallest_dist"),
+             (assign, ":smallest_dist", ":dist"),
+             (assign, ":nearest_entry_point", ":entry_point_no"),
+           (try_end),
+
+           (try_begin),
+             (ge, ":smallest_dist", 0),
+             (lt, ":smallest_dist", 22500), #max 15m distance
+             (entry_point_get_position, pos1, ":nearest_entry_point"),
+             (position_rotate_x, pos1, -90),
+             (scene_prop_set_slot, ":effected_object_instance_id", scene_prop_smoke_effect_done, 0),
+             (prop_instance_enable_physics, ":effected_object_instance_id", 0),
+             (prop_instance_animate_to_position, ":effected_object_instance_id", pos1, 130),
+           (try_end),
+
+           (scene_prop_set_slot, ":effected_object_instance_id", scene_prop_open_or_close_slot, 0),
+         (try_end),
+       (else_try),
+         (this_or_next|eq, ":effected_object", "spr_door_destructible"),
+         (this_or_next|eq, ":effected_object", "spr_castle_f_door_b"),
+         (this_or_next|eq, ":scene_prop_id", "spr_castle_e_sally_door_a"),
+         (this_or_next|eq, ":scene_prop_id", "spr_castle_f_sally_door_a"),
+         (this_or_next|eq, ":scene_prop_id", "spr_earth_sally_gate_left"),
+         (this_or_next|eq, ":scene_prop_id", "spr_earth_sally_gate_right"),
+         (this_or_next|eq, ":scene_prop_id", "spr_viking_keep_destroy_sally_door_left"),
+         (this_or_next|eq, ":scene_prop_id", "spr_viking_keep_destroy_sally_door_right"),
+         (eq, ":scene_prop_id", "spr_castle_f_door_a"),
+
+         (assign, ":effected_object_instance_id", ":instance_id"),
+         (scene_prop_get_slot, ":opened_or_closed", ":effected_object_instance_id", scene_prop_open_or_close_slot),
+
+         (try_begin),
+           (eq, ":opened_or_closed", 0),
+
+           (prop_instance_get_starting_position, pos0, ":effected_object_instance_id"),
+
+           (scene_prop_enable_after_time, ":effected_object_instance_id", 100),
+
+           (try_begin),
+             (neg|eq, ":scene_prop_id", "spr_viking_keep_destroy_sally_door_left"),
+             (neg|eq, ":scene_prop_id", "spr_earth_sally_gate_left"),
+
+             (position_rotate_z, pos0, -85),
+           (else_try),
+             (position_rotate_z, pos0, 85),
+           (try_end),
+
+           (prop_instance_animate_to_position, ":effected_object_instance_id", pos0, 100),
+
+           (scene_prop_set_slot, ":effected_object_instance_id", scene_prop_open_or_close_slot, 1),
+         (else_try),
+           (prop_instance_get_starting_position, pos0, ":effected_object_instance_id"),
+
+           (scene_prop_enable_after_time, ":effected_object_instance_id", 100),
+
+           (prop_instance_animate_to_position, ":effected_object_instance_id", pos0, 100),
+
+           (scene_prop_set_slot, ":effected_object_instance_id", scene_prop_open_or_close_slot, 0),
+         (try_end),
+       (try_end),
+     (try_end),
+     ]),
+
+("determine_team_flags",
+   [
+     (store_script_param, ":team_no", 1),
+
+     (try_begin),
+       (eq, "$g_multiplayer_game_type", multiplayer_game_type_capture_the_flag),
+
+       (try_begin),
+         (eq, ":team_no", 0),
+
+         (team_get_faction, ":team_faction_no", 0),
+         (try_begin),
+           (eq, ":team_faction_no", "fac_kingdom_1"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_1"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_2"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_2"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_3"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_3"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_4"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_4"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_5"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_5"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_6"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_6"),
+         (try_end),
+       (else_try),
+         (team_get_faction, ":team_faction_no", 1),
+         (try_begin),
+           (eq, ":team_faction_no", "fac_kingdom_1"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_1"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_2"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_2"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_3"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_3"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_4"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_4"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_5"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_5"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_6"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_6"),
+         (try_end),
+
+         (try_begin),
+           (eq, "$team_1_flag_scene_prop", "$team_2_flag_scene_prop"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_7"),
+         (try_end),
+       (try_end),
+     (else_try),
+       (try_begin),
+         (eq, ":team_no", 0),
+
+         (team_get_faction, ":team_faction_no", 0),
+         (try_begin),
+           (eq, ":team_faction_no", "fac_kingdom_1"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_swadian"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_2"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_vaegir"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_3"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_khergit"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_4"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_nord"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_5"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_rhodok"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_6"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_sarranid"),
+         (try_end),
+       (else_try),
+         (team_get_faction, ":team_faction_no", 1),
+         (try_begin),
+           (eq, ":team_faction_no", "fac_kingdom_1"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_swadian"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_2"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_vaegir"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_3"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_khergit"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_4"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_nord"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_5"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_rhodok"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_6"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_sarranid"),
+         (try_end),
+
+         (try_begin),
+           (eq, "$team_1_flag_scene_prop", "$team_2_flag_scene_prop"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_rebel"),
+         (try_end),
+       (try_end),
+     (try_end),
+   ]),
+
+("calculate_flag_move_time",
+   [
+     (store_script_param, ":number_of_total_agents_around_flag", 1),
+     (store_script_param, ":dist_between_flag_and_its_target", 2),
+
+     (try_begin), #(if no one is around flag it again moves to its current owner situation but 5 times slower than normal)
+       (eq, ":number_of_total_agents_around_flag", 0),
+       (store_mul, reg0, ":dist_between_flag_and_its_target", 2500),#5.00 * 1.00 * (500 stable) = 2000
+     (else_try),
+       (eq, ":number_of_total_agents_around_flag", 1),
+       (store_mul, reg0, ":dist_between_flag_and_its_target", 500), #1.00 * (500 stable) = 500
+     (else_try),
+       (eq, ":number_of_total_agents_around_flag", 2),
+       (store_mul, reg0, ":dist_between_flag_and_its_target", 300), #0.60(0.60) * (500 stable) = 300
+     (else_try),
+       (eq, ":number_of_total_agents_around_flag", 3),
+       (store_mul, reg0, ":dist_between_flag_and_its_target", 195), #0.39(0.60 * 0.65) * (500 stable) = 195
+     (else_try),
+       (eq, ":number_of_total_agents_around_flag", 4),
+       (store_mul, reg0, ":dist_between_flag_and_its_target", 137), #0.273(0.60 * 0.65 * 0.70) * (500 stable) = 136.5 >rounding> 137
+     (else_try),
+       (eq, ":number_of_total_agents_around_flag", 5),
+       (store_mul, reg0, ":dist_between_flag_and_its_target", 102), #0.20475(0.60 * 0.65 * 0.70 * 0.75) * (500 stable) = 102.375 >rounding> 102
+     (else_try),
+       (eq, ":number_of_total_agents_around_flag", 6),
+       (store_mul, reg0, ":dist_between_flag_and_its_target", 82),  #0.1638(0.60 * 0.65 * 0.70 * 0.75 * 0.80) * (500 stable) = 81.9 >rounding> 82
+     (else_try),
+       (eq, ":number_of_total_agents_around_flag", 7),
+       (store_mul, reg0, ":dist_between_flag_and_its_target", 66),  #0.13104(0.60 * 0.65 * 0.70 * 0.75 * 0.80 * 0.85) * (500 stable) = 65.52 >rounding> 66
+     (else_try),
+       (eq, ":number_of_total_agents_around_flag", 8),
+       (store_mul, reg0, ":dist_between_flag_and_its_target", 59),  #0.117936(0.60 * 0.65 * 0.70 * 0.75 * 0.80 * 0.85 * 0.90) * (500 stable) = 58.968 >rounding> 59
+     (else_try),
+       (store_mul, reg0, ":dist_between_flag_and_its_target", 56),  #0.1120392(0.60 * 0.65 * 0.70 * 0.75 * 0.80 * 0.85 * 0.90 * 0.95) * (500 stable) = 56.0196 >rounding> 56
+     (try_end),
+
+     (assign, ":number_of_players", 0),
+     (get_max_players, ":num_players"),
+     (try_for_range, ":cur_player", 0, ":num_players"),
+       (player_is_active, ":cur_player"),
+       (val_add, ":number_of_players", 1),
+     (try_end),
+
+     (try_begin),
+       (lt, ":number_of_players", 10),
+       (val_mul, reg0, 50),
+     (else_try),
+       (lt, ":number_of_players", 35),
+       (store_sub, ":number_of_players_multipication", 35, ":number_of_players"),
+       (val_mul, ":number_of_players_multipication", 2),
+       (store_sub, ":number_of_players_multipication", 100, ":number_of_players_multipication"),
+       (val_mul, reg0, ":number_of_players_multipication"),
+     (else_try),
+       (val_mul, reg0, 100),
+     (try_end),
+
+     (try_begin),
+       (eq, "$g_multiplayer_game_type", multiplayer_game_type_siege),
+       (val_mul, reg0, 2),
+     (try_end),
+
+     (val_div, reg0, 10000), #100x for number of players around flag, 100x for number of players in game
+     ]),
+
+("move_death_mode_flags_down",
+   [
+     (try_begin),
+       (scene_prop_get_instance, ":pole_1_id", "spr_headquarters_pole_code_only", 0),
+       (prop_instance_get_position, pos0, ":pole_1_id"),
+       (position_move_z, pos0, -2000),
+       (prop_instance_set_position, ":pole_1_id", pos0),
+     (try_end),
+
+     (try_begin),
+       (scene_prop_get_instance, ":pole_2_id", "spr_headquarters_pole_code_only", 1),
+       (prop_instance_get_position, pos1, ":pole_2_id"),
+       (position_move_z, pos1, -2000),
+       (prop_instance_set_position, ":pole_2_id", pos1),
+     (try_end),
+
+     (try_begin),
+       (scene_prop_get_instance, ":pole_1_id", "spr_headquarters_pole_code_only", 0),
+       (prop_instance_get_position, pos0, ":pole_1_id"),
+       (scene_prop_get_instance, ":flag_1_id", "$team_1_flag_scene_prop", 0),
+       (prop_instance_stop_animating, ":flag_1_id"),
+       (position_move_z, pos0, multi_headquarters_flag_initial_height),
+       (prop_instance_set_position, ":flag_1_id", pos0),
+     (try_end),
+
+     (try_begin),
+       (scene_prop_get_instance, ":pole_2_id", "spr_headquarters_pole_code_only", 1),
+       (prop_instance_get_position, pos1, ":pole_2_id"),
+       (scene_prop_get_instance, ":flag_2_id", "$team_2_flag_scene_prop", 0),
+       (prop_instance_stop_animating, ":flag_2_id"),
+       (position_move_z, pos1, multi_headquarters_flag_initial_height),
+       (prop_instance_set_position, ":flag_2_id", pos1),
+     (try_end),
+   ]),
+
+("move_flag",
+   [
+     (store_script_param, ":shown_flag_id", 1),
+     (store_script_param, ":shown_flag_move_time", 2),
+
+     (try_begin),
+       (multiplayer_is_server), #added after auto-animating
+
+       (try_begin),
+         (eq, ":shown_flag_move_time", 0), #stop
+         (prop_instance_stop_animating, ":shown_flag_id"),
+       (else_try),
+         (prop_instance_animate_to_position, ":shown_flag_id", pos0, ":shown_flag_move_time"),
+       (try_end),
+     (try_end),
+   ]),
+
+("move_headquarters_flags",
+   [
+     (store_script_param, ":flag_no", 1),
+     (store_script_param, ":number_of_agents_around_flag_team_1", 2),
+     (store_script_param, ":number_of_agents_around_flag_team_2", 3),
+
+     (store_add, ":cur_flag_slot", multi_data_flag_owner_begin, ":flag_no"),
+     (troop_get_slot, ":current_owner", "trp_multiplayer_data", ":cur_flag_slot"),
+
+     (scene_prop_get_num_instances, ":num_instances", "spr_headquarters_flag_gray_code_only"),
+     (try_begin),
+       (assign, ":visibility", 0),
+       (lt, ":flag_no", ":num_instances"),
+       (scene_prop_get_instance, ":flag_id", "spr_headquarters_flag_gray_code_only", ":flag_no"),
+       (scene_prop_get_visibility, ":visibility", ":flag_id"),
+     (try_end),
+
+     (try_begin),
+       (eq, ":visibility", 1),
+       (assign, ":shown_flag", 0),
+       (assign, ":shown_flag_id", ":flag_id"),
+     (else_try),
+       (scene_prop_get_num_instances, ":num_instances", "$team_1_flag_scene_prop"),
+       (try_begin),
+         (assign, ":visibility", 0),
+         (lt, ":flag_no", ":num_instances"),
+         (scene_prop_get_instance, ":flag_id", "$team_1_flag_scene_prop", ":flag_no"),
+         (scene_prop_get_visibility, ":visibility", ":flag_id"),
+       (try_end),
+
+       #(scene_prop_get_instance, ":flag_id", "$team_1_flag_scene_prop", ":flag_no"),
+       #(scene_prop_get_visibility, ":visibility", ":flag_id"),
+       (try_begin),
+         (eq, ":visibility", 1),
+         (assign, ":shown_flag", 1),
+         (assign, ":shown_flag_id", ":flag_id"),
+       (else_try),
+         (scene_prop_get_num_instances, ":num_instances", "$team_2_flag_scene_prop"),
+         (try_begin),
+           (assign, ":visibility", 0),
+           (lt, ":flag_no", ":num_instances"),
+           (scene_prop_get_instance, ":flag_id", "$team_2_flag_scene_prop", ":flag_no"),
+           (scene_prop_get_visibility, ":visibility", ":flag_id"),
+         (try_end),
+
+         #(scene_prop_get_instance, ":flag_id", "$team_2_flag_scene_prop", ":flag_no"),
+         #(scene_prop_get_visibility, ":visibility", ":flag_id"),
+         (try_begin),
+           (eq, ":visibility", 1),
+           (assign, ":shown_flag", 2),
+           (assign, ":shown_flag_id", ":flag_id"),
+         (try_end),
+       (try_end),
+     (try_end),
+
+     (try_begin),
+       (scene_prop_get_instance, ":pole_id", "spr_headquarters_pole_code_only", ":flag_no"),
+     (try_end),
+
+     (try_begin),
+       (eq, ":shown_flag", ":current_owner"), #situation 1 : (current owner is equal shown flag)
+       (try_begin),
+         (ge, ":number_of_agents_around_flag_team_1", 1),
+         (ge, ":number_of_agents_around_flag_team_2", 1),
+         (assign, ":flag_movement", 0), #0:stop
+       (else_try),
+         (eq, ":number_of_agents_around_flag_team_1", 0),
+         (eq, ":number_of_agents_around_flag_team_2", 0),
+         (assign, ":flag_movement", 1), #1:rise (slow)
+       (else_try),
+         (try_begin),
+           (ge, ":number_of_agents_around_flag_team_1", 1),
+           (eq, ":number_of_agents_around_flag_team_2", 0),
+           (eq, ":current_owner", 1),
+           (assign, ":flag_movement", 1), #1:rise (fast)
+         (else_try),
+           (eq, ":number_of_agents_around_flag_team_1", 0),
+           (ge, ":number_of_agents_around_flag_team_2", 1),
+           (eq, ":current_owner", 2),
+           (assign, ":flag_movement", 1), #1:rise (fast)
+         (else_try),
+           (assign, ":flag_movement", -1), #-1:drop (fast)
+         (try_end),
+       (try_end),
+     (else_try), #situation 2 : (current owner is different than shown flag)
+       (try_begin),
+         (ge, ":number_of_agents_around_flag_team_1", 1),
+         (ge, ":number_of_agents_around_flag_team_2", 1),
+         (assign, ":flag_movement", 0), #0:stop
+       (else_try),
+         (eq, ":number_of_agents_around_flag_team_1", 0),
+         (eq, ":number_of_agents_around_flag_team_2", 0),
+         (assign, ":flag_movement", -1), #-1:drop (slow)
+       (else_try),
+         (try_begin),
+           (ge, ":number_of_agents_around_flag_team_1", 1),
+           (eq, ":number_of_agents_around_flag_team_2", 0),
+           (try_begin),
+             (eq, ":shown_flag", 1),
+             (assign, ":flag_movement", 1), #1:rise (fast)
+           (else_try),
+             (neq, ":current_owner", 1),
+             (assign, ":flag_movement", -1), #-1:drop (fast)
+           (try_end),
+         (else_try),
+           (eq, ":number_of_agents_around_flag_team_1", 0),
+           (ge, ":number_of_agents_around_flag_team_2", 1),
+           (try_begin),
+             (eq, ":shown_flag", 2),
+             (assign, ":flag_movement", 1), #1:rise (fast)
+           (else_try),
+             (neq, ":current_owner", 2),
+             (assign, ":flag_movement", -1), #-1:drop (fast)
+           (try_end),
+         (try_end),
+       (try_end),
+     (try_end),
+
+     (store_add, ":number_of_total_agents_around_flag", ":number_of_agents_around_flag_team_1", ":number_of_agents_around_flag_team_2"),
+
+     (try_begin),
+       (eq, ":flag_movement", 0),
+       (assign, reg0, 0),
+     (else_try),
+       (eq, ":flag_movement", 1),
+       (prop_instance_get_position, pos1, ":shown_flag_id"),
+       (prop_instance_get_position, pos0, ":pole_id"),
+       (position_move_z, pos0, multi_headquarters_pole_height),
+       (get_distance_between_positions, ":dist_between_flag_and_its_target", pos0, pos1),
+       (call_script, "script_calculate_flag_move_time", ":number_of_total_agents_around_flag", ":dist_between_flag_and_its_target"),
+     (else_try),
+       (eq, ":flag_movement", -1),
+       (prop_instance_get_position, pos1, ":shown_flag_id"),
+       (prop_instance_get_position, pos0, ":pole_id"),
+       (get_distance_between_positions, ":dist_between_flag_and_its_target", pos0, pos1),
+       (call_script, "script_calculate_flag_move_time", ":number_of_total_agents_around_flag", ":dist_between_flag_and_its_target"),
+     (try_end),
+
+     (call_script, "script_move_flag", ":shown_flag_id", reg0), #pos0 : target position
+     ]),
+
+("set_num_agents_around_flag",
+   [
+     (store_script_param, ":flag_no", 1),
+     (store_script_param, ":current_owner_code", 2),
+
+     (store_div, ":number_of_agents_around_flag_team_1", ":current_owner_code", 100),
+     (store_mod, ":number_of_agents_around_flag_team_2", ":current_owner_code", 100),
+
+     (store_add, ":cur_flag_owner_counts_slot", multi_data_flag_players_around_begin, ":flag_no"),
+     (troop_set_slot, "trp_multiplayer_data", ":cur_flag_owner_counts_slot", ":current_owner_code"),
+
+     (call_script, "script_move_headquarters_flags", ":flag_no", ":number_of_agents_around_flag_team_1", ":number_of_agents_around_flag_team_2"),
+  ]),
+
+("change_flag_owner",
+   [
+     (store_script_param, ":flag_no", 1),
+     (store_script_param, ":owner_code", 2),
+
+     (try_begin),
+       (lt, ":owner_code", 0),
+       (val_add, ":owner_code", 1),
+       (val_mul, ":owner_code", -1),
+     (try_end),
+
+     (store_div, ":owner_team_no", ":owner_code", 100),
+     (store_mod, ":shown_flag_no", ":owner_code", 100),
+
+     (store_add, ":cur_flag_slot", multi_data_flag_owner_begin, ":flag_no"),
+     (troop_get_slot, ":older_owner_team_no", "trp_multiplayer_data", ":cur_flag_slot"),
+
+     (store_add, ":cur_flag_slot", multi_data_flag_owner_begin, ":flag_no"),
+     (troop_set_slot, "trp_multiplayer_data", ":cur_flag_slot", ":owner_team_no"),
+
+     #senchronizing flag positions
+     (try_begin),
+       #(this_or_next|eq, ":initial_flags", 0), #moved after auto-animating
+       (multiplayer_is_server),
+
+       (scene_prop_get_instance, ":pole_id", "spr_headquarters_pole_code_only", ":flag_no"),
+       (try_begin),
+         (eq, ":owner_team_no", 0), #if new owner team is 0 then flags are at bottom
+         (neq, ":older_owner_team_no", -1), #clients
+         (assign, ":continue", 1),
+         (try_begin),
+           (multiplayer_is_server),
+           (eq, "$g_placing_initial_flags", 1),
+           (assign, ":continue", 0),
+         (try_end),
+         (eq, ":continue", 1),
+         (prop_instance_get_position, pos0, ":pole_id"),
+         (position_move_z, pos0, multi_headquarters_distance_to_change_flag),
+       (else_try),
+         (prop_instance_get_position, pos0, ":pole_id"), #if new owner team is not 0 then flags are at top
+         (position_move_z, pos0, multi_headquarters_pole_height),
+       (try_end),
+
+       (scene_prop_get_instance, ":flag_id", "$team_1_flag_scene_prop", ":flag_no"),
+         (prop_instance_stop_animating, ":flag_id"),
+       (prop_instance_set_position, ":flag_id", pos0),
+
+       (scene_prop_get_instance, ":flag_id", "$team_2_flag_scene_prop", ":flag_no"),
+         (prop_instance_stop_animating, ":flag_id"),
+       (prop_instance_set_position, ":flag_id", pos0),
+
+       (scene_prop_get_instance, ":flag_id", "spr_headquarters_flag_gray_code_only", ":flag_no"),
+         (prop_instance_stop_animating, ":flag_id"),
+       (prop_instance_set_position, ":flag_id", pos0),
+     (try_end),
+
+     #setting visibilities of flags
+     (try_begin),
+       (eq, ":shown_flag_no", 0),
+       (scene_prop_get_instance, ":flag_id", "$team_1_flag_scene_prop", ":flag_no"),
+       (scene_prop_set_visibility, ":flag_id", 0),
+       (scene_prop_get_instance, ":flag_id", "$team_2_flag_scene_prop", ":flag_no"),
+       (scene_prop_set_visibility, ":flag_id", 0),
+       (scene_prop_get_instance, ":flag_id", "spr_headquarters_flag_gray_code_only", ":flag_no"),
+       (scene_prop_set_visibility, ":flag_id", 1),
+     (else_try),
+       (eq, ":shown_flag_no", 1),
+       (scene_prop_get_instance, ":flag_id", "$team_1_flag_scene_prop", ":flag_no"),
+       (scene_prop_set_visibility, ":flag_id", 1),
+       (scene_prop_get_instance, ":flag_id", "$team_2_flag_scene_prop", ":flag_no"),
+       (scene_prop_set_visibility, ":flag_id", 0),
+       (scene_prop_get_instance, ":flag_id", "spr_headquarters_flag_gray_code_only", ":flag_no"),
+       (scene_prop_set_visibility, ":flag_id", 0),
+     (else_try),
+       (eq, ":shown_flag_no", 2),
+       (scene_prop_get_instance, ":flag_id", "$team_1_flag_scene_prop", ":flag_no"),
+       (scene_prop_set_visibility, ":flag_id", 0),
+       (scene_prop_get_instance, ":flag_id", "$team_2_flag_scene_prop", ":flag_no"),
+       (scene_prop_set_visibility, ":flag_id", 1),
+       (scene_prop_get_instance, ":flag_id", "spr_headquarters_flag_gray_code_only", ":flag_no"),
+       (scene_prop_set_visibility, ":flag_id", 0),
+     (try_end),
+
+     #other
+     (store_add, ":cur_flag_players_around_slot", multi_data_flag_players_around_begin, ":flag_no"),
+     (troop_get_slot, ":players_around_code", "trp_multiplayer_data", ":cur_flag_players_around_slot"),
+
+     (store_div, ":number_of_agents_around_flag_team_1", ":players_around_code", 100),
+     (store_mod, ":number_of_agents_around_flag_team_2", ":players_around_code", 100),
+
+     (call_script, "script_move_headquarters_flags", ":flag_no", ":number_of_agents_around_flag_team_1", ":number_of_agents_around_flag_team_2"),
+   ]),
+
+("team_set_score",
+   [
+     (store_script_param, ":team_no", 1),
+     (store_script_param, ":score", 2),
+
+     (team_set_score, ":team_no", ":score"),
+   ]),
+
+("player_set_score",
+   [
+     (store_script_param, ":player_no", 1),
+     (store_script_param, ":score", 2),
+
+     (player_set_score, ":player_no", ":score"),
+   ]),
+
+("player_set_kill_count",
+   [
+     (store_script_param, ":player_no", 1),
+     (store_script_param, ":score", 2),
+
+     (player_set_kill_count, ":player_no", ":score"),
+   ]),
+
+("player_set_death_count",
+   [
+     (store_script_param, ":player_no", 1),
+     (store_script_param, ":score", 2),
+
+     (player_set_death_count, ":player_no", ":score"),
+   ]),
+
+("set_attached_scene_prop",
+   [
+     (store_script_param, ":agent_id", 1),
+     (store_script_param, ":flag_id", 2),
+
+     (try_begin), #if current mod is capture the flag and attached scene prop is flag then change flag situation of flag owner team.
+       (scene_prop_get_instance, ":red_flag_id", "spr_tutorial_flag_red", 0),
+       (scene_prop_get_instance, ":blue_flag_id", "spr_tutorial_flag_blue", 0),
+       (assign, ":flag_owner_team", -1),
+       (try_begin),
+         (ge, ":red_flag_id", 0),
+         (eq, ":flag_id", ":red_flag_id"),
+         (assign, ":flag_owner_team", 0),
+       (else_try),
+         (ge, ":blue_flag_id", 0),
+         (eq, ":flag_id", ":blue_flag_id"),
+         (assign, ":flag_owner_team", 1),
+       (try_end),
+       (ge, ":flag_owner_team", 0),
+       (team_set_slot, ":flag_owner_team", slot_team_flag_situation, 1), #1-stolen flag
+     (try_end),
+
+     (agent_set_attached_scene_prop, ":agent_id", ":flag_id"),
+     (agent_set_attached_scene_prop_x, ":agent_id", 20),
+     (agent_set_attached_scene_prop_z, ":agent_id", 50),
+   ]),
+
+("set_team_flag_situation",
+   [
+     (store_script_param, ":team_no", 1),
+     (store_script_param, ":flag_situation", 2),
+
+     (team_set_slot, ":team_no", slot_team_flag_situation, ":flag_situation"),
+   ]),
+
+("start_death_mode",
+   [
+     (assign, "$g_multiplayer_message_type", multiplayer_message_type_start_death_mode),
+     (start_presentation, "prsnt_multiplayer_message_1"),
+   ]),
+
+("calculate_new_death_waiting_time_at_death_mod",
+   [
+     (assign, ":num_living_players", 0), #count number of living players to find out death wait time
+     (try_begin),
+       (try_for_agents, ":agent_no"),
+         (agent_is_human, ":agent_no"),
+         (agent_is_alive, ":agent_no"),
+         (val_add, ":num_living_players", 1),
+       (try_end),
+     (try_end),
+
+     (val_add, ":num_living_players", multiplayer_battle_formula_value_a),
+     (set_fixed_point_multiplier, 100),
+     (store_mul, ":num_living_players", ":num_living_players", 100),
+     (store_sqrt, ":sqrt_num_living_players", ":num_living_players"),
+     (store_div, "$g_battle_waiting_seconds", multiplayer_battle_formula_value_b, ":sqrt_num_living_players"),
+     (store_mission_timer_a, "$g_death_mode_part_1_start_time"),
+   ]),
+
+("calculate_number_of_targets_destroyed",
+   [
+     (assign, "$g_number_of_targets_destroyed", 0),
+     (scene_prop_get_num_instances, ":num_instances_of_scene_prop", "spr_catapult_destructible"),
+     (try_for_range, ":cur_instance", 0, ":num_instances_of_scene_prop"),
+       (scene_prop_get_instance, ":cur_instance_id", "spr_catapult_destructible", ":cur_instance"),
+       (prop_instance_get_starting_position, pos0, ":cur_instance_id"),
+       (prop_instance_get_position, pos1, ":cur_instance_id"),
+       (get_sq_distance_between_positions_in_meters, ":dist", pos0, pos1),
+       (gt, ":dist", 2), #this can be 0 or 1 too.
+       (val_add, "$g_number_of_targets_destroyed", 1),
+     (try_end),
+
+     (scene_prop_get_num_instances, ":num_instances_of_scene_prop", "spr_trebuchet_destructible"),
+     (try_for_range, ":cur_instance", 0, ":num_instances_of_scene_prop"),
+       (scene_prop_get_instance, ":cur_instance_id", "spr_trebuchet_destructible", ":cur_instance"),
+       (prop_instance_get_starting_position, pos0, ":cur_instance_id"),
+       (prop_instance_get_position, pos1, ":cur_instance_id"),
+       (get_sq_distance_between_positions_in_meters, ":dist", pos0, pos1),
+       (gt, ":dist", 2), #this can be 0 or 1 too.
+       (val_add, "$g_number_of_targets_destroyed", 1),
+     (try_end),
+     ]),
+
+("get_headquarters_scores",
+   [
+     (assign, ":team_1_num_flags", 0),
+     (assign, ":team_2_num_flags", 0),
+     (try_for_range, ":flag_no", 0, "$g_number_of_flags"),
+       (store_add, ":cur_flag_owner_slot", multi_data_flag_owner_begin, ":flag_no"),
+       (troop_get_slot, ":cur_flag_owner", "trp_multiplayer_data", ":cur_flag_owner_slot"),
+       (neq, ":cur_flag_owner", 0),
+       (try_begin),
+         (eq, ":cur_flag_owner", 1),
+         (val_add, ":team_1_num_flags", 1),
+       (else_try),
+         (val_add, ":team_2_num_flags", 1),
+       (try_end),
+     (try_end),
+     (assign, reg0, ":team_1_num_flags"),
+     (assign, reg1, ":team_2_num_flags"),
+     ]),
+
+("draw_this_round",
+   [
+    (store_script_param, ":value", 1),
+    (try_begin),
+      (eq, ":value", -9), #destroy mod round end
+      (assign, "$g_round_ended", 1),
+      (store_mission_timer_a, "$g_round_finish_time"),
+      #(assign, "$g_multiplayer_message_value_1", -1),
+      #(assign, "$g_multiplayer_message_type", multiplayer_message_type_round_draw),
+      #(start_presentation, "prsnt_multiplayer_message_1"),
+    (else_try),
+      (eq, ":value", -1), #draw
+      (assign, "$g_round_ended", 1),
+      (store_mission_timer_a, "$g_round_finish_time"),
+      (assign, "$g_multiplayer_message_value_1", -1),
+      (assign, "$g_multiplayer_message_type", multiplayer_message_type_round_draw),
+      (start_presentation, "prsnt_multiplayer_message_1"),
+    (else_try),
+      (eq, ":value", 0), #defender wins
+      #THIS_IS_OUR_LAND achievement
+      (try_begin),
+        (eq, "$g_multiplayer_game_type", multiplayer_game_type_siege),
+        (multiplayer_get_my_player, ":my_player_no"),
+        (is_between, ":my_player_no", 0, multiplayer_max_possible_player_id),
+        (player_get_agent_id, ":my_player_agent", ":my_player_no"),
+        (ge, ":my_player_agent", 0),
+        (agent_is_alive, ":my_player_agent"),
+        (agent_get_team, ":my_player_agent_team_no", ":my_player_agent"),
+        (eq, ":my_player_agent_team_no", 0), #defender
+        (unlock_achievement, ACHIEVEMENT_THIS_IS_OUR_LAND),
+      (try_end),
+      #THIS_IS_OUR_LAND achievement end
+      (assign, "$g_round_ended", 1),
+      (store_mission_timer_a, "$g_round_finish_time"),
+
+      (team_get_faction, ":faction_of_winner_team", 0),
+      (team_get_score, ":team_1_score", 0),
+      (val_add, ":team_1_score", 1),
+      (team_set_score, 0, ":team_1_score"),
+      (assign, "$g_winner_team", 0),
+      (str_store_faction_name, s1, ":faction_of_winner_team"),
+
+      (assign, "$g_multiplayer_message_value_1", ":value"),
+      (try_begin),
+        (neq, "$g_multiplayer_game_type", multiplayer_game_type_battle),
+        (neq, "$g_multiplayer_game_type", multiplayer_game_type_destroy),
+        (assign, "$g_multiplayer_message_type", multiplayer_message_type_round_result_in_siege_mode),
+      (else_try),
+        (assign, "$g_multiplayer_message_type", multiplayer_message_type_round_result_in_battle_mode),
+      (try_end),
+      (start_presentation, "prsnt_multiplayer_message_1"),
+    (else_try),
+      (eq, ":value", 1), #attacker wins
+      (assign, "$g_round_ended", 1),
+      (store_mission_timer_a, "$g_round_finish_time"),
+
+      (team_get_faction, ":faction_of_winner_team", 1),
+      (team_get_score, ":team_2_score", 1),
+      (val_add, ":team_2_score", 1),
+      (team_set_score, 1, ":team_2_score"),
+      (assign, "$g_winner_team", 1),
+      (str_store_faction_name, s1, ":faction_of_winner_team"),
+
+      (assign, "$g_multiplayer_message_value_1", ":value"),
+      (try_begin),
+        (neq, "$g_multiplayer_game_type", multiplayer_game_type_battle),
+        (neq, "$g_multiplayer_game_type", multiplayer_game_type_destroy),
+        (assign, "$g_multiplayer_message_type", multiplayer_message_type_round_result_in_siege_mode),
+      (else_try),
+        (assign, "$g_multiplayer_message_type", multiplayer_message_type_round_result_in_battle_mode),
+      (try_end),
+      (start_presentation, "prsnt_multiplayer_message_1"),
+    (try_end),
+    #LAST_MAN_STANDING achievement
+    (try_begin),
+      (is_between, ":value", 0, 2), #defender or attacker wins
+      (try_begin),
+        (eq, "$g_multiplayer_game_type", multiplayer_game_type_battle),
+        (multiplayer_get_my_player, ":my_player_no"),
+        (is_between, ":my_player_no", 0, multiplayer_max_possible_player_id),
+        (player_get_agent_id, ":my_player_agent", ":my_player_no"),
+        (ge, ":my_player_agent", 0),
+        (agent_is_alive, ":my_player_agent"),
+        (agent_get_team, ":my_player_agent_team_no", ":my_player_agent"),
+        (eq, ":my_player_agent_team_no", ":value"), #winner team
+        (unlock_achievement, ACHIEVEMENT_LAST_MAN_STANDING),
+      (try_end),
+    (try_end),
+    #LAST_MAN_STANDING achievement end
+    ]),
+
+("check_achievement_last_man_standing",
+   [
+   #LAST_MAN_STANDING achievement
+	  (try_begin),
+	    (store_script_param, ":value", 1),
+		(is_between, ":value", 0, 2), #defender or attacker wins
+	    (try_begin),
+		  (eq, "$g_multiplayer_game_type", multiplayer_game_type_battle),
+		  (multiplayer_get_my_player, ":my_player_no"),
+		  (is_between, ":my_player_no", 0, multiplayer_max_possible_player_id),
+		  (player_get_agent_id, ":my_player_agent", ":my_player_no"),
+		  (ge, ":my_player_agent", 0),
+		  (agent_is_alive, ":my_player_agent"),
+		  (agent_get_team, ":my_player_agent_team_no", ":my_player_agent"),
+		  (eq, ":my_player_agent_team_no", ":value"), #winner team
+		  (unlock_achievement, ACHIEVEMENT_LAST_MAN_STANDING),
+		(try_end),
+	  (try_end),
+    #LAST_MAN_STANDING achievement end
+    ]),
+
+("find_most_suitable_bot_to_control",
+   [
+      (set_fixed_point_multiplier, 100),
+      (store_script_param, ":player_no", 1),
+      (player_get_team_no, ":player_team", ":player_no"),
+
+      (player_get_slot, ":x_coor", ":player_no", slot_player_death_pos_x),
+      (player_get_slot, ":y_coor", ":player_no", slot_player_death_pos_y),
+      (player_get_slot, ":z_coor", ":player_no", slot_player_death_pos_z),
+
+      (init_position, pos0),
+      (position_set_x, pos0, ":x_coor"),
+      (position_set_y, pos0, ":y_coor"),
+      (position_set_z, pos0, ":z_coor"),
+
+      (assign, ":most_suitable_bot", -1),
+      (assign, ":max_bot_score", -1),
+
+      (try_for_agents, ":cur_agent"),
+        (agent_is_alive, ":cur_agent"),
+        (agent_is_human, ":cur_agent"),
+        (agent_is_non_player, ":cur_agent"),
+        (agent_get_team ,":cur_team", ":cur_agent"),
+        (eq, ":cur_team", ":player_team"),
+        (agent_get_position, pos1, ":cur_agent"),
+
+        #getting score for distance of agent to death point (0..3000)
+        (get_distance_between_positions_in_meters, ":dist", pos0, pos1),
+
+        (try_begin),
+          (lt, ":dist", 500),
+          (store_sub, ":bot_score", 500, ":dist"),
+        (else_try),
+          (assign, ":bot_score", 0),
+        (try_end),
+        (val_mul, ":bot_score", 6),
+
+        #getting score for distance of agent to enemy & friend agents (0..300 x agents)
+        (try_for_agents, ":cur_agent_2"),
+          (agent_is_alive, ":cur_agent_2"),
+          (agent_is_human, ":cur_agent_2"),
+          (neq, ":cur_agent", ":cur_agent_2"),
+          (agent_get_team ,":cur_team_2", ":cur_agent_2"),
+          (try_begin),
+            (neq, ":cur_team_2", ":player_team"),
+            (agent_get_position, pos1, ":cur_agent_2"),
+            (get_distance_between_positions, ":dist_2", pos0, pos1),
+            (try_begin),
+              (lt, ":dist_2", 300),
+              (assign, ":enemy_near_score", ":dist_2"),
+            (else_try),
+              (assign, ":enemy_near_score", 300),
+            (try_end),
+            (val_add, ":bot_score", ":enemy_near_score"),
+          (else_try),
+            (agent_get_position, pos1, ":cur_agent_2"),
+            (get_distance_between_positions, ":dist_2", pos0, pos1),
+            (try_begin),
+              (lt, ":dist_2", 300),
+              (assign, ":friend_near_score", 300, ":dist_2"),
+            (else_try),
+              (assign, ":friend_near_score", 0),
+            (try_end),
+            (val_add, ":bot_score", ":friend_near_score"),
+          (try_end),
+        (try_end),
+
+        #getting score for health (0..200)
+        (store_agent_hit_points, ":agent_hit_points", ":cur_agent"),
+        (val_mul, ":agent_hit_points", 2),
+        (val_add, ":bot_score", ":agent_hit_points"),
+
+        (ge, ":bot_score", ":max_bot_score"),
+        (assign, ":max_bot_score", ":bot_score"),
+        (assign, ":most_suitable_bot", ":cur_agent"),
+      (try_end),
+
+      (assign, reg0, ":most_suitable_bot"),
+    ]),
+
+("find_number_of_agents_constant",
+   [
+     (assign, ":num_dead_or_alive_agents", 0),
+
+     (try_for_agents, ":cur_agent"),
+       (agent_is_human, ":cur_agent"),
+       (val_add, ":num_dead_or_alive_agents", 1),
+     (try_end),
+
+     (try_begin),
+       (le, ":num_dead_or_alive_agents", 2), #2
+       (assign, reg0, 100),
+     (else_try),
+       (le, ":num_dead_or_alive_agents", 4), #2+2
+       (assign, reg0, 140),
+     (else_try),
+       (le, ":num_dead_or_alive_agents", 7), #2+2+3
+       (assign, reg0, 180),
+     (else_try),
+       (le, ":num_dead_or_alive_agents", 11), #2+2+3+4
+       (assign, reg0, 220),
+     (else_try),
+       (le, ":num_dead_or_alive_agents", 17), #2+2+3+4+6
+       (assign, reg0, 260),
+     (else_try),
+       (le, ":num_dead_or_alive_agents", 25), #2+2+3+4+6+8
+       (assign, reg0, 300),
+     (else_try),
+       (le, ":num_dead_or_alive_agents", 36), #2+2+3+4+6+8+11
+       (assign, reg0, 340),
+     (else_try),
+       (le, ":num_dead_or_alive_agents", 50), #2+2+3+4+6+8+11+14
+       (assign, reg0, 380),
+     (else_try),
+       (le, ":num_dead_or_alive_agents", 68), #2+2+3+4+6+8+11+14+18
+       (assign, reg0, 420),
+     (else_try),
+       (le, ":num_dead_or_alive_agents", 91), #2+2+3+4+6+8+11+14+18+23
+       (assign, reg0, 460),
+     (else_try),
+       (assign, reg0, 500),
+     (try_end),
+     ]),
+
+("send_open_close_information_of_object",
+   [
+     (store_script_param, ":player_no", 1),
+     (store_script_param, ":scene_prop_no", 2),
+
+     (scene_prop_get_num_instances, ":num_instances", ":scene_prop_no"),
+
+     (try_for_range, ":instance_no", 0, ":num_instances"),
+       (scene_prop_get_instance, ":instance_id", ":scene_prop_no", ":instance_no"),
+       (scene_prop_get_slot, ":opened_or_closed", ":instance_id", scene_prop_open_or_close_slot),
+       (try_begin),
+         (eq, ":opened_or_closed", 1),
+         (multiplayer_send_int_to_player, ":player_no", multiplayer_event_set_scene_prop_open_or_close, ":instance_id"),
+       (try_end),
+     (try_end),
+     ]),
+]

@@ -2227,4 +2227,1495 @@ encounters_scripts = [
   ]),
 
   # # AI with Formations Scripts
+
+("spawn_quick_battle_army",
+   [
+     (store_script_param, ":cur_entry_point", 1),
+     (store_script_param, ":faction_no", 2),
+     (store_script_param, ":infantry_ratio", 3),
+     (store_script_param, ":archers_ratio", 4),
+     (store_script_param, ":cavalry_ratio", 5),
+     (store_script_param, ":divide_archer_entry_points", 6),
+     (store_script_param, ":player_team", 7),
+
+     (try_begin),
+       (eq, ":player_team", 1),
+       (call_script, "script_get_army_size_from_slider_value", "$g_quick_battle_army_1_size"),
+       (assign, ":army_size", reg0),
+       (set_player_troop, "$g_quick_battle_troop"),
+       (set_visitor, ":cur_entry_point", "$g_quick_battle_troop"),
+       (try_begin),
+         (eq, ":cur_entry_point", 0),
+         (try_begin),
+           (is_between, ":faction_no", npc_kingdoms_begin, npc_kingdoms_end),
+           (faction_get_slot, "$g_quick_battle_team_0_banner", ":faction_no", slot_faction_banner),
+         (else_try),
+           (assign, "$g_quick_battle_team_0_banner", "mesh_banners_default_b"),
+         (try_end),
+       (else_try),
+         (try_begin),
+           (is_between, ":faction_no", npc_kingdoms_begin, npc_kingdoms_end),
+           (faction_get_slot, "$g_quick_battle_team_1_banner", ":faction_no", slot_faction_banner),
+         (else_try),
+           (assign, "$g_quick_battle_team_1_banner", "mesh_banners_default_b"),
+         (try_end),
+       (try_end),
+       (val_add, ":cur_entry_point", 1),
+
+     (else_try),
+       (call_script, "script_get_army_size_from_slider_value", "$g_quick_battle_army_2_size"),
+       (assign, ":army_size", reg0),
+       (try_begin),
+         (eq, ":cur_entry_point", 0),
+         (try_begin),
+           (is_between, ":faction_no", npc_kingdoms_begin, npc_kingdoms_end),
+           (faction_get_slot, "$g_quick_battle_team_0_banner", ":faction_no", slot_faction_banner),
+         (else_try),
+           (assign, "$g_quick_battle_team_0_banner", "mesh_banners_default_a"),
+         (try_end),
+       (else_try),
+         (try_begin),
+           (is_between, ":faction_no", npc_kingdoms_begin, npc_kingdoms_end),
+           (faction_get_slot, "$g_quick_battle_team_1_banner", ":faction_no", slot_faction_banner),
+         (else_try),
+           (assign, "$g_quick_battle_team_1_banner", "mesh_banners_default_a"),
+         (try_end),
+       (try_end),
+       (val_add, ":cur_entry_point", 1),
+     (try_end),
+
+     (store_mul, ":num_infantry", ":infantry_ratio", ":army_size"),
+     (val_div, ":num_infantry", 100),
+     (store_mul, ":num_archers", ":archers_ratio", ":army_size"),
+     (val_div, ":num_archers", 100),
+     (store_mul, ":num_cavalry", ":cavalry_ratio", ":army_size"),
+     (val_div, ":num_cavalry", 100),
+
+     (try_begin),
+       (store_add, ":num_total", ":num_infantry", ":num_archers"),
+       (val_add, ":num_total", ":num_cavalry"),
+       (neq, ":num_total", ":army_size"),
+       (store_sub, ":leftover", ":army_size", ":num_total"),
+       (try_begin),
+         (gt, ":infantry_ratio", ":archers_ratio"),
+         (gt, ":infantry_ratio", ":cavalry_ratio"),
+         (val_add, ":num_infantry", ":leftover"),
+       (else_try),
+         (gt, ":archers_ratio", ":cavalry_ratio"),
+         (val_add, ":num_archers", ":leftover"),
+       (else_try),
+         (val_add, ":num_cavalry", ":leftover"),
+       (try_end),
+     (try_end),
+
+     (store_mul, ":rand_min", ":num_infantry", 15),
+     (val_div, ":rand_min", 100),
+     (store_mul, ":rand_max", ":num_infantry", 45),
+     (val_div, ":rand_max", 100),
+     (store_random_in_range, ":num_tier_2_infantry", ":rand_min", ":rand_max"),
+     (store_sub, ":num_tier_1_infantry", ":num_infantry", ":num_tier_2_infantry"),
+     (store_mul, ":rand_min", ":num_archers", 15),
+     (val_div, ":rand_min", 100),
+     (store_mul, ":rand_max", ":num_archers", 45),
+     (val_div, ":rand_max", 100),
+     (store_random_in_range, ":num_tier_2_archers", ":rand_min", ":rand_max"),
+     (store_sub, ":num_tier_1_archers", ":num_archers", ":num_tier_2_archers"),
+     (store_mul, ":rand_min", ":num_cavalry", 15),
+     (val_div, ":rand_min", 100),
+     (store_mul, ":rand_max", ":num_cavalry", 45),
+     (val_div, ":rand_max", 100),
+     (store_random_in_range, ":num_tier_2_cavalry", ":rand_min", ":rand_max"),
+     (store_sub, ":num_tier_1_cavalry", ":num_cavalry", ":num_tier_2_cavalry"),
+
+     (faction_get_slot, ":cur_troop", ":faction_no", slot_faction_quick_battle_tier_2_infantry),
+     (set_visitors, ":cur_entry_point", ":cur_troop", ":num_tier_2_infantry"),
+     (val_add, ":cur_entry_point", 1),
+     (faction_get_slot, ":cur_troop", ":faction_no", slot_faction_quick_battle_tier_1_infantry),
+     (set_visitors, ":cur_entry_point", ":cur_troop", ":num_tier_1_infantry"),
+     (val_add, ":cur_entry_point", 1),
+     (faction_get_slot, ":cur_troop", ":faction_no", slot_faction_quick_battle_tier_2_cavalry),
+     (set_visitors, ":cur_entry_point", ":cur_troop", ":num_tier_2_cavalry"),
+     (val_add, ":cur_entry_point", 1),
+     (faction_get_slot, ":cur_troop", ":faction_no", slot_faction_quick_battle_tier_1_cavalry),
+     (set_visitors, ":cur_entry_point", ":cur_troop", ":num_tier_1_cavalry"),
+     (val_add, ":cur_entry_point", 1),
+
+     (try_begin),
+       (eq, ":divide_archer_entry_points", 0),
+       (faction_get_slot, ":cur_troop", ":faction_no", slot_faction_quick_battle_tier_2_archer),
+       (set_visitors, ":cur_entry_point", ":cur_troop", ":num_tier_2_archers"),
+       (val_add, ":cur_entry_point", 1),
+       (faction_get_slot, ":cur_troop", ":faction_no", slot_faction_quick_battle_tier_1_archer),
+       (set_visitors, ":cur_entry_point", ":cur_troop", ":num_tier_1_archers"),
+       (val_add, ":cur_entry_point", 1),
+     (else_try),
+       (assign, ":cur_entry_point", 40), #archer positions begin point
+       (store_div, ":num_tier_1_archers_ceil_8", ":num_tier_1_archers", 8),
+       (val_mul, ":num_tier_1_archers_ceil_8", 8),
+       (try_begin),
+         (neq, ":num_tier_1_archers_ceil_8", ":num_tier_1_archers"),
+         (val_div, ":num_tier_1_archers_ceil_8", 8),
+         (val_add, ":num_tier_1_archers_ceil_8", 1),
+         (val_mul, ":num_tier_1_archers_ceil_8", 8),
+       (try_end),
+       (store_div, ":num_tier_2_archers_ceil_8", ":num_tier_2_archers", 8),
+       (val_mul, ":num_tier_2_archers_ceil_8", 8),
+       (try_begin),
+         (neq, ":num_tier_2_archers_ceil_8", ":num_tier_2_archers"),
+         (val_div, ":num_tier_2_archers_ceil_8", 8),
+         (val_add, ":num_tier_2_archers_ceil_8", 1),
+         (val_mul, ":num_tier_2_archers_ceil_8", 8),
+       (try_end),
+       (store_add, ":num_archers_ceil_8", ":num_tier_1_archers_ceil_8", ":num_tier_2_archers_ceil_8"),
+       (store_div, ":num_archers_per_entry_point", ":num_archers_ceil_8", 8),
+       (assign, ":left_tier_1_archers", ":num_tier_1_archers"),
+       (assign, ":left_tier_2_archers", ":num_tier_2_archers"),
+       (assign, ":end_cond", 1000),
+       (try_for_range, ":unused", 0, ":end_cond"),
+         (try_begin),
+           (gt, ":left_tier_2_archers", 0),
+           (assign, ":used_tier_2_archers", ":num_archers_per_entry_point"),
+           (val_min, ":used_tier_2_archers", ":left_tier_2_archers"),
+           (faction_get_slot, ":cur_troop", ":faction_no", slot_faction_quick_battle_tier_2_archer),
+           (set_visitors, ":cur_entry_point", ":cur_troop", ":used_tier_2_archers"),
+           (val_add, ":cur_entry_point", 1),
+           (val_sub, ":left_tier_2_archers", ":used_tier_2_archers"),
+         (else_try),
+           (gt, ":left_tier_1_archers", 0),
+           (assign, ":used_tier_1_archers", ":num_archers_per_entry_point"),
+           (val_min, ":used_tier_1_archers", ":left_tier_1_archers"),
+           (faction_get_slot, ":cur_troop", ":faction_no", slot_faction_quick_battle_tier_1_archer),
+           (set_visitors, ":cur_entry_point", ":cur_troop", ":used_tier_1_archers"),
+           (val_add, ":cur_entry_point", 1),
+           (val_sub, ":left_tier_1_archers", ":used_tier_1_archers"),
+         (else_try),
+           (assign, ":end_cond", 0),
+         (try_end),
+       (try_end),
+     (try_end),
+     ]),
+
+("let_nearby_parties_join_current_battle",
+    [
+      (store_script_param, ":besiege_mode", 1),
+      (store_script_param, ":dont_add_friends_other_than_accompanying", 2),
+
+      (store_character_level, ":player_level", "trp_player"),
+      (try_for_parties, ":party_no"),
+        (party_is_active, ":party_no"),
+        (party_get_battle_opponent, ":opponent",":party_no"),
+        (lt, ":opponent", 0), #party is not itself involved in a battle
+        (party_get_attached_to, ":attached_to",":party_no"),
+        (lt, ":attached_to", 0), #party is not attached to another party
+        (get_party_ai_behavior, ":behavior", ":party_no"),
+        (neq, ":behavior", ai_bhvr_in_town),
+
+        (party_stack_get_troop_id, ":stack_troop", ":party_no", 0),
+        (party_get_template_id,":template_id",":party_no"),
+        #SB : exclude certain templates, quest, prisoners/routers
+        (neq, ":template_id", "pt_troublesome_bandits"),
+        (neq, ":template_id", "pt_bandits_awaiting_ransom"),
+        (neq, ":template_id", "pt_rescued_prisoners"),
+        (neq, ":template_id", "pt_routed_warriors"),
+
+        (try_begin),
+          (this_or_next|is_between, ":stack_troop", "trp_looter", bandits_end),
+          (is_between, ":template_id", bandit_party_templates_begin, bandit_party_templates_end), #SB : template range
+          (assign, ":is_bandit", 1),
+        (else_try),
+          (assign, ":is_bandit", 0),
+        (try_end),
+        (game_get_reduce_campaign_ai, ":join_sub"), #easier = smaller distance bandits
+        (try_begin),#Native behaviour
+          (eq, "$g_dplmc_terrain_advantage", DPLMC_TERRAIN_ADVANTAGE_DISABLE),
+          (try_begin),
+            (eq, ":is_bandit", 1),
+            (assign, ":join_distance", 5), #day/not bandit
+            (try_begin),
+              (is_currently_night),
+              (assign, ":join_distance", 3), #nigh/not bandit
+            (try_end),
+          (else_try),
+            (assign, ":join_distance", 3), #day/bandit
+            (try_begin),
+              (is_currently_night),
+              (assign, ":join_distance", 2), #night/bandit
+            (try_end),
+          (try_end),
+        (else_try), #SB : new distance calculation, based on spotting
+          (party_get_skill_level, ":join_distance", ":party_no", "skl_spotting"), #Native lords have none
+          (val_div, ":join_distance", 3),
+          (val_add, ":join_distance", 4), #from 4 to 7
+          (try_begin), #global night deduction
+            (is_currently_night),
+            (val_sub, ":join_distance", 2), #night/not bandit
+          (try_end),
+          (try_begin),
+            (eq, ":is_bandit", 1),
+            (val_sub, ":join_distance", 1), #day/bandit, value of 3
+            (val_sub, ":join_distance", ":join_sub"), #can reduce it down to 1 on easy mode
+            (is_currently_night), #night/bandit
+            (val_add, ":join_distance", 1), #less sharp penalty, value of 2
+          (try_end),
+          #booster to patrols etc. that makes up for new base of 4
+          (try_begin),
+            (eq, ":template_id", "pt_patrol_party"),
+            (val_add, ":join_distance", 1), #always true
+            (try_begin),
+              (get_party_ai_object, ":obj", ":party_no"),#just in case
+              (eq, ":behavior", ai_bhvr_escort_party),
+              (eq, ":obj", "p_main_party"),
+              (val_add, ":join_distance", ":join_sub"),#they stray off easily
+            (try_end),
+          # (else_try), #other behaviour score
+            # (eq, ":behavior", ai_bhvr_avoid_party), #fleeing
+            # (val_sub, ":join_distance", 1),
+          (else_try), #representing preparedness to join battle
+            (this_or_next|eq, ":behavior", ai_bhvr_patrol_party),
+            (this_or_next|eq, ":behavior", ai_bhvr_patrol_location),
+            (eq, ":behavior", ai_bhvr_escort_party),
+            (val_add, ":join_distance", 1),
+          (try_end),
+        (try_end),
+
+
+		# #Quest bandits do not join battle
+		# (this_or_next|neg|check_quest_active, "qst_track_down_bandits"),
+			# (neg|quest_slot_eq, "qst_track_down_bandits", slot_quest_target_party, ":party_no"),
+		# (this_or_next|neg|check_quest_active, "qst_troublesome_bandits"),
+			# (neg|quest_slot_eq, "qst_troublesome_bandits", slot_quest_target_party, ":party_no"),
+
+
+
+        (store_distance_to_party_from_party, ":distance", ":party_no", "p_main_party"),
+        (lt, ":distance", ":join_distance"),
+
+        (store_faction_of_party, ":faction_no", ":party_no"),
+        (store_faction_of_party, ":enemy_faction", "$g_enemy_party"),
+        (try_begin),
+          (eq, ":faction_no", "fac_player_supporters_faction"),
+          (assign, ":reln_with_player", 100),
+        (else_try),
+          (store_relation, ":reln_with_player", ":faction_no", "fac_player_supporters_faction"),
+        (try_end),
+        (try_begin),
+          (eq, ":faction_no", ":enemy_faction"),
+          (assign, ":reln_with_enemy", 100),
+        (else_try),
+          (store_relation, ":reln_with_enemy", ":faction_no", ":enemy_faction"),
+        (try_end),
+
+        (assign, ":enemy_side", 1),
+        (try_begin),
+          (neq, "$g_enemy_party", "$g_encountered_party"),
+          (assign, ":enemy_side", 2),
+        (try_end),
+
+        (try_begin),
+          (eq, ":besiege_mode", 0),
+          (lt, ":reln_with_player", 0),
+          (gt, ":reln_with_enemy", 0),
+          ##zerilius changes begin
+          ##wrong use of operation (native bug)
+          #(party_get_slot, ":party_type", ":party_no"),
+          (party_get_slot, ":party_type", ":party_no", slot_party_type),
+          ##zerilius changes end
+
+          (assign, ":enemy_is_bandit_party_and_level_is_greater_than_6", 0),
+          (try_begin), #SB : is_bandit
+            # (party_stack_get_troop_id, ":stack_troop", ":party_no", 0),
+            # (is_between, ":stack_troop", "trp_looter", "trp_black_khergit_horseman"),
+            (eq, ":is_bandit", 1),
+            (gt, ":player_level", 6),
+            (assign, ":enemy_is_bandit_party_and_level_is_greater_than_6", 1),
+          (try_end),
+
+          (this_or_next|eq, ":party_type", spt_kingdom_hero_party),
+          (eq, ":enemy_is_bandit_party_and_level_is_greater_than_6", 1),
+
+          (get_party_ai_behavior, ":ai_bhvr", ":party_no"),
+          (neq, ":ai_bhvr", ai_bhvr_avoid_party),
+          (party_quick_attach_to_current_battle, ":party_no", ":enemy_side"), #attach as enemy
+          (str_store_party_name, s1, ":party_no"),
+          #SB : colorize
+          (display_message, "str_s1_joined_battle_enemy", message_negative),
+        (else_try),
+          (try_begin),
+            (party_slot_eq, ":party_no", slot_party_ai_state, spai_accompanying_army),
+            (party_slot_eq, ":party_no", slot_party_ai_object, "trp_player"),
+            (assign, ":party_is_accompanying_player", 1),
+          (else_try),
+            (assign, ":party_is_accompanying_player", 0),
+          (try_end),
+
+          (this_or_next|eq, ":dont_add_friends_other_than_accompanying", 0),
+          (eq, ":party_is_accompanying_player", 1),
+          (gt, ":reln_with_player", 0),
+          (lt, ":reln_with_enemy", 0),
+
+          (assign, ":following_player", 0),
+          (try_begin),
+            (party_slot_eq, ":party_no", slot_party_ai_state, spai_accompanying_army),
+            (party_slot_eq, ":party_no", slot_party_ai_object, "p_main_party"),
+            (assign, ":following_player", 1),
+          (try_end),
+
+          (assign, ":do_join", 1),
+          (try_begin),
+            (eq, ":besiege_mode", 1),
+            (eq, ":following_player", 0),
+            (assign, ":do_join", 0),
+            (eq, ":faction_no", "$players_kingdom"),
+            (faction_slot_eq, "$players_kingdom", slot_faction_marshall, "trp_player"),
+            (assign, ":do_join", 1),
+          (try_end),
+          (eq, ":do_join", 1),
+
+          ##zerilius changes begin
+          ##wrong use of operation (native bug)
+          #(party_get_slot, ":party_type", ":party_no"),
+          (party_get_slot, ":party_type", ":party_no", slot_party_type),
+          ##zerilius changes end
+          (this_or_next|eq, ":party_type", spt_kingdom_hero_party), #dckplmc
+          (eq, ":template_id", "pt_hero_party"),
+          (party_stack_get_troop_id, ":leader", ":party_no", 0),
+          #(troop_get_slot, ":player_relation", ":leader", slot_troop_player_relation),
+          (call_script, "script_troop_get_player_relation", ":leader"),
+          (assign, ":player_relation", reg0),
+
+          (assign, ":join_even_you_do_not_like_player", 0),
+          (try_begin),
+            (faction_slot_eq, "$players_kingdom", slot_faction_marshall, "trp_player"), #new added, if player is marshal and if he is accompanying then join battle even lord do not like player
+            (eq, ":following_player", 1),
+            (assign, ":join_even_you_do_not_like_player", 1),
+          ##diplomacy start+
+	  #Affiliates will assist the player.
+	   (else_try),
+             (lt, ":player_relation", 0),
+	     (call_script, "script_dplmc_is_affiliated_family_member", ":leader"),
+	     (val_max, ":player_relation", reg0),
+          ##diplomacy end+
+          (try_end),
+
+          (this_or_next|ge, ":player_relation", 0),
+          (eq, ":join_even_you_do_not_like_player", 1),
+
+          (party_quick_attach_to_current_battle, ":party_no", 0), #attach as friend
+          (str_store_party_name, s1, ":party_no"),
+          # ## SB : colorize
+          # (faction_get_color, ":color", ":faction_no"),
+          (display_message, "str_s1_joined_battle_friend", message_positive),
+
+          (troop_get_slot, ":limit", "$g_player_troop", slot_troop_renown),
+          (val_sub, ":limit", dplmc_command_renown_limit),
+          (game_get_reduce_campaign_ai, ":bonus"),
+          (val_mul, ":bonus", "$player_right_to_rule"),
+          (val_add, ":limit", ":bonus"),
+
+          (assign, ":continue", -1), #by default, not under command
+
+          (try_begin), #under command if marshal
+            (eq, ":faction_no", "$players_kingdom"),
+            (troop_slot_eq, ":leader", slot_troop_occupation, slto_kingdom_hero),
+            (try_begin), #as marshal
+               # (is_between, "$players_kingdom", kingdoms_begin, kingdoms_end),
+               # (faction_slot_eq, "$players_kingdom", slot_faction_marshall, "trp_player"),
+               # (assign, ":continue", 0),
+            # (else_try), #as ruler/pretender marshal
+               # (faction_slot_eq, ":party_faction", slot_faction_state, sfs_active),
+               (call_script, "script_dplmc_get_troop_standing_in_faction", "trp_player", ":faction_no"),
+               (ge, reg0, DPLMC_FACTION_STANDING_MARSHALL),
+
+               (display_message, "@marshall {reg0}"),
+               # (this_or_next|faction_slot_eq, ":party_faction", slot_faction_marshall, "trp_player"),
+               # (faction_slot_eq, ":party_faction", slot_faction_leader, "$g_player_troop"),
+               (assign, ":continue", 0),
+            (try_end),
+            (eq, ":continue", -1), #If still not satisfied, check other conditions
+          (else_try), #or high enough renown
+            (troop_slot_eq, ":leader", slot_troop_occupation, slto_kingdom_hero),
+            (troop_get_slot, ":renown", ":leader", slot_troop_renown),
+            (call_script, "script_troop_get_relation_with_troop", ":leader", "$g_player_troop"),
+            (val_sub, ":renown", reg0), #higher relation means less renown needed.
+            (le, ":renown", ":limit"),
+
+            (assign, ":continue", 0),
+          (else_try), #straggler parties - patrols, caravans, etc.
+            (neg|is_between, ":leader", active_npcs_begin, active_npcs_end),
+
+            (assign, ":continue", 0),
+          (try_end),
+          (party_set_slot, ":party_no", slot_party_temp_slot_1, ":continue"),
+          (try_begin),
+            (ge, "$cheat_mode", 1),
+            (assign, reg0, ":continue"),
+            # (str_store_party_name, s0, ":party_no"),
+            (str_store_party_name, s0, ":party_no"),
+            (faction_get_color, ":color", ":faction_no"),
+            (display_message, "@{s0} will {reg0?not :}be under your command", ":color"),
+          (try_end),
+
+        (try_end),
+      (try_end),
+  ]),
+
+("allow_vassals_to_join_indoor_battle",
+    [
+     #if our commander attacks an enemy army
+     ##diplomacy start+ Support promoted kingdom ladies
+     #(try_for_range, ":troop_no", active_npcs_begin, active_npcs_end),
+     (try_for_range, ":troop_no", heroes_begin, heroes_end),
+     ##diplomacy end+
+       (troop_slot_eq, ":troop_no", slot_troop_occupation, slto_kingdom_hero),
+       (neg|troop_slot_ge, ":troop_no", slot_troop_prisoner_of_party, 0),
+       (troop_get_slot, ":party_no", ":troop_no", slot_troop_leaded_party),
+       (gt, ":party_no", 0),
+       (party_is_active, ":party_no"),
+
+       (party_get_attached_to, ":party_is_attached_to", ":party_no"),
+       (lt, ":party_is_attached_to", 0),
+
+       (store_troop_faction, ":faction_no", ":troop_no"),
+
+       (try_begin),
+         #(faction_slot_eq, ":faction_no", slot_faction_ai_state, sfai_attacking_enemies_around_center),
+         (party_slot_eq, ":party_no", slot_party_ai_state, spai_accompanying_army),
+         (party_get_slot, ":commander_party", ":party_no", slot_party_ai_object),
+         (gt, ":commander_party", 0),
+         (party_is_active, ":commander_party"),
+
+         (assign, ":besieged_center", -1),
+         (try_begin),
+           (party_slot_eq, ":commander_party", slot_party_ai_state, spai_holding_center), #if commander is holding a center
+           (party_get_slot, ":commander_object", ":commander_party", slot_party_ai_object), #get commander's ai object (center they are holding)
+           (party_get_battle_opponent, ":besieger_enemy", ":commander_object"), #get this object's battle opponent
+           (party_is_active, ":besieger_enemy"),
+           (assign, ":besieged_center", ":commander_object"),
+           (assign, ":commander_object", ":besieger_enemy"),
+         (else_try),
+           (party_slot_eq, ":commander_party", slot_party_ai_state, spai_engaging_army), #if commander is engaging an army
+           (party_get_slot, ":commander_object", ":commander_party", slot_party_ai_object), #get commander's ai object (army which they engaded)
+           (ge, ":commander_object", 0), #if commander has an object
+           (neg|is_between, ":commander_object", centers_begin, centers_end), #if this object is not a center, so it is a party
+           (party_is_active, ":commander_object"),
+           (party_get_battle_opponent, ":besieged_center", ":commander_object"), #get this object's battle opponent
+         (else_try),
+           (assign, ":besieged_center", -1),
+         (try_end),
+
+         (is_between, ":besieged_center", walled_centers_begin, walled_centers_end), #if battle opponent of our commander's ai object is a walled center
+
+         (party_get_attached_to, ":attached_to_party", ":commander_party"), #if commander is attached to besieged center already.
+         (eq, ":attached_to_party", ":besieged_center"),
+
+         (store_faction_of_party, ":besieged_center_faction", ":besieged_center"),#get (battle opponent of our commander's ai object)'s faction
+         (eq, ":besieged_center_faction", ":faction_no"), #if battle opponent of our commander's ai object is from same faction with current party
+         (party_is_active, ":commander_object"),
+         #make also follow_or_not check if needed
+
+         (call_script, "script_party_set_ai_state", ":party_no", spai_engaging_army, ":commander_object"), #go and help commander
+
+         (try_begin),
+           (eq, "$cheat_mode", 1),
+           (str_store_party_name, s7, ":party_no"),
+           (str_store_party_name, s6, ":commander_object"),
+           (display_message, "@{!}DEBUG : {s7} is helping his commander by fighting with {s6}."),
+         (try_end),
+       (else_try),
+         #(faction_slot_eq, ":faction_no", slot_faction_ai_state, sfai_attacking_center),
+
+         (party_slot_eq, ":party_no", slot_party_ai_state, spai_accompanying_army),
+         (party_get_slot, ":commander_party", ":party_no", slot_party_ai_object),
+         (gt, ":commander_party", 0),
+         (party_is_active, ":commander_party"),
+
+         (party_get_battle_opponent, ":besieged_center", ":commander_party"), #get this object's battle opponent
+
+         #make also follow_or_not check if needed
+
+         (is_between, ":besieged_center", walled_centers_begin, walled_centers_end), #if this object is a center
+         (party_get_attached_to, ":attached_to_party", ":party_no"),
+         (neq, ":attached_to_party", ":besieged_center"),
+         (party_is_active, ":besieged_center"),
+
+         (call_script, "script_party_set_ai_state", ":party_no", spai_engaging_army, ":besieged_center"), #go and help commander
+
+         #(try_begin),
+         #  (eq, "$cheat_mode", 1),
+         #  (str_store_party_name, s7, ":party_no"),
+         #  (str_store_party_name, s6, ":besieged_center"),
+         #  (display_message, "@{!}DEBUG : {s7} is helping his commander by attacking {s6}."),
+         #(try_end),
+
+         #(party_set_ai_behavior, ":party_no", ai_bhvr_attack_party),
+         #(party_set_ai_object, ":party_no", ":besieged_center"),
+         #(party_set_flags, ":party_no", pf_default_behavior, 1), #is these needed?
+         #(party_set_slot, ":party_no", slot_party_ai_substate, 1), #is these needed?
+       (try_end),
+     (try_end),
+     ]),
+
+("check_friendly_kills",
+    [(get_player_agent_own_troop_kill_count, ":count"),
+     (try_begin),
+       (neq, "$g_player_current_own_troop_kills", ":count"),
+       (val_sub, ":count", "$g_player_current_own_troop_kills"),
+       (val_add, "$g_player_current_own_troop_kills", ":count"),
+       (val_mul, ":count", -1),
+       (call_script, "script_change_player_party_morale", ":count"),
+     (try_end),
+   ]),
+
+("cf_troop_check_troop_is_enemy",
+    [
+      (store_script_param_1, ":troop_no"),
+      (store_script_param_2, ":checked_troop_no"),
+	  (call_script, "script_troop_get_relation_with_troop", ":troop_no", ":checked_troop_no"),
+	  (lt, reg0, -10),
+ ]),
+
+("agent_reassign_team",
+    [
+      (store_script_param, ":agent_no", 1),
+      (get_player_agent_no, ":player_agent"),
+      (try_begin),
+        (ge, ":player_agent", 0),
+        (agent_is_human, ":agent_no"),
+        (agent_is_ally, ":agent_no"),
+        (agent_get_party_id, ":party_no", ":agent_no"),
+        #SB : pre-process this instead of calculating per agent
+        (party_slot_eq, ":party_no", slot_party_temp_slot_1, -1),
+        # (neq, ":party_no", "p_main_party"),
+        # (assign, ":continue", 1),
+        # (store_faction_of_party, ":party_faction", ":party_no"),
+        # (try_begin),
+          # (eq, ":party_faction", "$players_kingdom"),
+          # (is_between, "$players_kingdom", kingdoms_begin, kingdoms_end),
+          # (faction_slot_eq, "$players_kingdom", slot_faction_marshall, "trp_player"),
+          # (assign, ":continue", 0),
+        # (else_try),
+          # (party_stack_get_troop_id, ":leader_troop_id", ":party_no", 0),
+          # (neg|is_between, ":leader_troop_id", active_npcs_begin, active_npcs_end),
+          # (assign, ":continue", 0),
+        # (try_end),
+        # (eq, ":continue", 1),
+        (agent_get_team, ":player_team", ":player_agent"),
+        (val_add, ":player_team", 2),
+        (agent_set_team, ":agent_no", ":player_team"),
+      (try_end),
+      ]),
+
+("count_mission_casualties_from_agents",
+    [(party_clear, "p_player_casualties"),
+     (party_clear, "p_enemy_casualties"),
+     (party_clear, "p_ally_casualties"),
+     (assign, "$any_allies_at_the_last_battle", 0),
+     #(assign, "$num_routed_us", 0), #these should not assign to 0 here to protect routed agents to spawn again in next turns.
+     #(assign, "$num_routed_allies", 0),
+     #(assign, "$num_routed_enemies", 0),
+
+     #initialize all routed counts of troops
+     (try_for_agents, ":cur_agent"),
+       (agent_is_human, ":cur_agent"),
+       (agent_get_party_id, ":agent_party", ":cur_agent"),
+       (agent_get_troop_id, ":agent_troop_id", ":cur_agent"),
+       (troop_set_slot, ":agent_troop_id", slot_troop_player_routed_agents, 0),
+       (troop_set_slot, ":agent_troop_id", slot_troop_ally_routed_agents, 0),
+       (troop_set_slot, ":agent_troop_id", slot_troop_enemy_routed_agents, 0),
+     (try_end),
+
+     (try_for_agents, ":cur_agent"),
+       (agent_is_human, ":cur_agent"),
+       (agent_get_party_id, ":agent_party", ":cur_agent"),
+       (try_begin),
+         (neq, ":agent_party", "p_main_party"),
+         (agent_is_ally, ":cur_agent"),
+         (assign, "$any_allies_at_the_last_battle", 1),
+       (try_end),
+       #count routed agents in player party, ally parties and enemy parties
+       (try_begin),
+         #(agent_is_routed, ":cur_agent"), #dckplmc
+         (assign, ":continue", 0),
+         (agent_get_slot, ":agent_was_running_away", ":cur_agent", slot_agent_is_running_away),
+         (try_begin),
+             (agent_is_routed, ":cur_agent"),
+             (eq, ":agent_was_running_away", 1),
+             (assign, ":continue", 1),
+         (else_try),
+            (agent_is_alive, ":cur_agent"),
+            (eq, ":agent_was_running_away", 1),
+            (assign, ":continue", 1),
+         (try_end),
+         (eq, ":continue", 1),
+         (try_begin),
+           (agent_get_troop_id, ":routed_ag_troop_id", ":cur_agent"),
+           (agent_get_party_id, ":routed_ag_party_id", ":cur_agent"),
+           #only enemies
+           #only regulars
+
+           (try_begin),
+             (eq, ":agent_party", "p_main_party"),
+             (val_add, "$num_routed_us", 1),
+           (else_try),
+             (agent_is_ally, ":cur_agent"),
+             (val_add, "$num_routed_allies", 1),
+           (else_try),
+             #for now only count and include routed enemy agents in new routed party.
+             (val_add, "$num_routed_enemies", 1),
+
+             (gt, ":routed_ag_party_id", -1),
+             (store_faction_of_party, ":faction_of_routed_agent_party", ":routed_ag_party_id"),
+
+             (faction_get_slot, ":num_routed_agents_in_this_faction", ":faction_of_routed_agent_party", slot_faction_num_routed_agents),
+             (val_add, ":num_routed_agents_in_this_faction", 1),
+             (faction_set_slot, ":faction_of_routed_agent_party", slot_faction_num_routed_agents, ":num_routed_agents_in_this_faction"),
+             (party_add_members, "p_routed_enemies", ":routed_ag_troop_id", 1),
+           (try_end),
+         (try_end),
+         (agent_get_troop_id, ":agent_troop_id", ":cur_agent"),
+         (try_begin),
+           (eq, ":agent_party", "p_main_party"),
+           (troop_get_slot, ":player_routed_agents", ":agent_troop_id", slot_troop_player_routed_agents),
+           (val_add, ":player_routed_agents", 1),
+           (troop_set_slot, ":agent_troop_id", slot_troop_player_routed_agents, ":player_routed_agents"),
+
+         (else_try),
+           (agent_is_ally, ":cur_agent"),
+           (troop_get_slot, ":ally_routed_agents", ":agent_troop_id", slot_troop_ally_routed_agents),
+           (val_add, ":ally_routed_agents", 1),
+           (troop_set_slot, ":agent_troop_id", slot_troop_ally_routed_agents, ":ally_routed_agents"),
+
+         (else_try),
+           (troop_get_slot, ":enemy_routed_agents", ":agent_troop_id", slot_troop_enemy_routed_agents),
+           (val_add, ":enemy_routed_agents", 1),
+           (troop_set_slot, ":agent_troop_id", slot_troop_enemy_routed_agents, ":enemy_routed_agents"),
+
+         (try_end),
+       (try_end),
+       #count and save killed agents in player party, ally parties and enemy parties
+       (assign, ":continue", 0),
+       (agent_get_slot, ":agent_was_running_away", ":cur_agent", slot_agent_is_running_away),
+       (try_begin),
+         (neg|agent_is_alive, ":cur_agent"),
+         (assign, ":continue", 1),
+       (else_try),
+        (eq, ":agent_was_running_away", 1),
+        (assign, ":continue", 1),
+       (try_end),
+       (eq, ":continue", 1),
+       #(neg|agent_is_alive, ":cur_agent"),
+       (agent_get_troop_id, ":agent_troop_id", ":cur_agent"),
+       (try_begin),
+         (eq, ":agent_party", "p_main_party"),
+         (party_add_members, "p_player_casualties", ":agent_troop_id", 1),
+         (try_begin),
+           (agent_is_wounded, ":cur_agent"),
+           (party_wound_members, "p_player_casualties", ":agent_troop_id", 1),
+         (try_end),
+       (else_try),
+         (agent_is_ally, ":cur_agent"),
+         (party_add_members, "p_ally_casualties", ":agent_troop_id", 1),
+         (try_begin),
+           (agent_is_wounded, ":cur_agent"),
+           (party_wound_members, "p_ally_casualties", ":agent_troop_id", 1),
+         (try_end),
+       (else_try),
+         (party_add_members, "p_enemy_casualties", ":agent_troop_id", 1),
+         (try_begin),
+           (agent_is_wounded, ":cur_agent"),
+           (party_wound_members, "p_enemy_casualties", ":agent_troop_id", 1),
+         (try_end),
+       (try_end),
+     (try_end),
+     ]),
+
+("event_player_defeated_enemy_party",
+    [(try_begin),
+       (check_quest_active, "qst_raid_caravan_to_start_war"),
+       (neg|check_quest_concluded, "qst_raid_caravan_to_start_war"),
+       (party_slot_eq, "$g_enemy_party", slot_party_type, spt_kingdom_caravan),
+       (store_faction_of_party, ":enemy_faction", "$g_enemy_party"),
+       (quest_slot_eq, "qst_raid_caravan_to_start_war", slot_quest_target_faction, ":enemy_faction"),
+       (quest_get_slot, ":cur_state", "qst_raid_caravan_to_start_war", slot_quest_current_state),
+       (quest_get_slot, ":quest_target_amount", "qst_raid_caravan_to_start_war", slot_quest_target_amount),
+       (val_add, ":cur_state", 1),
+       (quest_set_slot, "qst_raid_caravan_to_start_war", slot_quest_current_state, ":cur_state"),
+       (try_begin),
+         (ge, ":cur_state", ":quest_target_amount"),
+         (quest_get_slot, ":quest_target_faction", "qst_raid_caravan_to_start_war", slot_quest_target_faction),
+         (quest_get_slot, ":quest_giver_troop", "qst_raid_caravan_to_start_war", slot_quest_giver_troop),
+         (store_troop_faction, ":quest_giver_faction", ":quest_giver_troop"),
+         (call_script, "script_diplomacy_start_war_between_kingdoms", ":quest_target_faction", ":quest_giver_faction", 1),
+         (call_script, "script_succeed_quest", "qst_raid_caravan_to_start_war"),
+       (try_end),
+     (try_end),
+
+     ]),
+
+("neutral_behavior_in_fight",
+	[
+      (get_player_agent_no, ":player_agent"),
+      (agent_get_position, pos3, ":player_agent"),
+      (agent_get_team, ":player_team", ":player_agent"),
+
+      (try_begin),
+        (gt, "$g_main_attacker_agent", 0),
+        (agent_get_team, ":attacker_team_no", "$g_main_attacker_agent"),
+        (agent_get_position, pos5, "$g_main_attacker_agent"),
+      (else_try),
+        (eq, ":attacker_team_no", -1),
+        (agent_get_position, pos5, ":player_agent"),
+      (try_end),
+
+      (set_fixed_point_multiplier, 100),
+
+      (try_for_agents, ":agent"),
+        (agent_get_team, ":other_team", ":agent"),
+        (neq, ":other_team", ":attacker_team_no"),
+        (neq, ":other_team", ":player_team"),
+
+        (agent_get_troop_id, ":troop_id", ":agent"),
+        #SB : better range checks
+        (this_or_next|eq, ":troop_id", "trp_farmer"), #farmers are "neutral"
+        (neg|is_between, ":troop_id", soldiers_begin, soldiers_end), #but lie within this range
+        (troop_slot_eq, ":troop_id", slot_troop_mission_participation, mp_unaware), #neutral prisoners?
+
+        (agent_get_position, pos4, ":agent"),
+
+        (assign, ":best_position_score", 0),
+        (assign, ":best_position", -1),
+
+        (try_begin),
+          (neg|agent_slot_eq, ":agent", slot_agent_is_running_away, 0), #if agent is running away
+          (agent_get_slot, ":target_entry_point_plus_one",  ":agent", slot_agent_is_running_away),
+          (store_sub, ":target_entry_point", ":target_entry_point_plus_one", 1),
+          (entry_point_get_position, pos6, ":target_entry_point"),
+          (get_distance_between_positions, ":agent_distance_to_target", pos6, pos4),
+          (lt, ":agent_distance_to_target", 100),
+          (agent_set_slot, ":agent", slot_agent_is_running_away, 0),
+        (try_end),
+
+        (agent_slot_eq, ":agent", slot_agent_is_running_away, 0), #if agent is not already running away
+
+        (try_begin), #stand in place
+          (get_distance_between_positions, ":distance", pos4, pos5),
+          (get_distance_between_positions, ":distance_to_player", pos4, pos3),
+
+          (val_min, ":distance", ":distance_to_player"),
+
+          (this_or_next|gt, ":distance", 700), #7 meters away from main belligerents
+          (main_hero_fallen),
+
+          (agent_set_scripted_destination, ":agent", pos4),
+        (else_try), #get out of the way
+          (try_for_range, ":target_entry_point", 0, 64),
+            (neg|entry_point_is_auto_generated, ":target_entry_point"),
+            (entry_point_get_position, pos6, ":target_entry_point"),
+            (get_distance_between_positions, ":agent_distance_to_target", pos6, pos4),
+            (get_distance_between_positions, ":player_distance_to_target", pos6, pos3),
+            (store_sub, ":position_score", ":player_distance_to_target", ":agent_distance_to_target"),
+            (ge, ":position_score", 0),
+            (try_begin),
+              (ge, ":agent_distance_to_target", 2000),
+              (store_sub, ":extra_distance", ":agent_distance_to_target", 2000),
+              (val_min, ":extra_distance", 1000),
+              (val_min, ":agent_distance_to_target", 2000), #if more than 10 meters assume it is 10 meters far while calculating best run away target
+              (val_sub, ":agent_distance_to_target", ":extra_distance"),
+            (try_end),
+            (val_mul, ":position_score", ":agent_distance_to_target"),
+            (try_begin),
+              (ge, ":position_score", ":best_position_score"),
+              (assign, ":best_position_score", ":position_score"),
+              (assign, ":best_position", ":target_entry_point"),
+            (try_end),
+          (try_end),
+
+          (try_begin),
+            (ge, ":best_position", 0),
+            (entry_point_get_position, pos6, ":best_position"),
+            (agent_set_speed_limit, ":agent", 10),
+            (agent_set_scripted_destination, ":agent", pos6),
+            (store_add, ":best_position_plus_one", ":best_position", 1),
+            (agent_set_slot, ":agent", slot_agent_is_running_away, ":best_position_plus_one"),
+          (try_end),
+        (try_end),
+	  (try_end),
+	]),
+
+("set_up_duel_with_troop", #now the setup is handled through the menu
+	[
+	  (store_script_param, "$g_duel_troop", 1),
+      #SB : change by parameter instead of always one
+	  (store_script_param, "$g_start_arena_fight_at_nearest_town", 2),
+	  (store_faction_of_troop, ":troop_faction", "$g_duel_troop"),
+	  (try_begin),
+	    (eq, "$g_start_arena_fight_at_nearest_town", 1),
+        # (assign, ":closest_town", -1),
+        (assign, ":minimum_dist", 500),
+        (try_for_range, ":cur_town", walled_centers_begin, walled_centers_end),
+          (store_distance_to_party_from_party, ":dist", ":cur_town", "$g_encountered_party"),
+          (lt, ":dist", ":minimum_dist"),
+          #make sure it's at least neutral, so we don't fight in an enemy town's arena
+          (store_faction_of_party, ":center_faction", ":cur_town"),
+          (store_relation, ":relation", ":troop_faction", ":center_faction"),
+          (ge, ":relation", 0),
+          (assign, ":minimum_dist", ":dist"),
+          (assign, "$g_start_arena_fight_at_nearest_town", ":cur_town"),
+        (try_end),
+	  (try_end),
+	  (unlock_achievement, ACHIEVEMENT_PUGNACIOUS_D),
+      (jump_to_menu, "mnu_arena_duel_fight"),
+	  (finish_mission),
+
+	]),
+
+("setup_camera_keys", [
+
+      # (assign, "$g_dplmc_cam_default", camera_keyboard),
+      # (assign, "$g_camera_up", key_w),
+      # (assign, "$g_camera_down", key_s),
+      # (assign, "$g_camera_left", key_a),
+      # (assign, "$g_camera_right", key_d),
+
+      #default custom commander y/z offsets
+      (call_script, "script_setup_camera_offset"),
+      #these will be retained after being changed inside missions
+
+      #deathcam
+      (assign, "$g_cam_tilt_left", key_numpad_1),
+      (assign, "$g_cam_tilt_right", key_numpad_3),
+
+      (assign, "$g_camera_adjust_add", key_numpad_plus),
+      (assign, "$g_camera_adjust_sub", key_numpad_minus),
+
+      #normally numpad swaps equipment, but we're dead so w/e
+      (assign, "$g_camera_rot_up", key_numpad_8),
+      (assign, "$g_camera_rot_down", key_numpad_2),
+      (assign, "$g_camera_rot_left", key_numpad_4),
+      (assign, "$g_camera_rot_right", key_numpad_6),
+    ]),
+
+("setup_camera_offset",
+      [
+      (assign, "$g_camera_z", 200),
+      (assign, "$g_camera_y", -175),
+      (assign, "$g_camera_rotate_x", 0),
+      (assign, "$g_camera_rotate_y", 0),
+      (assign, "$g_camera_rotate_z", 0),
+
+      ]),
+
+("init_death_cam",
+      [
+        (assign, "$deathcam_mouse_last_x", 5000),
+        (assign, "$deathcam_mouse_last_y", 3750),
+        (assign, "$deathcam_mouse_last_notmoved_x", 5000),
+        (assign, "$deathcam_mouse_last_notmoved_y", 3750),
+        (assign, "$deathcam_mouse_notmoved_x", 5000), #Center screen (10k fixed pos)
+        (assign, "$deathcam_mouse_notmoved_y", 3750),
+        (assign, "$deathcam_mouse_notmoved_counter", 0),
+
+        (assign, "$deathcam_total_rotx", 0),
+
+        (assign, "$deathcam_sensitivity_x", 200), #4:3 ratio may be best
+        (assign, "$deathcam_sensitivity_y", 150), #If modified, change values in common_move_deathcam
+
+        (assign, "$deathcam_prsnt_was_active", 0),
+
+        (assign, "$deathcam_keyboard_rotation_x", 0),
+        (assign, "$deathcam_keyboard_rotation_y", 0),
+
+        (assign, "$g_dplmc_cam_activated", 0),
+        (assign, "$dmod_current_agent", -1),
+        # check if keys are not set/invalid
+        (try_begin),
+          (neg|is_between, "$g_dplmc_cam_default", camera_keyboard, camera_follow + 1),
+          (call_script, "script_setup_camera_keys"),
+          (assign, "$g_dplmc_cam_default", camera_keyboard),
+        (try_end),
+
+        (get_player_agent_no, "$g_player_agent"),
+        (agent_get_team, "$g_player_team", "$g_player_agent"),
+      ]),
+
+("cf_cancel_camera_keys", [
+      (this_or_next|game_key_is_down, gk_view_char),
+      (this_or_next|game_key_is_down, gk_zoom),
+      (game_key_is_down, gk_cam_toggle),
+      (mission_cam_set_mode, 0),
+    ]),
+
+("dmod_closest_agent", [
+          (assign, ":cur_agent", -1),
+          (assign, ":distance", 999999),
+          (mission_cam_get_position, pos11),
+          (position_set_z_to_ground_level, pos11),
+          (try_for_agents, ":agent_no"),
+            (agent_is_human, ":agent_no"),
+            (agent_is_alive, ":agent_no"),
+            (agent_is_ally, ":agent_no"),
+            #position on the ground
+            (agent_get_position, pos13, ":agent_no"),
+            # (position_get_screen_projection, pos14, pos13),
+            # (get_distance_between_positions, ":cur_distance", pos12, pos14),
+            (get_distance_between_positions, ":cur_distance", pos11, pos13),
+            (lt, ":cur_distance", ":distance"),
+            (assign, ":distance", ":cur_distance"),
+            (assign, ":cur_agent", ":agent_no"),
+          (try_end),
+          (try_begin),
+            (neq, ":cur_agent", 1),
+            (assign, "$dmod_current_agent", ":cur_agent"),
+            (str_store_agent_name, 1, "$dmod_current_agent"),
+            (display_message, "@Selected Troop: {s1}"),
+          (try_end),
+
+      ]
+    ),
+
+("dmod_cycle_forwards",[
+
+         (assign, ":agent_moved", 0),
+         (assign, ":first_agent", -1),
+         # (get_player_agent_no, ":player_agent"),
+         # (agent_get_team, ":player_team", ":player_agent"),
+
+        (try_for_agents, ":agent_no"),
+            (neq, ":agent_moved", 1),
+            (neq, ":agent_no", "$g_player_agent"),
+            (agent_is_human, ":agent_no"),
+            (agent_is_alive, ":agent_no"),
+            (agent_is_ally, ":agent_no"),
+            # (agent_get_team, ":cur_team", ":agent_no"),
+            # (this_or_next|eq, ":cur_team", 5), #bodyguards
+            # (eq, ":cur_team", ":player_team"),
+            (try_begin),
+              (lt, ":first_agent", 0),
+              (assign, ":first_agent", ":agent_no"),
+            (try_end),
+            (gt, ":agent_no", "$dmod_current_agent"),
+            (assign, "$dmod_current_agent", ":agent_no"),
+            (assign, ":agent_moved", 1),
+        (try_end),
+
+        (try_begin),
+            (eq, ":agent_moved", 0),
+            (neq, ":first_agent", -1),
+            (assign, "$dmod_current_agent", ":first_agent"),
+            (assign, ":agent_moved", 1),
+        (else_try),
+            (eq, ":agent_moved", 0),
+            (eq, ":first_agent", -1),
+            (display_message, "@No Troops Left."),
+        (try_end),
+
+        (try_begin),
+            (eq, ":agent_moved", 1),
+            (str_store_agent_name, s1, "$dmod_current_agent"),
+            (display_message, "@Selected Troop: {s1}"),
+        (try_end),
+      #(assign, "$dmod_move_camera", 1),
+      ]),
+
+("dmod_cycle_backwards",[
+
+        (assign, ":new_agent", -1),
+        (assign, ":last_agent", -1),
+        # (get_player_agent_no, ":player_agent"),
+        # (agent_get_team, ":player_team", ":player_agent"),
+
+        (try_for_agents, ":agent_no"),
+            (neq, ":agent_no", "$g_player_agent"),
+            (agent_is_human, ":agent_no"),
+            (agent_is_alive, ":agent_no"),
+            (agent_is_ally, ":agent_no"),
+        # (agent_get_team, ":cur_team", ":agent_no"),
+        # (this_or_next|eq, ":cur_team", 5), #bodyguards
+        # (eq, ":cur_team", ":player_team"),
+            (assign, ":last_agent", ":agent_no"),
+            (lt, ":agent_no", "$dmod_current_agent"),
+            (assign, ":new_agent", ":agent_no"),
+        (try_end),
+
+        (try_begin),
+            (eq, ":new_agent", -1),
+            (neq, ":last_agent", -1),
+            (assign, ":new_agent", ":last_agent"),
+        (else_try),
+            (eq, ":new_agent", -1),
+            (eq, ":last_agent", -1),
+            (display_message, "@No Troops Left."),
+        (try_end),
+
+        (try_begin),
+            (neq, ":new_agent", -1),
+            (assign, "$dmod_current_agent", ":new_agent"),
+            (str_store_agent_name, 1, "$dmod_current_agent"),
+            (display_message, "@Selected Troop: {s1}"),
+        (try_end),
+      ]),
+
+("game_missile_dives_into_water", [
+	# (store_script_param, ":launcher_item_modifier", 4),
+	# (store_script_param, ":shooter_agent_no", 5),
+	# (store_script_param, ":missile_no", 6),
+
+    (play_sound_at_position, "snd_jump_end_water", pos1),
+    (particle_system_burst, "psys_game_water_splash_2", pos1, 40),
+
+]),
+
+("all_enemies_routed", [
+  (assign, ":enemies_remaining", 0),
+  (try_for_agents, ":agent"),
+    (neg|agent_is_ally, ":agent"),
+    (agent_is_alive, ":agent"),
+    (agent_is_human, ":agent"),
+    (agent_get_slot, ":routing", ":agent", slot_agent_is_running_away),
+    (eq, ":routing", 0),
+    (val_add, ":enemies_remaining", 1),
+  (try_end),
+  (assign, reg10, ":enemies_remaining"),
+]),
+
+("cf_calculate_battle_ratio",
+		[
+			#bugfix; prevents earlier scripts from enforcing
+			#fixed_point_* operations
+			#(set_fixed_point_multiplier, 1),
+
+			(assign, "$battle_ratio", 0),
+
+			(assign, "$j_num_us_ready", 0),
+			(assign, "$j_num_us_wounded", 0),
+			(assign, "$j_num_us_routed", 0),
+			(assign, "$j_num_us_dead", 0),
+
+			(assign, "$j_num_allies_ready", 0),
+			(assign, "$j_num_allies_wounded", 0),
+			(assign, "$j_num_allies_routed", 0),
+			(assign, "$j_num_allies_dead", 0),
+
+			(assign, "$j_num_enemies_ready", 0),
+			(assign, "$j_num_enemies_wounded", 0),
+			(assign, "$j_num_enemies_routed", 0),
+			(assign, "$j_num_enemies_dead", 0),
+
+			#count and categorize agents (me, ally, enemy/wounded, dead, routed, alive)
+			(try_for_agents, ":cur_agent"),
+			  (agent_is_human, ":cur_agent"),
+			  (agent_get_party_id, ":agent_party", ":cur_agent"),
+			  (try_begin),
+				(eq, ":agent_party", "p_main_party"),
+				(try_begin),
+				  (agent_is_alive, ":cur_agent"),
+				  (val_add, "$j_num_us_ready", 1),
+				(else_try),
+				  (agent_is_wounded, ":cur_agent"),
+				  (val_add, "$j_num_us_wounded", 1),
+				(else_try),
+				  (agent_is_routed, ":cur_agent"),
+				  (val_add, "$j_num_us_routed", 1),
+				(else_try),
+				  (val_add, "$j_num_us_dead", 1),
+				(try_end),
+			  (else_try),
+				(agent_is_ally, ":cur_agent"),
+				(try_begin),
+				  (agent_is_alive, ":cur_agent"),
+				  (val_add, "$j_num_allies_ready", 1),
+				(else_try),
+				  (agent_is_wounded, ":cur_agent"),
+				  (val_add, "$j_num_allies_wounded", 1),
+				(else_try),
+				  (agent_is_routed, ":cur_agent"),
+				  (val_add, "$j_num_allies_routed", 1),
+				(else_try),
+				  (val_add, "$j_num_allies_dead", 1),
+				(try_end),
+			  (else_try),
+				(try_begin),
+				  (agent_is_alive, ":cur_agent"),
+				  (val_add, "$j_num_enemies_ready", 1),
+				(else_try),
+				  (agent_is_wounded, ":cur_agent"),
+				  (val_add, "$j_num_enemies_wounded", 1),
+				(else_try),
+				  (agent_is_routed, ":cur_agent"),
+				  (val_add, "$j_num_enemies_routed", 1),
+				(else_try),
+				  (val_add, "$j_num_enemies_dead", 1),
+				(try_end),
+			  (try_end),
+			(try_end),
+
+			#don't think I need these
+			# (assign, ":ratio", 0),
+			# (assign, ":ratio_3", 0),
+			# (assign, ":difference", 0),
+			# (assign, ":enemy_sqrt", 0),
+			# (assign, ":ally_sqrt", 0),
+
+			# ALLY STRENGTH
+			(assign, ":ally_strength", 1),
+			(val_add, ":ally_strength", "$j_num_enemies_routed"),
+			(val_add, ":ally_strength", "$j_num_enemies_dead"),
+			(val_add, ":ally_strength", "$j_num_enemies_wounded"),
+			#ready is counted three times
+			(val_add, ":ally_strength", "$j_num_us_ready"),
+			(val_add, ":ally_strength", "$j_num_us_ready"),
+			(val_add, ":ally_strength", "$j_num_us_ready"),
+			(val_add, ":ally_strength", "$j_num_allies_ready"),
+			(val_add, ":ally_strength", "$j_num_allies_ready"),
+			(val_add, ":ally_strength", "$j_num_allies_ready"),
+
+			# ENEMY STRENGTH
+			(assign, ":enemy_strength", 1),
+			(val_add, ":enemy_strength", "$j_num_us_dead"),
+			(val_add, ":enemy_strength", "$j_num_us_wounded"),
+			(val_add, ":enemy_strength", "$j_num_us_routed"),
+			(val_add, ":enemy_strength", "$j_num_allies_dead"),
+			(val_add, ":enemy_strength", "$j_num_allies_wounded"),
+			(val_add, ":enemy_strength", "$j_num_allies_routed"),
+			#ready is counted three times
+			(val_add, ":enemy_strength", "$j_num_enemies_ready"),
+			(val_add, ":enemy_strength", "$j_num_enemies_ready"),
+			(val_add, ":enemy_strength", "$j_num_enemies_ready"),
+
+			#(A*10/E)
+			#10/1 ratio = 10,000 morale penalty
+			(store_mul, ":enemy_value", ":enemy_strength", battle_ratio_multiple),
+			(val_div, ":enemy_value", ":ally_strength"),
+
+			#(E*10/A)
+			(store_mul, ":ally_value", ":ally_strength", battle_ratio_multiple),
+			(val_div, ":ally_value", ":enemy_strength"),
+
+			#if enemy value is greater, use negative of that.
+			(try_begin),
+				(gt, ":enemy_value", ":ally_value"),
+				(val_sub, ":enemy_value", battle_ratio_multiple),
+				(store_sub, ":enemy_value", 0, ":enemy_value"),
+				(assign, "$battle_ratio", ":enemy_value"),
+			(else_try),
+				(val_sub, ":ally_value", battle_ratio_multiple),
+				(assign, "$battle_ratio", ":ally_value"),
+			(try_end),
+
+			#(val_clamp, "$battle_ratio", -max_ratio, max_ratio),
+
+			# (assign, reg2, ":enemy_value"),
+			# (assign, reg1, ":ally_value"),
+
+			#(assign, reg0, "$battle_ratio"),
+			#(display_message, "@Battle Ratio:{reg0}"),
+
+
+			#(sqrt A - sqrt E)^3 + (A-E) (unused)
+
+				#(sqrt A - sqrt E)^3
+				# (store_sqrt, ":enemy_sqrt", ":enemy_strength"),
+				# (store_sqrt, ":ally_sqrt", ":ally_strength"),
+				# (store_sub, ":ratio", ":ally_sqrt", ":enemy_sqrt"),
+				# #I get the feeling store_pow doesn't work or is deprecated in some way; keep getting weird results
+				# #perhaps use cumbersome approach instead:
+				# (store_pow, ":ratio_3", ":ratio", 3),
+				# # (store_mul, ":ratio_3", ":ratio", ":ratio"), #squared
+				# # (val_mul, ":ratio_3", ":ratio"), #cubed
+
+				# #(A-E)
+				# (store_sub, ":difference", ":ally_strength", ":enemy_strength"),
+
+			# (store_add, "$battle_ratio", ":difference", ":ratio_3"),
+			# (val_mul, "$battle_ratio", 10),
+			# (val_mul, "$battle_ratio", 10),
+
+		#housekeeping BEGIN
+			# (assign, reg2, "$battle_ratio"),
+			# (assign, reg3, ":ally_strength"),
+			# (assign, reg4, ":enemy_strength"),
+			# (display_message, "@{reg3}/{reg4}={reg2}"),
+
+			#find average morale for each side
+			# (assign, ":enemy_morale", 1),
+			# (assign, ":ally_morale", 1),
+			# (assign, ":ally_amount", 1),
+
+			#store morale for all troops
+			# (try_for_agents,":cur_agent"),
+				# (agent_is_human, ":cur_agent"),
+				# (agent_is_alive, ":cur_agent"),
+				# (agent_get_slot, ":agent_courage_score", ":cur_agent", slot_agent_courage_score),
+				# (try_begin),
+					# (agent_is_ally, ":cur_agent"),
+					# (val_add, ":ally_morale", ":agent_courage_score"),
+				# (else_try),
+					# (val_add, ":enemy_morale", ":agent_courage_score"),
+				# (try_end),
+			# (try_end),
+
+			# (store_add, ":ally_amount", "$j_num_us_ready", "$j_num_allies_ready"),
+
+			# (store_div, reg6, ":ally_morale", ":ally_amount"),
+			# (store_div, reg7, ":enemy_morale", "$j_num_enemies_ready"),
+			# (display_message, "@Morale: {reg6}/{reg7}"),
+
+			#check that fixed_point_whatever or something else isn't screwing me over
+			#answer: it is, and tends to fluctuate
+			# (store_sqrt, ":four", 16),
+			# (assign, reg5, ":four"),
+			# (display_message, "@the square root of sixteen is {reg5}"),
+		#housekeeping END
+
+			#100-10	= ~400
+			#100-30	= ~150
+			#100-50	= ~75
+
+			#50-10	= ~100
+			#50-30	= ~25
+			#50-40	= ~10
+		]
+	),
+
+("cf_agent_can_rout", [
+	(store_script_param, ":agent", 1),
+
+	(try_begin),
+		(agent_is_ally, ":agent"),
+		#count ready allies
+		(assign, ":ready", "$j_num_us_ready"),
+		(val_add, ":ready", "$j_num_allies_ready"),
+
+		#count deady allies
+		(store_add, ":deady", "$j_num_us_wounded", "$j_num_us_routed"),
+		(val_add, ":deady", "$j_num_us_dead"),
+		(val_add, ":deady", "$j_num_allies_wounded"),
+		(val_add, ":deady", "$j_num_allies_routed"),
+		(val_add, ":deady", "$j_num_allies_dead"),
+		(val_mul, ":deady", 10),
+	(else_try),
+		#count ready enemies
+		(assign, ":ready", "$j_num_enemies_ready"),
+
+		#count deady enemies
+		(store_add, ":deady", "$j_num_enemies_wounded", "$j_num_enemies_routed"),
+		(val_add, ":deady", "$j_num_enemies_dead"),
+		(val_mul, ":deady", 10),
+	(try_end),
+	# (display_message, "@agents cannot rout"),
+	(gt, ":deady", ":ready"),
+	# (display_message, "@agents can rout"),
+]),
+
+("setup_camp_scene",
+    [
+      (party_get_current_terrain, ":terrain_type", "p_main_party"),
+      (assign, ":scene_to_use", "scn_camp_scene_plain"),
+      (try_begin),
+        (this_or_next|eq, ":terrain_type", rt_steppe),
+        (eq, ":terrain_type", rt_steppe_forest),
+        (assign, ":scene_to_use", "scn_camp_scene_steppe"),
+      (else_try),
+        (this_or_next|eq, ":terrain_type", rt_plain),
+        (eq, ":terrain_type", rt_forest),
+        (assign, ":scene_to_use", "scn_camp_scene_plain"),
+      (else_try),
+        (this_or_next|eq, ":terrain_type", rt_snow),
+        (eq, ":terrain_type", rt_snow_forest),
+        (assign, ":scene_to_use", "scn_camp_scene_snow"),
+      (else_try),
+        (this_or_next|eq, ":terrain_type", rt_desert),
+        (eq, ":terrain_type", rt_desert_forest),
+        (assign, ":scene_to_use", "scn_camp_scene_desert"),
+      (else_try),
+        (this_or_next|eq, ":terrain_type", rt_river),
+        (eq, ":terrain_type", rt_water), #figure this out later
+        (assign, ":scene_to_use", "scn_sea_1"),
+
+        (party_get_slot, ":ship_type", "p_main_party", slot_party_ship_type),
+        (try_begin),
+          (eq, ":ship_type", 1),
+          (assign, ":scene_to_use", "scn_sea_1"),
+        (else_try),
+          (eq, ":ship_type", 2),
+          (assign, ":scene_to_use", "scn_sea_2"),
+        (else_try),
+          (eq, ":ship_type", 3),
+          (assign, ":scene_to_use", "scn_sea_3"),
+        (else_try),
+          (eq, ":ship_type", 4),
+          (assign, ":scene_to_use", "scn_sea_4"),
+        (try_end),
+
+       (try_for_range, ":entry_no", 33, 40),
+         (mission_tpl_entry_set_override_flags, "mt_camp", ":entry_no", af_override_horse),
+       (try_end),
+
+      (else_try),
+        (eq, ":terrain_type", rt_bridge),
+		(try_for_parties, ":party_no"),
+			(is_between, ":party_no", "p_bridge_1", "p_looter_spawn_point"),
+			(store_distance_to_party_from_party, ":distance", ":party_no", "p_main_party"),
+			(lt, ":distance", 2),
+			(party_get_icon, ":icon", ":party_no"),
+			(try_begin),
+				(eq, ":icon", "icon_bridge_snow_a"),
+				(assign, ":scene_to_use", "scn_camp_scene_snow"),
+			(else_try),
+				(assign, ":scene_to_use", "scn_camp_scene_plain"),
+			(try_end),
+		(try_end),
+      (try_end),
+	  (modify_visitors_at_site, ":scene_to_use"),
+	  (reset_visitors),
+	# (set_visitor,1,"trp_follower_woman"),
+
+	(assign, ":cur_entry", 2),
+
+    (assign, ":entry_1_assigned", 0),
+
+    (troop_get_slot, ":spouse", "trp_player", slot_troop_spouse),
+
+   (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
+   (try_for_range, ":troop_iterator", 0, ":num_stacks"), #1st pass: grab all heroes
+	 (party_stack_get_troop_id, ":cur_troop_id", "p_main_party", ":troop_iterator"),
+	 (troop_is_hero, ":cur_troop_id"),
+	 (neq, ":cur_troop_id", "trp_player"),
+	 (try_begin),
+		(ge, ":cur_entry", 40),
+		(assign, ":num_stacks", -1), #break the loop
+	 (else_try),
+         (eq, ":cur_troop_id", ":spouse"),
+		 (set_visitor, 1, ":cur_troop_id"), #is spouse
+         (assign, ":entry_1_assigned", 1),
+	 (else_try),
+		 (set_visitor, ":cur_entry", ":cur_troop_id"),
+		 (val_add, ":cur_entry", 1),
+	 (try_end),
+   (try_end),
+
+   #2nd pass: get anyone else
+   (try_for_range, ":troop_iterator", 0, ":num_stacks"),
+	 (party_stack_get_troop_id, ":cur_troop_id", "p_main_party", ":troop_iterator"),
+	 (neq, ":cur_troop_id", "trp_player"),
+	 (neg|troop_is_hero, ":cur_troop_id"),
+	 (try_begin),
+		(ge, ":cur_entry", 40),
+		(assign, ":num_stacks", -1), #break the loop
+	 (else_try),
+		 (party_stack_get_size, ":stack_size","p_main_party",":troop_iterator"),
+		 (party_stack_get_num_wounded, ":num_wounded","p_main_party",":troop_iterator"),
+		 (val_sub, ":stack_size", ":num_wounded"),
+		 (gt, ":stack_size", 0),
+		 (try_for_range, ":stack_iterator", 0, ":stack_size"), #nested loop ayy lmao
+			 (try_begin),
+				(ge, ":cur_entry", 40),
+				(assign, ":stack_size", -1), #break the loop
+             (else_try),
+                 (neq, ":entry_1_assigned", 1),
+                 (this_or_next|eq, ":cur_troop_id", "trp_prostitute"),
+                 (eq, ":cur_troop_id", "trp_courtesan"),
+                 (set_visitor, 1, ":cur_troop_id"),
+                 (assign, ":entry_1_assigned", 1),
+			 (else_try),
+				 (store_random_in_range,":troop_dna",0,1000),
+				 (set_visitor, ":cur_entry", ":cur_troop_id", ":troop_dna"),
+                 (troop_set_slot, "trp_temp_array_c", ":cur_entry", ":troop_dna"),
+				 (val_add, ":cur_entry", 1),
+			 (try_end),
+		 (try_end),
+	  (try_end),
+   (try_end),
+
+	#prisoners
+	(assign, ":cur_entry", 40),
+	(party_get_num_prisoner_stacks, ":prisoner_stacks","p_main_party"),
+    (try_for_range, ":troop_iterator", 0, ":prisoner_stacks"), #1st pass: grab all heroes
+	 (party_prisoner_stack_get_troop_id, ":cur_troop_id", "p_main_party", ":troop_iterator"),
+	 (troop_is_hero, ":cur_troop_id"),
+	 (neq, ":cur_troop_id", "trp_player"),
+	 (try_begin),
+		(ge, ":cur_entry", 48),
+		(assign, ":troop_iterator", ":prisoner_stacks"), #break the loop
+	 (else_try),
+		 (set_visitor, ":cur_entry", ":cur_troop_id"),
+		 (store_add, ":cur_entry", ":cur_entry", 1),
+	 (try_end),
+   (try_end),
+
+   #2nd pass: get anyone else
+   (party_get_num_prisoner_stacks, ":prisoner_stacks","p_main_party"),
+   (try_for_range, ":troop_iterator", 0, ":prisoner_stacks"),
+	 (party_prisoner_stack_get_troop_id, ":cur_troop_id", "p_main_party", ":troop_iterator"),
+	 (neg|troop_is_hero, ":cur_troop_id"),
+	 (try_begin),
+		(ge, ":cur_entry", 48),
+		(assign, ":troop_iterator", ":num_stacks"), #break the loop
+	 (else_try),
+		 (party_prisoner_stack_get_size, ":stack_size","p_main_party",":troop_iterator"),
+		 (gt, ":stack_size", 0),
+		 (try_for_range, ":stack_iterator", 0, ":stack_size"), #nested loop ayy lmao
+			 (try_begin),
+				(ge, ":cur_entry", 48),
+				(assign, ":stack_size", -1), #break the loop
+			 (else_try),
+				 (store_random_in_range,":troop_dna",0,1000),
+				 (set_visitor, ":cur_entry", ":cur_troop_id", ":troop_dna"),
+                 (troop_set_slot, "trp_temp_array_c", ":cur_entry", ":troop_dna"),
+				 (val_add, ":cur_entry", 1),
+			 (try_end),
+		 (try_end),
+	  (try_end),
+   (try_end),
+
+	(mission_tpl_entry_clear_override_items,"mt_camp",1),
+	(store_random_in_range,":r",0,2),
+	(try_begin),
+		(eq,":r",0),
+		(mission_tpl_entry_add_override_item,"mt_camp",1,"itm_lute"),
+	(else_try),
+		(mission_tpl_entry_add_override_item,"mt_camp",1,"itm_lyre"),
+	(try_end),
+
+	  (assign, "$talk_context", tc_camp_talk),
+      (jump_to_scene,":scene_to_use"),
+  ]),
+
+("cf_count_casualties", [
+      (assign, ":num_casualties", 0),
+      (try_for_agents,":cur_agent"),
+        (try_begin),
+          (this_or_next | agent_is_wounded, ":cur_agent"),
+          (this_or_next | agent_slot_eq, ":cur_agent", slot_agent_is_running_away, 1),
+          (neg | agent_is_alive, ":cur_agent"),
+          (val_add, ":num_casualties", 1),
+        (try_end),
+      (try_end),
+      (assign, reg0, ":num_casualties"),
+      (gt, ":num_casualties", 0)]),
+
+("cf_any_fighting", [
+      (assign, ":any_fighting", 0),
+      (try_for_range, ":team", 0, 4),
+        (team_slot_ge, ":team", slot_team_size, 1),
+        (eq, ":any_fighting", 0),
+        (assign, ":num_divs", 9),
+        (try_for_range, ":division", 0, ":num_divs"),
+          (store_add, ":slot", slot_team_d0_is_fighting, ":division"),
+          (team_slot_ge, ":team", ":slot", 1),
+          (assign, ":any_fighting", 1),
+          (assign, ":num_divs", 0),
+        (try_end),
+      (try_end),
+
+      #lag this check to be sure
+      (store_mission_timer_c, ":time_stamp"),
+      (try_begin),	#time lag
+        (gt, ":any_fighting", 0),
+        (assign, "$teams_last_fighting", ":time_stamp"),
+      (try_end),
+      (assign, ":fighting_finished", formation_reform_interval),
+      (val_max, ":fighting_finished", 5),
+      (val_add, ":fighting_finished", "$teams_last_fighting"),
+      (gt, ":fighting_finished", ":time_stamp"),]),
 ]

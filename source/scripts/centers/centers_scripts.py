@@ -7902,4 +7902,1411 @@ centers_scripts = [
   ),
 
     #script_cf_has_companion_emissary for diplomatic options
+
+(
+	"find_total_prosperity_score",
+	[
+	  (store_script_param, ":center_no", 1),
+
+      (try_begin), #":total_prosperity_score" changes between 10..100
+        (is_between, ":center_no", walled_centers_begin, walled_centers_end),
+
+        (party_get_slot, ":center_prosperity", ":center_no", slot_town_prosperity),
+        (store_add, ":center_prosperity_add_200_div_10", ":center_prosperity", 200),
+        (val_div, ":center_prosperity_add_200_div_10", 10),
+        (try_begin),
+          (is_between, ":center_no", towns_begin, towns_end),
+          (store_mul, ":this_center_score", ":center_prosperity_add_200_div_10", 15),
+        (else_try),
+          (store_mul, ":this_center_score", ":center_prosperity_add_200_div_10", 5),
+        (try_end),
+        (assign, ":total_prosperity_score", ":this_center_score"),
+
+        (try_for_range_backwards, ":village_no", villages_begin, villages_end),
+          (party_slot_eq, ":village_no", slot_village_bound_center, ":center_no"),
+
+          (party_get_slot, ":village_prosperity", ":village_no", slot_town_prosperity),
+          (store_add, ":village_prosperity_add_200_div_10", ":village_prosperity", 200),
+          (val_div, ":village_prosperity_add_200_div_10", 10),
+          (store_mul, ":this_village_score", ":village_prosperity_add_200_div_10", 5),
+
+          (val_add, ":total_prosperity_score", ":this_village_score"),
+        (try_end),
+      (else_try),
+        (party_get_slot, ":center_prosperity", ":center_no", slot_town_prosperity),
+        (store_add, ":center_prosperity_add_200_div_10", ":center_prosperity", 200),
+        (val_div, ":center_prosperity_add_200_div_10", 10),
+        (store_mul, ":this_center_score", ":center_prosperity_add_200_div_10", 5),
+        (assign, ":total_prosperity_score", ":this_center_score"),
+      (try_end),
+      (val_div, ":total_prosperity_score", 10),
+
+      (assign, reg0, ":total_prosperity_score"),
+	]),
+
+(
+    "calculate_center_assailability_score",
+    [
+      (store_script_param, ":troop_no", 1),
+      (store_script_param, ":potential_target", 2),
+      (store_script_param, ":all_vassals_included", 3),
+
+      (assign, ":target_score", -1),
+
+      (store_faction_of_troop, ":faction_no", ":troop_no"),
+
+      (store_current_hours, ":hours_since_last_offensive"),
+      (faction_get_slot, ":last_offensive_time", ":faction_no", slot_faction_last_offensive_concluded),
+      (val_sub, ":hours_since_last_offensive", ":last_offensive_time"),
+
+      (store_div, ":last_offensive_time_score", ":hours_since_last_offensive", 12), #30..50
+      (val_add, ":last_offensive_time_score", 30),
+      (val_min, ":last_offensive_time_score", 100),
+
+      (faction_get_slot, ":faction_marshal", ":faction_no", slot_faction_marshall),
+
+      (assign, ":marshal_party", -1),
+      (assign, ":marshal_strength", 0),
+      #(assign, ":strength_of_nearby_friend", 0),
+
+      (try_begin),
+        (gt, ":faction_marshal", 0),
+        (troop_get_slot, ":marshal_party", ":faction_marshal", slot_troop_leaded_party),
+        (party_is_active, ":marshal_party"),
+        (party_get_slot, ":marshal_strength", ":marshal_party", slot_party_cached_strength),
+        #(eq, ":all_vassals_included", 0),
+        (party_get_slot, ":strength_of_current_followers", ":marshal_party", slot_party_follower_strength),
+        #(party_get_slot, ":strength_of_nearby_friend", ":marshal_party", slot_party_nearby_friend_strength),
+      (try_end),
+
+      #(try_begin),
+      #  (eq, ":all_vassals_included", 0),
+      #
+      #  (try_begin),
+      #    (gt, ":faction_marshal", 0),
+      #    (troop_get_slot, ":marshal_party", ":faction_marshal", slot_troop_leaded_party),
+      #    (party_is_active, ":marshal_party"),
+      #    (party_get_slot, ":strength_of_potential_followers", ":marshal_party", slot_party_follower_strength),
+      #  (try_end),
+      #(else_try),
+      #  (eq, ":all_vassals_included", 1),
+      #
+      #  (assign, ":strength_of_potential_followers", 0),
+      #
+      #  (try_for_parties, ":party_no"),
+      #    (store_faction_of_party, ":party_faction", ":party_no"),
+      #    (eq, ":party_faction", ":faction_no"),
+      #    (neq, ":party_no", ":marshal_party"),
+      #    (party_slot_eq, ":party_no", slot_party_type, spt_kingdom_hero_party),
+      #    (call_script, "script_party_calculate_strength", ":party_no", 0),
+      #    (val_add, ":strength_of_potential_followers", reg0),
+      #  (try_end),
+      #
+      #  (val_div, ":strength_of_potential_followers", 2), #Ozan - Think about this, will you divide strength_of_potential_followers to 3 or 2.5 or 2
+      #(else_try),
+      #  (assign, ":strength_of_potential_followers", 0),
+      #(try_end),
+
+      (faction_get_slot, ":last_attacked_center", ":faction_no", slot_faction_last_attacked_center),
+      (faction_get_slot, ":last_attacked_hours", ":faction_no", slot_faction_last_attacked_hours),
+
+      (try_begin),
+        (store_current_hours, ":hours"),
+        (store_add, ":last_attacked_hours_plus_24", ":last_attacked_hours", 24),
+        (gt, ":hours", ":last_attacked_hours_plus_24"),
+        (faction_set_slot, ":faction_no", slot_faction_last_attacked_center, 0),
+        (assign, ":last_attacked_center", 0),
+      (try_end),
+
+      (try_begin),
+        (this_or_next|eq, ":last_attacked_center", 0),
+        (this_or_next|eq, ":last_attacked_center", ":potential_target"),
+        (this_or_next|eq, "$g_do_not_skip_other_than_current_ai_object", 1),
+        (neg|faction_slot_eq, ":faction_no", slot_faction_marshall, ":troop_no"),
+
+        (party_is_active, ":potential_target"),
+        (store_faction_of_party, ":potential_target_faction", ":potential_target"),
+
+        (store_relation, ":relation", ":potential_target_faction", ":faction_no"),
+        (lt, ":relation", 0),
+
+        #attack if and only if we are already besieging that center or anybody do not making besiege.
+        (assign, ":faction_of_besieger_party", -1),
+        (try_begin),
+          (is_between, ":potential_target", walled_centers_begin, walled_centers_end),
+          (neg|party_slot_eq, ":potential_target", slot_center_is_besieged_by, -1),
+          (party_get_slot, ":besieger_party", ":potential_target", slot_center_is_besieged_by),
+          (party_is_active, ":besieger_party"),
+          (store_faction_of_party, ":faction_of_besieger_party", ":besieger_party"),
+        (try_end),
+
+        (this_or_next|eq, ":faction_of_besieger_party", -1),
+        (eq, ":faction_of_besieger_party", ":faction_no"),
+
+        #attack if and only if this center is not a village or if it is village it should not be raided or looted
+        (assign, ":village_is_looted_or_raided_already", 0),
+        (try_begin),
+          (is_between, ":potential_target", villages_begin, villages_end),
+          (try_begin),
+            (party_slot_eq, ":potential_target", slot_village_state, svs_being_raided),
+            (party_get_slot, ":raider_party", ":potential_target", slot_village_raided_by),
+			(party_is_active, ":raider_party"),
+
+            (store_faction_of_party, ":raider_faction", ":raider_party"),
+            (neq, ":raider_faction", ":faction_no"),
+            (assign, ":raiding_by_one_other_faction", 1),
+          (else_try),
+            (assign, ":raiding_by_one_other_faction", 0),
+          (try_end),
+          (this_or_next|party_slot_eq, ":potential_target", slot_village_state, svs_looted),
+          (eq, ":raiding_by_one_other_faction", 1),
+          (assign, ":village_is_looted_or_raided_already", 1),
+        (try_end),
+        (eq, ":village_is_looted_or_raided_already", 0),
+
+        #if ":potential_target" is faction object of some other faction which is enemy to owner of
+        #":potential_target" then this target cannot be new target we are looking for.
+        (assign, ":this_potantial_target_is_target_of_some_other_faction", 0),
+        (try_for_range, ":cur_faction", kingdoms_begin, kingdoms_end),
+          (is_between, ":cur_faction", "fac_kingdom_1", kingdoms_end), #Excluding player kingdom
+          (neq, ":cur_faction", ":faction_no"),
+          (faction_get_slot, ":faction_object", ":cur_faction", slot_faction_ai_object),
+          (eq, ":faction_object", ":potential_target"),
+          (store_relation, ":rel", ":potential_target_faction", ":cur_faction"),
+          (lt, ":rel", 0),
+          (assign, ":this_potantial_target_is_target_of_some_other_faction", 1),
+        (try_end),
+        (eq, ":this_potantial_target_is_target_of_some_other_faction", 0),
+
+        (try_begin),
+          (is_between, ":potential_target", walled_centers_begin, walled_centers_end),
+          (party_get_slot, ":potential_target_inside_strength", ":potential_target", slot_party_cached_strength),
+          (party_get_slot, ":potential_target_nearby_enemy_strength", ":potential_target", slot_party_nearby_friend_strength),
+          (val_div, ":potential_target_nearby_enemy_strength", 2),
+          (store_add, ":potential_target_strength", ":potential_target_inside_strength", ":potential_target_nearby_enemy_strength"),
+
+          #(try_begin),
+            #(eq, ":faction_no", "fac_kingdom_4"),
+            #(assign, reg0, ":potential_target_inside_strength"),
+            #(assign, reg1, ":potential_target_nearby_enemy_strength"),
+            #(assign, reg2, ":marshal_strength"),
+            #(assign, reg3, ":strength_of_potential_followers"),
+            #(assign, reg4, ":strength_of_nearby_friend"),
+            #(assign, reg6, ":marshal_party"),
+            #(str_store_party_name, s8, ":potential_target"),
+            #(eq, ":all_vassals_included", 0),
+            #(display_message, "@DEBUG : {s8}:{reg0}, neare {reg1}, our {reg2}, follow {reg3}, nearf {reg4}"),
+          #(try_end),
+
+          (val_mul, ":potential_target_strength", 4), #in walled centers defenders have advantage.
+          (val_div, ":potential_target_strength", 3),
+
+          #(store_add, ":army_strength", ":marshal_strength", ":strength_of_potential_followers"),
+          (assign, ":army_strength", ":marshal_strength"),
+          (val_add, ":army_strength", ":strength_of_current_followers"),
+          (store_mul, ":power_ratio", ":army_strength", 100),
+
+          #this ratio ":power_ratio" shows (our total army power) / (their total army power)
+          (try_begin),
+            (gt, ":potential_target_strength", 0),
+            (val_div, ":power_ratio", ":potential_target_strength"),
+          (else_try),
+            (assign, ":power_ratio", 1000),
+          (try_end),
+        (else_try),
+          (party_get_slot, ":potential_target_nearby_enemy_strength", ":potential_target", slot_party_nearby_friend_strength),
+          (assign, ":potential_target_strength", 1000),
+
+          #(store_add, ":army_strength", ":marshal_strength", ":strength_of_potential_followers"),
+          (assign, ":army_strength", ":marshal_strength"),
+          (val_add, ":army_strength", ":strength_of_current_followers"),
+          (store_mul, ":power_ratio", ":army_strength", 100),
+
+          (try_begin),
+            (gt, ":potential_target_strength", 0),
+            (val_div, ":power_ratio", ":potential_target_strength"),
+          (else_try),
+            (assign, ":power_ratio", 1000),
+          (try_end),
+        (try_end),
+
+        (ge, ":power_ratio", 120), #attack if and only if our army is at least 1.2 times powerfull
+        (store_sub, ":power_ratio_sub_120", ":power_ratio", 120),
+
+        (try_begin),
+          (lt, ":power_ratio_sub_120", 100), #changes between 20..120
+          (store_add, ":power_ratio_score", ":power_ratio_sub_120", 20),
+        (else_try),
+          (lt, ":power_ratio_sub_120", 200), #changes between 120..170
+          (store_sub, ":power_ratio_score", ":power_ratio_sub_120", 100),
+          (val_div, ":power_ratio_score", 2),
+          (val_add, ":power_ratio_score", 120),
+        (else_try),
+          (lt, ":power_ratio_sub_120", 400), #changes between 170..210
+          (store_sub, ":power_ratio_score", ":power_ratio_sub_120", 200),
+          (val_div, ":power_ratio_score", 5),
+          (val_add, ":power_ratio_score", 170),
+        (else_try),
+          (lt, ":power_ratio_sub_120", 800), #changes between 210..250
+          (store_sub, ":power_ratio_score", ":power_ratio_sub_120", 400),
+          (val_div, ":power_ratio_score", 10),
+          (val_add, ":power_ratio_score", 210),
+        (else_try),
+          (assign, ":power_ratio_score", 250),
+        (try_end),
+
+        (assign, ":number_of_walled_centers", 0),
+        (assign, ":total_distance", 0),
+        (try_for_range, ":walled_center", walled_centers_begin, walled_centers_end),
+          (store_faction_of_party, ":walled_center_faction", ":walled_center"),
+          (eq, ":walled_center_faction", ":faction_no"),
+
+          (store_distance_to_party_from_party, ":dist", ":walled_center", ":potential_target"),
+          (val_add, ":total_distance", ":dist"),
+
+          (val_add, ":number_of_walled_centers", 1),
+        (try_end),
+
+        (try_begin),
+          (gt, ":number_of_walled_centers", 0),
+          (store_div, ":average_distance", ":total_distance", ":number_of_walled_centers"),
+          #(assign, reg0, ":average_distance"),
+          #(str_store_faction_name, s7, ":faction_no"),
+          #(str_store_party_name, s8, ":potential_target"),
+          #(display_message, "@average distance for {s7} for {s8} is {reg0}"),
+
+          (try_begin),
+            (ge, ":marshal_party", 0),
+            (party_is_active, ":marshal_party"),
+            (store_distance_to_party_from_party, ":marshal_dist_to_potential_target", ":marshal_party", ":potential_target"),
+          (else_try),
+            (assign, ":marshal_dist_to_potential_target", 100),
+          (try_end),
+
+          (try_begin),
+            #if currently main aim of our faction is attacking to an enemy center and that center is already besieged/raided by one of
+            #our parties then divide marshal_dist_to_potential_target_div_x score for current center to "3/2" instead of "3" and this
+            #result in decrease at distance_score, and also decrease some scores from power_ratio_score in order to avoid frequently
+            #changes at main aimed target city of our faction during sieges.
+
+            (faction_get_slot, ":current_ai_state", ":faction_no", slot_faction_ai_state),
+            (eq, ":current_ai_state", sfai_attacking_center),
+            (faction_get_slot, ":current_ai_object", ":faction_no", slot_faction_ai_object),
+
+            (ge, ":current_ai_object", 0),
+            (neq, ":current_ai_object", ":potential_target"),
+
+            (try_begin),
+              (ge, ":power_ratio_score", 300), #200 max
+              (assign, ":power_ratio_score", 200),
+            (else_try),
+              (ge, ":power_ratio_score", 100), #100..200
+              (val_sub, ":power_ratio_score", 100),
+              (val_div, ":power_ratio_score", 2),
+              (val_add, ":power_ratio_score", 100),
+            (try_end),
+
+            (try_begin),
+              (faction_slot_eq, ":faction_no", slot_faction_marshall, ":troop_no"),
+              (eq, "$g_do_not_skip_other_than_current_ai_object", 0),
+              (assign, ":power_ratio_score", 0), #lets completely forget all other choices if we are already besieging one center.
+            (try_end),
+
+            (faction_set_slot, ":faction_no", slot_faction_last_attacked_center, ":current_ai_object"),
+            (store_current_hours, ":hours"),
+            (faction_set_slot, ":faction_no", slot_faction_last_attacked_hours, ":hours"),
+
+            (eq, ":all_vassals_included", 0),
+
+            (store_mul, ":marshal_dist_to_potential_target_div_x", ":marshal_dist_to_potential_target", 2),
+            (val_div, ":marshal_dist_to_potential_target_div_x", 3),
+          (else_try),
+            (store_div, ":marshal_dist_to_potential_target_div_x", ":marshal_dist_to_potential_target", 3),
+          (try_end),
+
+          (store_add, ":total_distance", ":average_distance", ":marshal_dist_to_potential_target_div_x"), #in average ":total_distance" is about 150, min : 0, max : 1000
+        (else_try),
+          (assign, ":total_distance", 100),
+        (try_end),
+
+        (try_begin),
+          #according to cautious troop distance is more important
+          ##diplomacy start+ Take into account lady & companion personality types
+		  ##OLD:
+	      #(this_or_next|troop_slot_eq, ":troop_no", slot_lord_reputation_type, lrep_upstanding),
+	      #(this_or_next|troop_slot_eq, ":troop_no", slot_lord_reputation_type, lrep_debauched),
+	      #(this_or_next|troop_slot_eq, ":troop_no", slot_lord_reputation_type, lrep_goodnatured),
+	      #(troop_slot_eq, ":troop_no", slot_lord_reputation_type, lrep_cunning),
+		  #
+		  ##NEW:
+		  (call_script, "script_dplmc_store_troop_personality_caution_level", ":troop_no"),
+		  (assign, ":troop_caution", reg0),
+		  (gt, ":troop_caution", 0),
+		  ##diplomacy end+
+
+          (try_begin),
+            (lt, ":total_distance", 30), #very close (100p)
+            (assign, ":distance_score", 100),
+          (else_try),
+            (lt, ":total_distance", 80), #close (50p-100p)
+            (store_sub, ":distance_score", ":total_distance", 30),
+            (val_div, ":distance_score", 1),
+            (store_sub, ":distance_score", 100, ":distance_score"),
+          (else_try),
+            (lt, ":total_distance", 160), #far (10p-50p)
+            (store_sub, ":distance_score", ":total_distance", 80),
+            (val_div, ":distance_score", 2),
+            (store_sub, ":distance_score", 50, ":distance_score"),
+          (else_try),
+            (assign, ":distance_score", 10), #very far
+          (try_end),
+        (else_try),
+          #according to agressive troop distance is less important
+
+          (try_begin),
+            (lt, ":total_distance", 40), #very close (100p)
+            (assign, ":distance_score", 100),
+          (else_try),
+            (lt, ":total_distance", 140), #close (50p-100p)
+            (store_sub, ":distance_score", ":total_distance", 40),
+            (val_div, ":distance_score", 2),
+            (store_sub, ":distance_score", 100, ":distance_score"),
+          (else_try),
+            (lt, ":total_distance", 300), #far (10p-50p)
+            (store_sub, ":distance_score", ":total_distance", 140),
+            (val_div, ":distance_score", 4),
+            (store_sub, ":distance_score", 50, ":distance_score"),
+          (else_try),
+            (assign, ":distance_score", 10), #very far
+          (try_end),
+        (try_end),
+		##diplomacy start+ If AI changes are enabled, reduce distance penalty (increase score)
+		##for recently-lost fiefs.
+		(try_begin),
+			(lt, ":distance_score", 100),
+			(ge, "$g_dplmc_ai_changes", DPLMC_AI_CHANGES_LOW),
+			(party_slot_eq, ":potential_target", slot_center_ex_faction, ":faction_no"),
+			(party_get_slot, reg0, ":potential_target", dplmc_slot_center_last_transfer_time),
+			(gt, reg0, 0),#0 means the slot was uninitialized.  A negative number would be before the start of the game.
+			(store_current_hours, ":hours_since_transfer"),
+			(val_sub, ":hours_since_transfer", reg0),
+			(try_begin),
+				(ge, "$g_dplmc_ai_changes", DPLMC_AI_CHANGES_HIGH),
+				(assign, reg0, 24 * 21),#within last three weeks
+			(else_try),
+				(ge, "$g_dplmc_ai_changes", DPLMC_AI_CHANGES_MEDIUM),
+				(assign, reg0, 24 * 14),#within last two weeks
+			(else_try),
+				(assign, reg0, 24 * 7),#within last week
+			(try_end),
+			(lt, ":hours_since_transfer", reg0),
+			(val_add, ":distance_score", 100),
+			(val_div, ":distance_score", 2),
+		(try_end),
+		##diplomacy end+
+
+        (store_mul, ":target_score", ":distance_score", ":power_ratio_score"),
+        (val_mul, ":target_score", ":last_offensive_time_score"),
+        (val_div, ":target_score", 100), #target score is between 0..10000 generally here
+
+        (call_script, "script_find_total_prosperity_score", ":potential_target"),
+        (assign, ":total_prosperity_score", reg0),
+
+        #(try_begin), #new for increase attackability of villages by ai
+          #(is_between, ":potential_target", villages_begin, villages_end),
+          (val_mul, ":total_prosperity_score", 3),
+          (val_div, ":total_prosperity_score", 2),
+        #(try_end),
+
+        (val_mul, ":target_score", ":total_prosperity_score"),
+
+        (try_begin), #if both that center was our (original center) and (ex center) than bonus is 1.2x
+          (party_slot_eq, ":potential_target", slot_center_ex_faction, ":faction_no"),
+          (party_slot_eq, ":potential_target", slot_center_original_faction, ":faction_no"),
+          (val_mul, ":target_score", 12),
+          (val_div, ":target_score", 10),
+        (else_try), #if either that center was our (original center) or (ex center) than bonus is 1.1x
+          (this_or_next|party_slot_eq, ":potential_target", slot_center_ex_faction, ":faction_no"),
+          (party_slot_eq, ":potential_target", slot_center_original_faction, ":faction_no"),
+          (val_mul, ":target_score", 11),
+          (val_div, ":target_score", 10),
+        (try_end),
+
+        (val_div, ":target_score", 1000), #target score is between 0..1000 generally here
+
+        (try_begin),
+          (eq, ":potential_target_faction", "fac_player_supporters_faction"),
+          (game_get_reduce_campaign_ai, ":reduce_campaign_ai"),
+
+          (assign, ":number_of_walled_centers_player_have", 0),
+          (try_for_range, ":center_no", walled_centers_begin, walled_centers_end),
+            (store_faction_of_party, ":center_faction", ":center_no"),
+            (eq, ":center_faction", "fac_player_supporters_faction"),
+            (val_add, ":number_of_walled_centers_player_have", 1),
+          (try_end),
+
+          (try_begin),
+            (eq, ":reduce_campaign_ai", 2), #easy
+
+            (try_begin),
+              (le, ":number_of_walled_centers_player_have", 2),
+              (assign, ":hardness_score", 0),
+            (else_try),
+              (eq, ":number_of_walled_centers_player_have", 3),
+              (assign, ":hardness_score", 20),
+            (else_try),
+              (eq, ":number_of_walled_centers_player_have", 4),
+              (assign, ":hardness_score", 40),
+            (else_try),
+              (eq, ":number_of_walled_centers_player_have", 5),
+              (eq, ":number_of_walled_centers_player_have", 6),
+              (assign, ":hardness_score", 55),
+            (else_try),
+              (eq, ":number_of_walled_centers_player_have", 7),
+              (eq, ":number_of_walled_centers_player_have", 8),
+              (eq, ":number_of_walled_centers_player_have", 9),
+              (assign, ":hardness_score", 70),
+            (else_try),
+              (assign, ":hardness_score", 85),
+            (try_end),
+          (else_try),
+            (eq, ":reduce_campaign_ai", 1), #medium
+
+            (try_begin),
+              (le, ":number_of_walled_centers_player_have", 1),
+              (assign, ":hardness_score", 25),
+            (else_try),
+              (eq, ":number_of_walled_centers_player_have", 2),
+              (assign, ":hardness_score", 45),
+            (else_try),
+              (eq, ":number_of_walled_centers_player_have", 3),
+              (assign, ":hardness_score", 60),
+            (else_try),
+              (eq, ":number_of_walled_centers_player_have", 4),
+              (eq, ":number_of_walled_centers_player_have", 5),
+              (assign, ":hardness_score", 75),
+            (else_try),
+              (eq, ":number_of_walled_centers_player_have", 6),
+              (eq, ":number_of_walled_centers_player_have", 7),
+              (eq, ":number_of_walled_centers_player_have", 8),
+              (assign, ":hardness_score", 85),
+            (else_try),
+              (assign, ":hardness_score", 92),
+            (try_end),
+          (else_try), #hard
+            (assign, ":hardness_score", 100),
+          (try_end),
+
+          (val_mul, ":target_score", ":hardness_score"),
+          (val_div, ":target_score", 100),
+        (try_end),
+
+        (try_begin),
+          (ge, "$cheat_mode", 1),
+          (eq, ":faction_no", "fac_kingdom_4"),
+          (ge, ":target_score", -1),
+          (assign, reg0, ":target_score"),
+          (assign, reg7, ":total_prosperity_score"),
+          (assign, reg8, ":power_ratio_score"),
+          (assign, reg9, ":distance_score"),
+          (assign, reg10, ":last_offensive_time_score"),
+          (str_store_party_name, s8, ":potential_target"),
+          #(eq, ":all_vassals_included", 0),
+          (assign, reg11, ":all_vassals_included"),
+          #(display_message, "@DEBUG : attack of {s8} is {reg0}({reg11}), prs:{reg7}, pow:{reg8}, dis:{reg9}, lst:{reg10}"),
+        (try_end),
+      (try_end),
+
+      (assign, reg0, ":target_score"),
+      (assign, reg1, ":power_ratio"),
+      (assign, reg2, ":distance_score"),
+      (assign, reg3, ":total_prosperity_score"),
+    ]),
+
+(
+    "find_center_to_defend",
+    [
+      (store_script_param, ":troop_no", 1),
+
+	  (store_faction_of_troop, ":faction_no", ":troop_no"),
+
+      (faction_get_slot, ":faction_marshal", ":faction_no", slot_faction_marshall),
+      (faction_get_slot, ":current_ai_state", ":faction_no", slot_faction_ai_state),
+      (assign, ":marshal_party", -1),
+      (try_begin),
+        (gt, ":faction_marshal", 0),
+        (troop_get_slot, ":marshal_party", ":faction_marshal", slot_troop_leaded_party),
+      (try_end),
+
+      (assign, ":most_threatened_center", -1),
+      (assign, ":maximum_threat_score", 0),
+      (try_for_range, ":cur_center", centers_begin, centers_end),
+        (store_faction_of_party, ":center_faction", ":cur_center"),
+        (eq, ":center_faction", ":faction_no"),
+
+        (party_get_slot, ":exact_enemy_strength", ":cur_center", slot_center_sortie_enemy_strength),
+		#Distort this to account for questionable intelligence
+		#(call_script, "script_reduce_exact_number_to_estimate", ":exact_enemy_strength"),
+		#(assign, ":enemy_strength_nearby", reg0),
+		(assign, ":enemy_strength_nearby", ":exact_enemy_strength"),
+
+        (assign, ":threat_importance", 0),
+        (try_begin),
+          (is_between, ":cur_center", walled_centers_begin, walled_centers_end),
+          (party_slot_ge, ":cur_center", slot_center_is_besieged_by, 0),
+
+          (call_script, "script_find_total_prosperity_score", ":cur_center"),
+          (assign, ":total_prosperity_score", reg0),
+
+          (party_get_slot, ":cur_center_strength", ":cur_center", slot_party_cached_strength),
+          (val_mul, ":cur_center_strength", 4),
+          (val_div, ":cur_center_strength", 3), #give 33% bonus to insiders because they are inside a castle
+
+          #I removed below line and assigned ":cur_center_nearby_strength" to 0, because if not when defender army comes to help
+          #threat become less because of high defence power but not yet enemy cleared.
+          #(party_get_slot, ":cur_center_nearby_strength", ":cur_center", slot_party_nearby_friend_strength),
+          (assign, ":cur_center_nearby_strength", 0),
+
+          (val_add, ":cur_center_strength", ":cur_center_nearby_strength"), #add nearby friends and find ":cur_center_strength"
+
+          (store_mul, ":power_ratio", ":enemy_strength_nearby", 100),
+          (val_add, ":cur_center_strength", 1),
+		  (val_max, ":cur_center_strength", 1),
+          (val_div, ":power_ratio", ":cur_center_strength"),
+
+          (assign, ":player_is_attacking", 0),
+          (party_get_slot, ":besieger_party", ":cur_center", slot_center_is_besieged_by),
+          (try_begin),
+            (party_is_active, ":besieger_party"),
+            (try_begin),
+              (eq, ":besieger_party", "p_main_party"),
+              (assign, ":player_is_attacking", 1),
+              #(display_message, "@{!}DEBUG : player is attacking a center (1)"),
+            (else_try),
+              (store_faction_of_party, ":besieger_faction", ":besieger_party"),
+              (eq, ":besieger_faction", "fac_player_faction"),
+              (assign, ":player_is_attacking", 1),
+              #(display_message, "@{!}DEBUG : player is attacking a center (2)"),
+            (else_try),
+              (party_get_attached_to, ":player_is_attached_to", "p_main_party"),
+              (ge, ":player_is_attached_to", 0),
+              (eq, ":player_is_attached_to", ":besieger_party"),
+              (assign, ":player_is_attacking", 1),
+              #(display_message, "@{!}DEBUG : player is attacking a center (3)"),
+            (try_end),
+          (try_end),
+
+          (try_begin),
+            (eq, ":player_is_attacking", 0),
+
+            (try_begin),
+              (lt, ":power_ratio", 40), #changes between 1..1
+              (assign, ":threat_importance", 1),
+            (else_try),
+              (lt, ":power_ratio", 80), #changes between 1..7
+              (store_sub, ":threat_importance", ":power_ratio", 40),
+              (val_div, ":threat_importance", 5),
+              (val_add, ":threat_importance", 1), #1
+            (else_try),
+              (lt, ":power_ratio", 120), #changes between 7..17
+              (store_sub, ":threat_importance", ":power_ratio", 80),
+              (val_div, ":threat_importance", 4),
+              (val_add, ":threat_importance", 7), #1 + 6
+            (else_try),
+              (lt, ":power_ratio", 200),
+              (store_sub, ":threat_importance", ":power_ratio", 120),
+              (val_div, ":threat_importance", 10),
+              (val_add, ":threat_importance", 17), #1 + 6 + 10
+            (else_try),
+              (assign, ":threat_importance", 25),
+            (try_end),
+          (else_try),
+            (try_begin),
+              (lt, ":power_ratio", 200), #changes between 5..25
+              (store_div, ":threat_importance", ":power_ratio", 10),    #MOTO correction (thanks MOTO:) (mexxico))
+              (val_add, ":threat_importance", 6 ),
+            (else_try),
+              (assign, ":threat_importance", 26),
+            (try_end),
+          (try_end),
+        (else_try),
+          (is_between, ":cur_center", villages_begin, villages_end),
+          (party_slot_eq, ":cur_center", slot_village_state, svs_being_raided),
+
+          (gt, ":enemy_strength_nearby", 0),
+
+          (call_script, "script_find_total_prosperity_score", ":cur_center"),
+          (assign, ":power_ratio", 100), #useless
+          (assign, ":total_prosperity_score", reg0),
+          (assign, ":threat_importance", 10), #if faction village is looted they lose money for shorter time period. So importance is something low (6-8).
+        (try_end),
+
+        (gt, ":threat_importance", 0),
+
+        (try_begin),
+          (is_between, ":cur_center", walled_centers_begin, walled_centers_end),
+          (assign, ":enemy_strength_nearby_score", 120),
+
+          (try_begin),
+            (ge, ":marshal_party", 0),
+            (party_is_active, ":marshal_party"),
+            (store_distance_to_party_from_party, ":marshal_dist_to_cur_center", ":marshal_party", ":cur_center"),
+          (else_try),
+            (assign, ":marshal_dist_to_cur_center", 100),
+          (try_end),
+
+          (try_begin),
+            #if currently our target is ride to break a siege then
+            #divide marshal_distance for other center's to "2" instead of "4" and add some small more distance to avoid easily
+            #changing mind during siege because of small score differences.
+
+	        #(faction_get_slot, ":current_ai_state", ":faction_no", slot_faction_ai_state),
+            (eq, ":current_ai_state", sfai_attacking_enemies_around_center),
+            (faction_get_slot, ":current_ai_object", ":faction_no", slot_faction_ai_object),
+            (is_between, ":current_ai_object", walled_centers_begin, walled_centers_end),
+            (neq, ":current_ai_object", ":cur_center"),
+            (val_mul, ":marshal_dist_to_cur_center", 2),
+            (val_add, ":marshal_dist_to_cur_center", 20),
+          (try_end),
+
+          (val_mul, ":marshal_dist_to_cur_center", 2), #standard multipication (1.5x) to adjust distance scoring same with formula at find_center_to_attack
+          #(val_div, ":marshal_dist_to_cur_center", 2),
+
+          (try_begin),
+            (lt, ":marshal_dist_to_cur_center", 10), #very close (100p)
+            (assign, ":distance_score", 100),
+          (else_try),
+            (lt, ":marshal_dist_to_cur_center", 160), #close (50p-100p)
+            (store_sub, ":distance_score", ":marshal_dist_to_cur_center", 10),
+            (val_div, ":distance_score", 3),
+            (store_sub, ":distance_score", 100, ":distance_score"),
+          (else_try),
+            (lt, ":marshal_dist_to_cur_center", 360), #far (10p-50p)
+            (store_sub, ":distance_score", ":marshal_dist_to_cur_center", 250),
+            (val_div, ":distance_score", 5),
+            (store_sub, ":distance_score", 50, ":distance_score"),
+          (else_try),
+            (assign, ":distance_score", 10), #very far
+          (try_end),
+        (else_try),
+          (store_add, ":enemy_strength_nearby_score", ":enemy_strength_nearby", 20000),
+          (val_div, ":enemy_strength_nearby_score", 200),
+          (assign, ":distance_score", 70), #not related to marshal's position, because everybody is going same place (no gathering in most village raids)
+        (try_end),
+
+		##diplomacy start+
+		(try_begin),
+			#AI changes LOW: Give priority to defending centers with lords
+			(le, DPLMC_AI_CHANGES_LOW, "$g_dplmc_ai_changes"),
+			(party_slot_ge, ":cur_center", slot_town_lord, 0),
+			(val_mul, ":threat_importance", 120),
+			(val_div, ":threat_importance", 100),
+		(try_end),
+		##diplomacy end+
+        (store_mul, ":threat_score", ":enemy_strength_nearby_score", ":total_prosperity_score"),
+        (val_mul, ":threat_score", ":threat_importance"),
+        (val_mul, ":threat_score", ":distance_score"),
+        (val_div, ":threat_score", 10000),
+
+        (try_begin),
+		  (ge, "$cheat_mode", 1),
+          (gt, ":threat_score", 0),
+          (eq, ":faction_no", "fac_kingdom_6"),
+          (assign, reg0, ":threat_score"),
+          (str_store_party_name, s32, ":cur_center"),
+          (assign, reg1,  ":total_prosperity_score"),
+          (assign, reg2, ":enemy_strength_nearby_score"),
+          (assign, reg3, ":threat_importance"),
+          (assign, reg4, ":distance_score"),
+          #(display_message, "@{!}DEBUG : defend of {s32} is {reg0}, prosperity:{reg1}, enemy nearby:{reg2}, threat importance:{reg3}, distance: {reg4}"),
+        (try_end),
+
+        (gt, ":threat_score", ":maximum_threat_score"),
+
+        (assign, ":most_threatened_center", ":cur_center"),
+        (assign, ":maximum_threat_score", ":threat_score"),
+        (assign, ":enemy_strength_near_most_threatened_center", ":enemy_strength_nearby"),
+      (try_end),
+
+      (val_mul, ":maximum_threat_score", 3),
+      (val_div, ":maximum_threat_score", 2),
+
+      (assign, reg0, ":most_threatened_center"),
+      (assign, reg1, ":maximum_threat_score"),
+      (assign, reg2, ":enemy_strength_near_most_threatened_center"),
+    ]),
+
+(
+   "prepare_alley_to_fight",
+   [
+     (party_get_slot, ":scene_no", "$current_town", slot_town_alley),
+
+     #(store_faction_of_party, ":faction_no", "$current_town"),
+
+     (modify_visitors_at_site, ":scene_no"),
+
+     (reset_visitors),
+     (set_visitor, 0, "trp_player"),
+
+     #(set_visitor, 3, ":bandit_troop"),
+     (set_visitor, 3, "trp_bandit"),
+
+     (assign, "$talked_with_merchant", 0),
+     (set_jump_mission, "mt_alley_fight"),
+     (jump_to_scene, ":scene_no"),
+     (change_screen_mission),
+   ]),
+
+(
+   "prepare_town_to_fight",
+   [
+     (str_store_party_name_link, s9, "$g_starting_town"),
+     (str_store_string, s2, "str_save_town_from_bandits"),
+     (call_script, "script_start_quest", "qst_save_town_from_bandits", "$g_talk_troop"),
+
+     (assign, "$g_mt_mode", tcm_default),
+     (store_faction_of_party, ":town_faction", "$current_town"),
+     (faction_get_slot, ":tier_2_troop", ":town_faction", slot_faction_tier_3_troop),
+     (faction_get_slot, ":tier_3_troop", ":town_faction", slot_faction_tier_3_troop),
+     (faction_get_slot, ":tier_4_troop", ":town_faction", slot_faction_tier_4_troop),
+
+     (party_get_slot, ":town_scene", "$current_town", slot_town_center),
+
+     (set_jump_mission,"mt_town_fight"), #dckplmc
+
+     (modify_visitors_at_site, ":town_scene"),
+     (reset_visitors),
+
+     #people spawned at #32, #33, #34, #35, #36, #37, #38 and #39 are town walkers.
+     (try_begin),
+       #(eq, "$town_nighttime", 0),
+       (try_for_range, ":walker_no", 0, num_town_walkers),
+         (store_add, ":troop_slot", slot_center_walker_0_troop, ":walker_no"),
+         (party_get_slot, ":walker_troop_id", "$current_town", ":troop_slot"),
+         (gt, ":walker_troop_id", 0),
+         (store_add, ":entry_no", town_walker_entries_start, ":walker_no"),
+
+		 #dckplmc - add daggers and clubs
+		 (mission_tpl_entry_set_override_flags, "mt_town_fight", ":entry_no", af_override_weapons),
+		 (store_random_in_range, ":r", 0,2),
+		 (try_begin),
+			(eq, ":r", 0),
+			(mission_tpl_entry_add_override_item, "mt_town_fight", ":entry_no", "itm_dagger"),
+		 (else_try),
+			(mission_tpl_entry_add_override_item, "mt_town_fight", ":entry_no", "itm_club"),
+		 (try_end),
+
+         (set_visitor, ":entry_no", ":walker_troop_id"),
+       (try_end),
+     (try_end),
+
+     #guards will be spawned at #25, #26 and #27
+     (set_visitors, 25, ":tier_2_troop", 1),
+     (set_visitors, 26, ":tier_3_troop", 1),
+     (set_visitors, 27, ":tier_4_troop", 1),
+
+     (set_visitors, 10, "trp_looter", 1),
+     (set_visitors, 11, "trp_bandit", 1),
+     (set_visitors, 12, "trp_looter", 1),
+
+     # (store_faction_of_party, ":starting_town_faction", "$g_starting_town"),
+     #SB : add a few bandits alongside the looters
+     (call_script, "script_center_get_bandits", "$g_starting_town", 0),
+     (assign, ":bandit_troop", reg0),
+     (call_script, "script_get_troop_of_merchant"),
+     (assign, ":troop_of_merchant", reg0),
+     (str_store_troop_name, s10, ":troop_of_merchant"),
+
+     (set_visitors, 24, "trp_looter", 1),
+     (set_visitors, 2, ":bandit_troop", 2),
+     (set_visitors, 4, "trp_looter", 1),
+     (set_visitors, 5, "trp_looter", 2),
+     (set_visitors, 6, "trp_looter", 1),
+     (set_visitors, 7, ":bandit_troop", 1),
+
+	 #dckplmc
+	 (mission_tpl_entry_set_override_flags, "mt_town_fight", 3, af_override_weapons),
+	 (mission_tpl_entry_add_override_item, "mt_town_fight", 3, "itm_dagger"),
+     (set_visitors, 3, ":troop_of_merchant", 1),
+
+
+     #(set_jump_mission,"mt_town_fight"),
+     (jump_to_scene, ":town_scene"),
+     (change_screen_mission),
+   ]),
+
+("enter_court",
+    [
+      (store_script_param_1, ":center_no"),
+
+      (assign, "$talk_context", tc_court_talk),
+
+      (set_jump_mission,"mt_visit_town_castle"),
+
+      (mission_tpl_entry_clear_override_items, "mt_visit_town_castle", 0),
+      #(mission_tpl_entry_set_override_flags, "mt_visit_town_castle", 0, af_override_all),
+
+      (mission_tpl_entry_set_override_flags, "mt_visit_town_castle", 0, af_override_all),
+      (assign, ":dest_cloth", "itm_tabard"),
+      (assign, ":have_civilian_cloth", 0),
+      (assign, ":equipped_body_is_civilian", 0),
+      (troop_get_inventory_slot, ":equipped_body", "trp_player", ek_body),
+      (try_begin),
+        (ge, ":equipped_body", 0),
+        (item_has_property, ":equipped_body", itp_civilian),
+        (assign, ":dest_cloth", ":equipped_body"),
+        (assign, ":have_civilian_cloth", 1),
+        (assign, ":equipped_body_is_civilian", 1),
+      (else_try),
+        (troop_get_inventory_capacity, ":inv_size", "trp_player"),
+        (assign, ":end_cond", ":inv_size"),
+        (try_for_range, ":i_slot", ek_head, ":end_cond"),
+          (troop_get_inventory_slot, ":item_id", "trp_player", ":i_slot"),
+          (ge, ":item_id", 0),
+          (item_get_type, ":i_type", ":item_id"),
+          (eq, ":i_type", itp_type_body_armor),
+          (item_has_property, ":item_id", itp_civilian),
+          (assign, ":dest_cloth", ":item_id"),
+          (assign, ":have_civilian_cloth", 1),
+          (assign, ":end_cond", 0),
+        (try_end),
+      (try_end),
+      (try_begin),
+        (eq, ":equipped_body_is_civilian", 1),
+      (else_try),
+        (eq, ":have_civilian_cloth", 1),
+        (display_message, "@You have changed into casual clothes from your inventory."),
+      (else_try),
+        (display_message, "@You have no casual clothes, so the castle guard provides common clothes temporarily."),
+      (try_end),
+      (mission_tpl_entry_add_override_item, "mt_visit_town_castle", 0, ":dest_cloth"),
+
+      (party_get_slot, ":castle_scene", ":center_no", slot_town_castle),
+      (modify_visitors_at_site,":castle_scene"),
+      (reset_visitors),
+      #Adding guards
+      (store_faction_of_party, ":center_faction", ":center_no"),
+      ##diplomacy begin
+      (try_begin),
+         (eq, ":center_faction", "$players_kingdom"),
+         (is_between, "$g_player_culture", npc_kingdoms_begin, npc_kingdoms_end),
+         (faction_get_slot, ":guard_troop", "$g_player_culture", slot_faction_guard_troop),
+	  ##nested diplomacy start+
+	  (else_try),
+	     #Reflect multicultural empires.
+		 (party_get_slot, ":town_lord", ":center_no", slot_town_lord),
+		 (gt, ":town_lord", "trp_player"),
+		 (troop_get_slot, ":lord_original_faction", ":town_lord", slot_troop_original_faction),
+		 (neq, ":lord_original_faction", ":center_faction"),
+		 (is_between, ":lord_original_faction", npc_kingdoms_begin, npc_kingdoms_end),
+		 (this_or_next|party_slot_eq, ":center_no", slot_center_original_faction, ":lord_original_faction"),
+			(troop_slot_eq, ":town_lord", slot_troop_home, ":center_no"),
+		 (faction_get_slot, ":guard_troop", ":lord_original_faction", slot_faction_guard_troop),
+	  ##nested diplomacy end+
+      (else_try),
+        (faction_get_slot, ":guard_troop", ":center_faction", slot_faction_guard_troop),
+      (try_end),
+      ##diplomacy end
+      (try_begin),
+        (le, ":guard_troop", 0),
+		#diplomacy start+
+		#rubik changes this in Custom Commander, and I agree: the "generic" guard
+		#should be non-faction-specific.
+		##OLD:
+        #(assign, ":guard_troop", "trp_swadian_sergeant"),
+		##NEW:
+		(assign, ":guard_troop", "trp_hired_blade"),
+		##diplomacy end+
+      (try_end),
+      (set_visitor, 6, ":guard_troop"),
+      (set_visitor, 7, ":guard_troop"),
+
+      (assign, ":cur_pos", 16),
+
+	  (try_begin),
+		(troop_get_slot, ":player_spouse", "trp_player", slot_troop_spouse),
+	    (gt, ":player_spouse", 0),
+		(troop_slot_eq, ":player_spouse", slot_troop_cur_center, ":center_no"),
+        (set_visitor, ":cur_pos", ":player_spouse"),
+        (val_add,":cur_pos", 1),
+	  (else_try),
+		(troop_get_slot, ":player_betrothed", "trp_player", slot_troop_betrothed),
+	    (gt, ":player_betrothed", 0),
+		(troop_slot_eq, ":player_betrothed", slot_troop_cur_center, ":center_no"),
+        (set_visitor, ":cur_pos", ":player_betrothed"),
+        (val_add,":cur_pos", 1),
+	  (try_end),
+
+	  (try_begin),
+		(eq, "$g_player_court", ":center_no"),
+		(gt, "$g_player_minister", 0),
+		(neg|troop_slot_eq, "trp_player", slot_troop_spouse, "$g_player_minister"),
+        (set_visitor, ":cur_pos", "$g_player_minister"),
+        (val_add,":cur_pos", 1),
+	  (try_end),
+    ##diplomacy begin
+
+    # (try_begin), #dckplmc seneschals
+      # (call_script, "script_assign_seneschals"),
+      # (party_get_slot, ":town_seneschal", ":center_no", slot_town_seneschal),
+      # (gt, ":town_seneschal", -1),
+      # (set_visitor, ":cur_pos", ":town_seneschal"),
+      # (val_add,":cur_pos", 1),
+    # (try_end),
+
+    (try_begin),
+      (gt, "$g_player_chamberlain", 0),
+      (call_script, "script_dplmc_appoint_chamberlain"),  #fix for wrong troops after update
+      (party_get_slot, ":town_lord", ":center_no", slot_town_lord),
+      (eq, ":town_lord", "trp_player"),
+      (set_visitor, ":cur_pos", "$g_player_chamberlain"),
+      (val_add,":cur_pos", 1),
+    (try_end),
+
+    (try_begin),
+      (gt, "$g_player_constable", 0),
+      (call_script, "script_dplmc_appoint_constable"),  #fix for wrong troops after update
+      (party_get_slot, ":town_lord", ":center_no", slot_town_lord),
+      (eq, ":town_lord", "trp_player"),
+      (set_visitor, ":cur_pos", "$g_player_constable"),
+      (val_add,":cur_pos", 1),
+    (try_end),
+
+    (try_begin),
+      (gt, "$g_player_chancellor", 0),
+      (call_script, "script_dplmc_appoint_chancellor"), #fix for wrong troops after update
+      (party_get_slot, ":town_lord", ":center_no", slot_town_lord),
+      (eq, ":town_lord", "trp_player"),
+      (set_visitor, ":cur_pos", "$g_player_chancellor"),
+      (val_add,":cur_pos", 1),
+    (try_end),
+    ##diplomacy end
+
+      #Lords wishing to pledge allegiance - inactive, but part of player faction
+      #SB : move down to sorted script call
+	  (try_begin),
+		(eq, "$g_player_court", ":center_no"),
+	    (faction_slot_eq, ":center_faction", slot_faction_leader, "trp_player"),
+	    (try_for_range, ":active_npc", heroes_begin, heroes_end), #support for upgraded kingdom ladies
+	      (store_faction_of_troop, ":active_npc_faction", ":active_npc"),
+	      (eq, ":active_npc_faction", "fac_player_supporters_faction"),
+	      (troop_slot_eq, ":active_npc", slot_troop_occupation, slto_inactive),
+	      (neg|troop_slot_ge, ":active_npc", slot_troop_prisoner_of_party, 0), #if he/she is not prisoner in any center.
+	      (neq, ":active_npc", "$g_player_minister"),
+	      (set_visitor, ":cur_pos", ":active_npc"),
+	      (val_add,":cur_pos", 1),
+		(try_end),
+	  (try_end),
+
+      ##diplomacy start+
+      #Show heroes you haven't seen recently first, to deal with crowded feast halls
+      #(call_script, "script_get_heroes_attached_to_center", ":center_no", "p_temp_party"),
+      (call_script, "script_dplmc_time_sorted_heroes_for_center", ":center_no", "p_temp_party"),
+	  #Reserve a certain number of feast positions for ladies, both for practical
+	  #reasons of courtship and for visual variety.
+	  (try_begin),
+		#If the player is unmarried, reserve zero to 8 slots for women
+		(lt, ":player_spouse", 1),
+		(store_random_in_range, ":reserved", 0, 9),
+	  (else_try),
+		#If the player is married, reserve zero to four slots for women
+		(store_random_in_range, ":reserved", 0, 5),
+	  (try_end),
+	  (store_sub, ":non_lady_max", 32, ":reserved"),
+      #diplomacy end+
+      (party_get_num_companion_stacks, ":num_stacks","p_temp_party"),
+      (try_for_range, ":i_stack", 0, ":num_stacks"),
+        (party_stack_get_troop_id, ":stack_troop","p_temp_party",":i_stack"),
+		##diplomacy start+
+        #(lt, ":cur_pos", 32), # spawn up to entry point 32 - is it possible to add another 10 spots?
+		(lt, ":cur_pos", ":non_lady_max"),#Leave some room for ladies in huge feasts
+		##diplomacy end+
+        (set_visitor, ":cur_pos", ":stack_troop"),
+        (val_add,":cur_pos", 1),
+      (try_end),
+      (try_for_range, ":cur_troop", kingdom_ladies_begin, kingdom_ladies_end),
+        (neq, ":cur_troop", "trp_knight_1_1_wife"), #The one who should not appear in game
+        #(troop_slot_eq, ":cur_troop", slot_troop_occupation, slto_kingdom_lady),
+        (troop_slot_eq, ":cur_troop", slot_troop_cur_center, ":center_no"),
+
+        (assign, ":lady_meets_visitors", 0),
+		(assign, ":tribute_entertainer", 0),
+        (try_begin),
+            (this_or_next|troop_slot_eq, "trp_player", slot_troop_spouse, ":cur_troop"), #player spouse goes in position of honor
+            (troop_slot_eq, "trp_player", slot_troop_betrothed, ":cur_troop"), #player spouse goes in position of honor
+            (assign, ":lady_meets_visitors", 0), #She is already in the place of honor
+            (try_begin), #SB : primary spouse
+                (eq, "$cheat_mode", 1),
+                (str_store_troop_name, s4, ":cur_troop"),
+                (display_message, "str_s4_is_present_at_the_center_and_in_place_of_honor"),
+            (try_end),
+        (else_try),
+            (this_or_next|troop_slot_eq, ":cur_troop", slot_troop_spouse, "trp_player"), #player spouse goes in position of honor
+            (troop_slot_eq, ":cur_troop", slot_troop_betrothed, "trp_player"),
+            (assign, ":lady_meets_visitors", 1),
+            (try_begin), #SB : secondary spouse, normally shadowed due to above behaviour
+                (eq, "$cheat_mode", 1),
+                (str_store_troop_name, s4, ":cur_troop"),
+                (display_message, "str_s4_is_present_at_the_center_and_is_married"),
+            (try_end),
+        (else_try), #lady is troop
+            (store_faction_of_troop, ":lady_faction", ":cur_troop"),
+            (neq, ":lady_faction", ":center_faction"),
+
+            (assign, ":lady_meets_visitors", 1),
+
+
+            (try_begin),
+                (eq, "$cheat_mode", 1),
+                (str_store_troop_name, s4, ":cur_troop"),
+                (try_begin), #SB : distinguish between refugee and prisoner
+                  (troop_slot_eq, ":cur_troop", slot_troop_prisoner_of_party, ":center_no"),
+                  (display_message, "@{s4} is present at the center as a prisoner"),
+				  #Prisoner Entertainer
+				  (assign, ":lady_meets_visitors", 1),
+                (else_try),
+                  (display_message, "str_s4_is_present_at_the_center_as_a_refugee"),
+                (try_end),
+            (try_end),
+
+        (else_try),
+            (troop_slot_ge, ":cur_troop", slot_troop_spouse, 1),
+
+            (try_begin),
+             #married ladies at a feast will not mingle - this is ahistorical, as married women and widows probably had much more freedom than unmarried ones, at least in the West, but the game needs to leave slots for them to show off their unmarried daughters
+                (faction_slot_eq, ":center_faction", slot_faction_ai_state, sfai_feast),
+                (faction_slot_eq, ":center_faction", slot_faction_ai_object, ":center_no"),
+                (assign, ":lady_meets_visitors", 0),
+
+                (try_begin),
+                    (eq, "$cheat_mode", 1),
+                    (str_store_troop_name, s4, ":cur_troop"),
+                    (display_message, "str_s4_is_present_at_the_center_and_not_attending_the_feast"),
+                (try_end),
+            (else_try),
+                (assign, ":lady_meets_visitors", 1),
+
+                (try_begin),
+                    (eq, "$cheat_mode", 1),
+                    (str_store_troop_name, s4, ":cur_troop"),
+                    (display_message, "str_s4_is_present_at_the_center_and_is_married"),
+                (try_end),
+            (try_end),
+
+		(else_try), #feast is in progress
+			(faction_slot_eq, ":center_faction", slot_faction_ai_state, sfai_feast),
+			(faction_slot_eq, ":center_faction", slot_faction_ai_object, ":center_no"),
+			(assign, ":lady_meets_visitors", 1),
+
+			(try_begin),
+				(store_random_in_range,":r",1,8),
+				(eq,":r", 3),
+				(assign, ":tribute_entertainer", 1),
+			(try_end),
+			(try_begin),
+				(eq, "$cheat_mode", 1),
+				(str_store_troop_name, s4, ":cur_troop"),
+				(display_message, "@{!}DEBUG -- {s4} is present at the center and is attending the feast"),
+			(try_end),
+
+		(else_try), #already met - awaits in private
+			(troop_slot_ge, ":cur_troop", slot_troop_met, 2),
+			(assign, ":lady_meets_visitors", 0),
+
+			(try_begin),
+				(eq, "$cheat_mode", 1),
+				(str_store_troop_name, s4, ":cur_troop"),
+				(display_message, "@{!}DEBUG -- {s4} is present at the center and is awaiting the player in private"),
+			(try_end),
+
+		(else_try),
+			(call_script, "script_get_kingdom_lady_social_determinants", ":cur_troop"),
+			(call_script, "script_npc_decision_checklist_male_guardian_assess_suitor", reg0, "trp_player"),
+			(gt, reg0, 0),
+			(assign, ":lady_meets_visitors", 1),
+
+			(try_begin),
+				(eq, "$cheat_mode", 1),
+				(str_store_troop_name, s4, ":cur_troop"),
+				(display_message, "@{!}DEBUG -- {s4} is_present_at_the_center_and_is_allowed_to_meet_the_player"),
+			(try_end),
+
+		(else_try),
+			(try_begin),
+				(eq, "$cheat_mode", 1),
+				(str_store_troop_name, s4, ":cur_troop"),
+				(display_message, "@{!}DEBUG -- {s4}is_present_at_the_center_and_is_not_allowed_to_meet_the_player"),
+			(try_end),
+
+		(try_end),
+
+		(eq, ":lady_meets_visitors", 1),
+
+		(try_begin),
+			(eq, ":tribute_entertainer", 1),
+			(try_begin),
+				(eq, "$tep_entertainer1", 69),
+				(assign, "$tep_entertainer1", ":cur_troop"),
+			(else_try),
+				(eq, "$tep_entertainer2", 69),
+				(assign, "$tep_entertainer2", ":cur_troop"),
+			(else_try),
+				(eq, "$tep_entertainer3", 69),
+				(assign, "$tep_entertainer3", ":cur_troop"),
+			(else_try),
+				(eq, "$tep_entertainer4", 69),
+				(assign, "$tep_entertainer4", ":cur_troop"),
+			(else_try),
+				(assign, ":tribute_entertainer", 0),
+		(try_end),
+			#(troop_set_slot, ":cur_troop", slot_troop_entertainer, 1), Now used for permanently abused ladies
+		(try_end),
+
+        (lt, ":cur_pos", 32), # spawn up to entry point 32
+        (set_visitor, ":cur_pos", ":cur_troop"),
+        (val_add,":cur_pos", 1),
+      (try_end),
+
+      (set_jump_entry, 0),
+
+      (jump_to_scene,":castle_scene"),
+      (scene_set_slot, ":castle_scene", slot_scene_visited, 1),
+      (change_screen_mission),
+  ]),
+
+("deduct_casualties_from_garrison", #after a battle in a center, deducts any casualties from "$g_encountered_party"
+	[
+	##(display_message, "str_totalling_casualties_caused_during_mission"),
+
+	(try_for_agents, ":agent"),
+		(agent_get_troop_id, ":troop_type", ":agent"),
+		(is_between, ":troop_type", regular_troops_begin, regular_troops_end),
+
+		(neg|agent_is_alive, ":agent"),
+
+		(try_begin), #if troop not present, search for another type which is
+			(store_troop_count_companions, ":number", ":troop_type", "$g_encountered_party"),
+			(eq, ":number", 0),
+			(assign, ":troop_type", 0),
+			(try_for_range, ":new_tier", slot_faction_tier_1_troop, slot_faction_tier_5_troop),
+			(faction_get_slot, ":troop_type", "$g_encountered_party_faction", ":new_tier"),
+				(faction_get_slot, ":new_troop_type", "$g_encountered_party_faction", ":new_tier"),
+				(store_troop_count_companions, ":number", ":new_troop_type", "$g_encountered_party"),
+				(gt, ":number", 0),
+				(assign, ":troop_type", ":new_troop_type"),
+			(try_end),
+		(try_end),
+
+		(gt, ":troop_type", 0),
+
+		(party_remove_members, "$g_encountered_party", ":troop_type", 1),
+		(str_store_troop_name, s4, ":troop_type"),
+		(str_store_party_name, s5, "$g_encountered_party"),
+	(try_end),
+	]),
+
+("improve_center", [
+        (store_script_param, ":center_no", 1),
+        (store_script_param, ":builder", 2),
+        (store_script_param, ":improvement_time", 3),
+        (party_set_slot, ":center_no", slot_center_current_improvement, "$g_improvement_type"),
+        (store_current_hours, ":cur_hours"),
+        (store_mul, ":hours_takes", ":improvement_time", 24),
+        (val_add, ":hours_takes", ":cur_hours"),
+        (party_set_slot, ":center_no", slot_center_improvement_end_hour, ":hours_takes"),
+        (assign, reg6, ":improvement_time"),
+        (call_script, "script_get_improvement_details", "$g_improvement_type"),
+        (add_party_note_from_sreg, ":center_no", 2, "@A {s0} is being built. It will finish in {reg6} days", 1),
+        (try_begin), #should probably raise this depending on project instead of constant reward
+          (troop_is_hero, ":builder"),
+          (neq, ":builder", "trp_player"),
+          (call_script, "script_change_troop_renown", ":builder", dplmc_companion_skill_renown),
+        (try_end),
+    ]),
+
+("calculate_improvement_limit", [
+        (store_script_param_1, ":troop_no"),
+        (assign, ":limit", dplmc_improvement_limit),
+        (troop_get_slot, ":personality", ":troop_no", slot_lord_reputation_type),
+        (try_begin), #bad personality, unlikely to ever build property
+            (is_between, ":personality", lrep_selfrighteous, lrep_goodnatured),
+            (val_mul, ":limit", ":personality"),
+            (val_div, ":limit", 2),
+        (else_try), #include companion personality types
+            (is_between, ":personality", lrep_goodnatured, lrep_custodian),
+            (try_begin), #exception
+              (neq, ":personality", lrep_roguish),
+              (store_mul, ":level", ":personality", 250),
+              (val_sub, ":limit", ":level"),
+            (try_end),
+        (try_end),
+        (assign, reg0, ":limit"),
+    ]),
+
+("center_get_bandits",[
+
+    (store_script_param_1, ":village_no"),
+    (store_script_param_2, ":mode"),
+    (assign, ":bandit_troop", "trp_looter"),
+
+    (try_begin), #native mode
+      (eq, ":mode", -1),
+      (store_random_in_range, ":random_no", 0, 3),
+      (try_begin),
+        (eq, ":random_no", 0),
+        (assign, ":bandit_troop", "trp_bandit"),
+      (else_try),
+        (eq, ":random_no", 1),
+        (assign, ":bandit_troop", "trp_mountain_bandit"),
+      (else_try),
+        (assign, ":bandit_troop", "trp_forest_bandit"),
+      (try_end),
+    (else_try), #faction mode
+      (eq, ":mode", 0),
+
+      (assign, ":bandit_troop", "trp_looter"),
+      # (store_faction_of_party, ":faction", ":village_no"),
+      (party_get_slot, ":faction", ":village_no", slot_center_original_faction),
+      (store_random_in_range, ":random_no", 0, 10),
+      (try_begin), #deserter troops, 10% chance
+        (eq, ":random_no", 0),
+        (faction_get_slot, ":bandit_troop", ":faction", slot_faction_deserter_troop),
+      (else_try),
+        (lt, ":random_no", 6),  #regular bandits (looter to brigand), 50%
+        (val_div, ":random_no", 2),
+        (store_add, ":bandit_troop","trp_looter",":random_no"),
+      (else_try), #regional bandits, 40% (should be terrain based though)
+        (try_begin),
+          (eq, ":faction", "fac_kingdom_6"),
+          (assign, ":bandit_troop", "trp_desert_bandit"),
+        (else_try),
+          (eq, ":faction", "fac_kingdom_5"),
+          (assign, ":bandit_troop", "trp_mountain_bandit"),
+        (else_try),
+          (eq, ":faction", "fac_kingdom_4"),
+          (assign, ":bandit_troop", "trp_sea_raider"),
+        (else_try),
+          (eq, ":faction", "fac_kingdom_3"),
+		  (try_begin),
+			(lt, ":random_no", 3),
+			(assign, ":bandit_troop", "trp_black_khergit_horseman"), # dckplmc - 20% chance of black khergits
+		  (else_try),
+			(assign, ":bandit_troop", "trp_steppe_bandit"),
+		  (try_end),
+        (else_try),
+          (eq, ":faction", "fac_kingdom_2"),
+          (assign, ":bandit_troop", "trp_taiga_bandit"),
+        (else_try),
+          (eq, ":faction", "fac_kingdom_1"),
+          (assign, ":bandit_troop", "trp_forest_bandit"),
+        (try_end),
+      (try_end),
+    (else_try), #terrain mode
+      (eq, ":mode", 1),
+      #base type first
+      (party_get_current_terrain, ":terrain_type", ":village_no"),
+      (try_begin),
+        (this_or_next|eq, ":terrain_type", rt_steppe),
+        (eq, ":terrain_type", rt_steppe_forest),
+		(store_random_in_range, ":random_no", 0, 10),
+	    (try_begin),
+		  (lt, ":random_no", 3),
+		  (assign, ":bandit_troop", "trp_black_khergit_horseman"), # dckplmc - 20% chance of black khergits
+	    (else_try),
+		  (assign, ":bandit_troop", "trp_steppe_bandit"),
+	    (try_end),
+      # (else_try),
+        # (eq, ":terrain_type", rt_plain),
+        # (assign, ":bandit_troop", "trp_bandit"),
+      (else_try),
+        (this_or_next|eq, ":terrain_type", rt_snow),
+        (eq, ":terrain_type", rt_snow_forest),
+        (assign, ":bandit_troop", "trp_taiga_bandit"),
+      (else_try),
+        (this_or_next|eq, ":terrain_type", rt_desert),
+        (eq, ":terrain_type", rt_desert_forest),
+        (assign, ":bandit_troop", "trp_desert_bandit"),
+      # (else_try),
+        # (eq, ":terrain_type", rt_forest),
+        # (assign, ":bandit_troop", "trp_forest_bandit"),
+      (try_end),
+      (try_begin),
+        (eq, ":bandit_troop", "trp_looter"), #still not picked
+        #proximity to features (forest, mountain, ocean),
+        (party_get_position, pos1, ":village_no"),
+        (try_begin), #cf operation to see if it's near water
+          (map_get_water_position_around_position, pos2, pos1, 5),
+          # after finding water limit range of spawning (so sea raiders don't appear upriver)
+          (store_add, ":limit", "p_sea_raider_spawn_point_1", num_sea_raider_spawn_points),
+          (try_for_range, ":spawn_point", "p_sea_raider_spawn_point_1", ":limit"),
+            (store_distance_to_party_from_party, ":distance", ":village_no", ":spawn_point"),
+            (lt, ":distance", 50), # 200% bandit spawning radius
+            (assign, ":limit", -1),
+          (try_end),
+          (eq, ":limit", -1), #within boundaries
+          (assign, ":bandit_troop", "trp_sea_raider"),
+        (else_try), #sample random points until we find forest/mountain (coast)
+          (assign, ":forest_count", 0),
+          (assign, ":mountain_count", 0),
+          (assign, ":other_count", 0),
+          (try_for_range, ":unused", 0, 100),
+            (map_get_land_position_around_position, pos2, pos1, 5),
+            (party_set_position, "p_temp_party", pos2),
+            (party_get_current_terrain, ":terrain_type", "p_temp_party"),
+            (try_begin),
+              (eq, ":terrain_type", rt_forest),
+              (val_add, ":forest_count", 1),
+            (else_try),
+              (eq, ":terrain_type", rt_mountain),
+              (val_add, ":mountain_count", 1),
+            (else_try),
+              (val_add, ":other_count", 1),
+            (try_end),
+          (try_end),
+          (try_begin), # not enough features
+            (gt, ":other_count", 75), #pass through to faction calls
+            (call_script, "script_center_get_bandits", ":village_no", 0),
+            (assign, ":bandit_troop", reg0),
+          (else_try),
+            (gt, ":forest_count", ":mountain_count"),
+            (gt, ":forest_count", 15),
+            (assign, ":bandit_troop", "trp_forest_bandit"),
+          (else_try),
+            (gt, ":mountain_count", ":forest_count"),
+            (gt, ":mountain_count", 15),
+            (assign, ":bandit_troop", "trp_mountain_bandit"),
+          (try_end),
+        (try_end),
+      (try_end),
+    (try_end),
+    (assign, reg0, ":bandit_troop"),
+  ]),
+
+  #script_calculate_castle_prosperities_by_using_its_villages
+  (
+  "calculate_castle_prosperities_by_using_its_villages",
+  [
+    (try_for_range, ":cur_castle", castles_begin, castles_end),
+      (assign, ":total_prosperity", 0),
+      (assign, ":total_villages", 0),
+
+      (try_for_range, ":cur_village", villages_begin, villages_end),
+        (party_get_slot, ":bound_center", ":cur_village", slot_village_bound_center),
+        (eq, ":cur_castle", ":bound_center"),
+
+        (party_get_slot, ":village_prosperity", ":cur_village", slot_town_prosperity),
+
+        (val_add, ":total_prosperity", ":village_prosperity"),
+        (val_add, ":total_villages", 1),
+      (try_end),
+
+      (try_begin),
+        (store_div, ":castle_prosperity", ":total_prosperity", ":total_villages"),
+      (else_try),
+        (assign, ":castle_prosperity", 50),
+      (try_end),
+
+      (party_set_slot, ":cur_castle", slot_town_prosperity, ":castle_prosperity"),
+    (try_end),
+  ]),
 ]

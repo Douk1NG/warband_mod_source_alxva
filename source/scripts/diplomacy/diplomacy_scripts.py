@@ -5383,4 +5383,510 @@ diplomacy_scripts = [
     ]),
 
       # INPUT:
+
+(
+	"diplomacy_faction_get_diplomatic_status_with_faction",
+	#result: -1 faction_1 has a casus belli against faction_2. 1, faction_1 has a truce with faction_2, -2, the two factions are at war
+	[
+	(store_script_param, ":actor_faction", 1),
+	(store_script_param, ":target_faction", 2),
+	##diplomacy start+
+	#Since "fac_player_supporters_faction" is used as a shorthand for the faction
+	#run by the player, intercept that here instead of the various places this is
+	#called from.
+	(call_script, "script_dplmc_translate_inactive_player_supporter_faction_2", ":actor_faction", ":target_faction"),
+	(assign, ":actor_faction", reg0),
+	(assign, ":target_faction", reg1),
+	##diplomacy end+
+
+	(store_add, ":truce_slot", ":target_faction", slot_faction_truce_days_with_factions_begin),
+	(store_add, ":provocation_slot", ":target_faction", slot_faction_provocation_days_with_factions_begin),
+	(val_sub, ":truce_slot", kingdoms_begin),
+	(val_sub, ":provocation_slot", kingdoms_begin),
+
+	(assign, ":result", 0),
+	(assign, ":duration", 0),
+
+	(try_begin),
+		(store_relation, ":relation", ":actor_faction", ":target_faction"),
+		(lt, ":relation", 0),
+		(assign, ":result", -2),
+	(else_try),
+		(faction_slot_ge, ":actor_faction", ":truce_slot", 1),
+		(assign, ":result", 1),
+
+		(faction_get_slot, ":duration", ":actor_faction", ":truce_slot"),
+	(else_try),
+		(faction_slot_ge, ":actor_faction", ":provocation_slot", 1),
+		(assign, ":result", -1),
+
+		(faction_get_slot, ":duration", ":actor_faction", ":provocation_slot"),
+	(try_end),
+
+	(assign, reg0, ":result"),
+	(assign, reg1, ":duration"),
+	]),
+
+("make_kingdom_hostile_to_player",
+    [
+      (store_script_param_1, ":kingdom_no"),
+      (store_script_param_2, ":difference"),
+
+      (try_begin),
+        (lt, ":difference", 0),
+        (store_relation, ":player_relation", ":kingdom_no", "fac_player_supporters_faction"),
+        (val_min, ":player_relation", 0),
+        (val_add, ":player_relation", ":difference"),
+        (call_script, "script_set_player_relation_with_faction", ":kingdom_no", ":player_relation"),
+      (try_end),
+  ]),
+
+("diplomacy_start_war_between_kingdoms", #sets relations between two kingdoms and their vassals.
+    [
+      (store_script_param, ":kingdom_a", 1),
+      (store_script_param, ":kingdom_b", 2),
+      (store_script_param, ":initializing_war_peace_cond", 3), #1 = after start of game
+
+	  (call_script, "script_npc_decision_checklist_peace_or_war", ":kingdom_a", ":kingdom_b", -1),
+	  (assign, ":explainer_string", reg1),
+
+	  #
+    ##diplomacy begin
+    (try_begin),
+      (lt, ":initializing_war_peace_cond", 2),
+    ##diplomacy end
+	  (try_begin),
+	    (eq, ":kingdom_a", "fac_player_supporters_faction"),
+		(assign, ":war_event", logent_player_faction_declares_war),
+	  (else_try),
+		(eq, ":explainer_string", "str_s12s15_declared_war_to_control_calradia"),
+		(assign, ":war_event", logent_player_faction_declares_war), #for savegame compatibility, this event stands in for the attempt to declare war on all of calradia
+	  (else_try),
+		(eq, ":explainer_string", "str_s12s15_considers_s16_to_be_dangerous_and_untrustworthy_and_shehe_wants_to_bring_s16_down"),
+		(assign, ":war_event", logent_faction_declares_war_out_of_personal_enmity),
+	  (else_try),
+		(eq, ":explainer_string", "str_s12s15_is_anxious_to_reclaim_old_lands_such_as_s18_now_held_by_s16"),
+		(assign, ":war_event", logent_faction_declares_war_to_regain_territory),
+	  (else_try),
+		(eq, ":explainer_string", "str_s12s15_faces_too_much_internal_discontent_to_feel_comfortable_ignoring_recent_provocations_by_s16s_subjects"),
+		(assign, ":war_event", logent_faction_declares_war_to_respond_to_provocation),
+	  (else_try),
+		(eq, ":explainer_string", "str_s12s15_is_alarmed_by_the_growing_power_of_s16"),
+		(assign, ":war_event", logent_faction_declares_war_to_curb_power),
+	  (try_end),
+	  (call_script, "script_add_log_entry", ":war_event", ":kingdom_a", 0, 0, ":kingdom_b"),
+
+
+
+	  (call_script, "script_diplomacy_faction_get_diplomatic_status_with_faction", ":kingdom_a", ":kingdom_b"),
+	  (assign, ":current_diplomatic_status", reg0),
+	  (try_begin), #effects of policy only after the start of the game
+	    (eq, ":initializing_war_peace_cond", 1),
+		(eq, ":current_diplomatic_status", -1),
+		(call_script, "script_faction_follows_controversial_policy", ":kingdom_a", logent_policy_ruler_declares_war_with_justification),
+	  (else_try),
+	    (eq, ":initializing_war_peace_cond", 1),
+		(eq, ":current_diplomatic_status", 0),
+		(call_script, "script_faction_follows_controversial_policy", ":kingdom_a", logent_policy_ruler_attacks_without_provocation),
+	  (else_try),
+		(eq, ":current_diplomatic_status", 1),
+		(call_script, "script_faction_follows_controversial_policy", ":kingdom_a", logent_policy_ruler_breaks_truce),
+	  (try_end),
+	  ##diplomacy begin
+    (else_try),
+      (assign, ":war_event", logent_faction_declares_war_to_fulfil_pact),
+      (call_script, "script_faction_follows_controversial_policy", ":kingdom_a", logent_policy_ruler_declares_war_with_justification),
+      (assign, ":initializing_war_peace_cond", 1),
+	  (try_end),
+	  ##diplomacy end
+
+      (store_relation, ":relation", ":kingdom_a", ":kingdom_b"),
+      (val_min, ":relation", -10),
+      (val_add, ":relation", -30),
+      (set_relation, ":kingdom_a", ":kingdom_b", ":relation"),
+
+      (try_begin),
+        (eq, "$players_kingdom", ":kingdom_a"),
+        (store_relation, ":relation", "fac_player_supporters_faction", ":kingdom_b"),
+        (val_min, ":relation", -30),
+        (call_script, "script_set_player_relation_with_faction", ":kingdom_b", ":relation"),
+      (else_try),
+        (eq, "$players_kingdom", ":kingdom_b"),
+        (store_relation, ":relation", "fac_player_supporters_faction", ":kingdom_a"),
+        (val_min, ":relation", -30),
+        (call_script, "script_set_player_relation_with_faction", ":kingdom_a", ":relation"),
+      (try_end),
+
+      (try_begin),
+        (eq, ":initializing_war_peace_cond", 1),
+
+		#Remove this -- this scrambles who declares war on whom
+#        (try_begin),
+ #         (store_random_in_range, ":random_no", 0, 2),
+  #        (this_or_next|eq, ":kingdom_a", "fac_player_supporters_faction"),
+	#		(eq, ":random_no", 0),
+     #     (assign, ":local_temp", ":kingdom_a"),
+      #    (assign, ":kingdom_a", ":kingdom_b"),
+       #   (assign, ":kingdom_b", ":local_temp"),
+        #(try_end),
+
+        (str_store_faction_name_link, s1, ":kingdom_a"),
+        #SB : don't colorize message, if it's relevant script_set_player_relation_with_faction calls will show it
+        # (faction_get_color, ":color", ":kingdom_a"),
+        (str_store_faction_name_link, s2, ":kingdom_b"),
+        (display_log_message, "@{s1} has declared war against {s2}.", message_alert),
+
+		(store_current_hours, ":hours"),
+		(faction_set_slot, ":kingdom_a", slot_faction_ai_last_decisive_event, ":hours"),
+		(faction_set_slot, ":kingdom_b", slot_faction_ai_last_decisive_event, ":hours"),
+
+		#set provocation and truce days
+		(store_add, ":truce_slot", ":kingdom_b", slot_faction_truce_days_with_factions_begin),
+		(store_add, ":provocation_slot", ":kingdom_b", slot_faction_provocation_days_with_factions_begin),
+		(val_sub, ":truce_slot", kingdoms_begin),
+		(val_sub, ":provocation_slot", kingdoms_begin),
+		(faction_set_slot, ":kingdom_a", ":truce_slot", 0),
+		(faction_set_slot, ":kingdom_a", ":provocation_slot", 0),
+
+		(store_add, ":truce_slot", ":kingdom_a", slot_faction_truce_days_with_factions_begin),
+		(store_add, ":provocation_slot", ":kingdom_a", slot_faction_provocation_days_with_factions_begin),
+		(val_sub, ":truce_slot", kingdoms_begin),
+		(val_sub, ":provocation_slot", kingdoms_begin),
+		(faction_set_slot, ":kingdom_b", ":truce_slot", 0),
+		(faction_set_slot, ":kingdom_b", ":provocation_slot", 0),
+
+        (call_script, "script_add_notification_menu", "mnu_notification_war_declared", ":kingdom_a", ":kingdom_b"),
+
+        (call_script, "script_update_faction_notes", ":kingdom_a"),
+        (call_script, "script_update_faction_notes", ":kingdom_b"),
+        (assign, "$g_recalculate_ais", 1),
+      (try_end),
+
+	  (try_begin),
+		(check_quest_active, "qst_cause_provocation"),
+	    (neg|check_quest_succeeded, "qst_cause_provocation"),
+		(this_or_next|eq, "$players_kingdom", ":kingdom_a"),
+			(eq, "$players_kingdom", ":kingdom_b"),
+		(call_script, "script_abort_quest", "qst_cause_provocation", 0),
+	  (try_end),
+    ##diplomacy begin
+    #check for defensive
+    (try_for_range, ":cur_kingdom", kingdoms_begin, kingdoms_end),
+      (neq, ":cur_kingdom", ":kingdom_a"),
+      (neq, ":cur_kingdom", ":kingdom_b"),
+
+      (store_relation, ":cur_relation", ":cur_kingdom", ":kingdom_a"),
+			(ge, ":cur_relation", 0), #AT PEACE
+
+      (store_add, ":truce_slot", ":kingdom_b", slot_faction_truce_days_with_factions_begin),
+  		(val_sub, ":truce_slot", kingdoms_begin),
+  		(faction_get_slot, ":truce_days", ":cur_kingdom", ":truce_slot"),
+  		##nested diplomacy start+ replace "40" with a named constant
+  		#(gt, ":truce_days", 40),
+  		(gt, ":truce_days", dplmc_treaty_defense_days_expire),
+  		##nested diplomacy end+
+  		(try_begin),
+  		  (lt, ":initializing_war_peace_cond", 2), #only if war was not caused by defensive or alliance pact
+  		  (call_script, "script_diplomacy_start_war_between_kingdoms", ":cur_kingdom", ":kingdom_a", 2),
+  		(try_end),
+    (try_end),
+
+    #check for alliance
+    (try_for_range, ":cur_kingdom", kingdoms_begin, kingdoms_end),
+      (neq, ":cur_kingdom", ":kingdom_a"),
+      (neq, ":cur_kingdom", ":kingdom_b"),
+
+      (store_relation, ":cur_relation", ":cur_kingdom", ":kingdom_b"),
+			(ge, ":cur_relation", 0), #AT PEACE
+
+  		(store_add, ":truce_slot", ":kingdom_a", slot_faction_truce_days_with_factions_begin),
+  		(val_sub, ":truce_slot", kingdoms_begin),
+  		(faction_get_slot, ":truce_days", ":cur_kingdom", ":truce_slot"),
+  		##nested diplomacy start+ replace "60" with a named constant
+  		#(gt, ":truce_days", 60),
+  		(gt, ":truce_days", dplmc_treaty_alliance_days_expire),
+  		##nested diplomacy end+
+  		(call_script, "script_diplomacy_start_war_between_kingdoms", ":cur_kingdom", ":kingdom_b", 3),
+    (try_end),
+    ##diplomacy end
+  ]),
+
+("diplomacy_party_attacks_neutral", #called from game_menus (plundering a village, raiding a village),  from dialogs: surprise attacking a neutral lord, any attack on caravan or villagers
+#Has no effect if factions are already at war
+    [
+      (store_script_param, ":attacker_party", 1),
+      (store_script_param, ":defender_party", 2),
+
+	  (store_faction_of_party, ":attacker_faction", ":attacker_party"),
+	  (store_faction_of_party, ":defender_faction", ":defender_party"),
+
+	  (party_stack_get_troop_id, ":attacker_leader", ":attacker_party", 0),
+
+	  (try_begin),
+		(eq, ":attacker_party", "p_main_party"),
+		(neq, ":attacker_faction", "fac_player_supporters_faction"),
+		(assign, ":attacker_faction", "$players_kingdom"),
+	  (else_try),
+		(eq, ":attacker_party", "p_main_party"),
+		(eq, ":attacker_faction", "fac_player_supporters_faction"),
+	  (try_end),
+
+	  (try_begin),
+	    (eq, ":attacker_party", "p_main_party"),
+		(store_relation, ":relation", ":attacker_faction", ":defender_faction"),
+	    (ge, ":relation", 0),
+		(call_script, "script_change_player_honor", -2),
+	  (try_end),
+
+
+	  (try_begin),
+		(check_quest_active, "qst_cause_provocation"),
+		(quest_slot_eq, "qst_cause_provocation", slot_quest_target_faction, ":defender_faction"),
+		(quest_get_slot, ":giver_troop", "qst_cause_provocation", slot_quest_giver_troop),
+		(store_faction_of_troop, ":attacker_faction", ":giver_troop"),
+		(call_script, "script_succeed_quest", "qst_cause_provocation"),
+	  (try_end),
+
+	  (call_script, "script_diplomacy_faction_get_diplomatic_status_with_faction", ":attacker_faction", ":defender_faction"),
+	  (assign, ":diplomatic_status", reg0),
+
+	  (try_begin),
+	    (eq, ":attacker_faction", "fac_player_supporters_faction"),
+		(neg|faction_slot_eq, "fac_player_supporters_faction", slot_faction_state, sfs_active),
+		#player faction inactive, no effect
+	  (else_try),
+		(eq, ":diplomatic_status", -2),
+	    #war, no effect
+	  (else_try),
+
+	    (eq, ":attacker_faction", "fac_player_supporters_faction"),
+		(faction_slot_eq, ":attacker_faction", slot_faction_leader, "trp_player"),
+		(call_script, "script_faction_follows_controversial_policy", "fac_player_supporters_faction",logent_policy_ruler_attacks_without_provocation),
+	  (else_try),
+		(eq, ":diplomatic_status", 1),
+		#truce
+		(party_stack_get_troop_id, ":defender_party_leader", ":defender_party", 0),
+		(try_begin),
+			##diplomacy start+ add support for promoted kingdom ladies
+			#(i.e. verify not a promoted kingdom lady, since they exist)
+			(this_or_next|neg|is_between, ":defender_party_leader", kingdom_ladies_begin, kingdom_ladies_end),
+				(neg|troop_slot_eq, ":defender_party_leader", slot_troop_occupation, slto_kingdom_hero),
+			##diplomacy end+
+			(neg|is_between, ":defender_party_leader", active_npcs_begin, active_npcs_end),
+			(store_faction_of_party, ":defender_party_faction", ":defender_party"),
+			(faction_get_slot, ":defender_party_leader", ":defender_party_faction", slot_faction_leader),
+		(try_end),
+
+		(call_script, "script_add_log_entry", logent_border_incident_troop_breaks_truce, ":attacker_leader", -1, ":defender_party_leader", ":attacker_faction"),
+	  (else_try),
+		#truce
+		(call_script, "script_add_log_entry", logent_border_incident_troop_attacks_neutral, ":attacker_leader", -1, ":defender_party_leader", ":attacker_faction"),
+	  (try_end),
+
+	  (try_begin),
+	    (is_between, ":defender_party", villages_begin, villages_end),
+	    (call_script, "script_add_log_entry", logent_village_raided, ":attacker_leader",  ":defender_party", -1, ":defender_faction"),
+        #SB : add quest cancellation when raiding villages
+        (try_begin),
+          (eq, ":attacker_party", "p_main_party"),
+          (party_get_slot, ":elder", ":defender_party", slot_town_elder),
+          (gt, ":elder", 0),
+          (try_for_range, ":quest_no", village_elder_quests_begin, village_elder_quests_end),
+            (quest_slot_eq, ":quest_no", slot_quest_giver_troop, ":elder"),
+            (call_script, "script_abort_quest", ":quest_no", 1),
+          (try_end),
+        (try_end),
+	  (else_try),
+	    (party_get_template_id, ":template", ":defender_party"),
+	    # (neq, ":template", "pt_kingdom_hero_party"),
+	    (eq, ":template", "pt_kingdom_caravan_party"), #SB: fix this to specifically apply to caravans
+		(try_begin),
+			(ge, "$cheat_mode", 1),
+			(str_store_faction_name, s5, ":defender_faction"),
+			(display_message, "@{!}Debug - {s5} caravan attacked"),
+		(try_end),
+
+	    (call_script, "script_add_log_entry", logent_caravan_accosted, ":attacker_leader",  -1, -1, ":defender_faction"),
+	  (try_end),
+
+	  (store_add, ":slot_truce_days", ":attacker_faction", slot_faction_provocation_days_with_factions_begin),
+	  (val_sub, ":slot_truce_days", kingdoms_begin),
+	  (faction_set_slot, ":defender_faction", ":slot_truce_days", 0),
+
+	  (store_add, ":slot_provocation_days", ":attacker_faction", slot_faction_provocation_days_with_factions_begin),
+	  (val_sub, ":slot_provocation_days", kingdoms_begin),
+	  (try_begin),
+	    (neq, ":diplomatic_status", -2),
+		(faction_slot_eq, ":defender_faction", ":slot_provocation_days", 0),
+		(faction_set_slot, ":defender_faction", ":slot_provocation_days", 30),
+	  (try_end),
+	]),
+
+("diplomacy_start_peace_between_kingdoms", #sets relations between two kingdoms
+    [
+      (store_script_param, ":kingdom_a", 1),
+      (store_script_param, ":kingdom_b", 2),
+      (store_script_param, ":initializing_war_peace_cond", 3), #set to 1 if not the start of the game
+
+      (store_relation, ":relation", ":kingdom_a", ":kingdom_b"),
+      (val_max, ":relation", 0),
+      (set_relation, ":kingdom_a", ":kingdom_b", ":relation"),
+      (call_script, "script_exchange_prisoners_between_factions", ":kingdom_a", ":kingdom_b"),
+
+      (try_begin),
+        (eq, "$players_kingdom", ":kingdom_a"),
+        (store_relation, ":relation", "fac_player_supporters_faction", ":kingdom_b"),
+        (val_max, ":relation", 0),
+        (call_script, "script_set_player_relation_with_faction", ":kingdom_b", ":relation"),
+        (call_script, "script_event_kingdom_make_peace_with_kingdom", ":kingdom_b", "fac_player_supporters_faction"), #event cancels certain quests
+      (else_try),
+        (eq, "$players_kingdom", ":kingdom_b"),
+        (store_relation, ":relation", "fac_player_supporters_faction", ":kingdom_a"),
+        (val_max, ":relation", 0),
+        (call_script, "script_set_player_relation_with_faction", ":kingdom_a", ":relation"),
+        (call_script, "script_event_kingdom_make_peace_with_kingdom", ":kingdom_a", "fac_player_supporters_faction"), #event cancels certain quests
+      (try_end),
+
+      (try_for_range, ":cur_center", centers_begin, centers_end),
+        (store_faction_of_party, ":faction_no", ":cur_center"),
+        (this_or_next|eq, ":faction_no", ":kingdom_a"),
+        (eq, ":faction_no", ":kingdom_b"),
+        (party_get_slot, ":besieger_party", ":cur_center", slot_center_is_besieged_by),
+        (ge, ":besieger_party", 0), #town is under siege
+        (party_is_active, ":besieger_party"),
+        (store_faction_of_party, ":besieger_party_faction_no", ":besieger_party"),
+        (this_or_next|eq, ":besieger_party_faction_no", ":kingdom_a"),
+        (eq, ":besieger_party_faction_no", ":kingdom_b"),
+        (call_script, "script_lift_siege", ":cur_center", 0),
+      (try_end),
+
+      (try_begin),
+        (this_or_next|eq, "$players_kingdom", ":kingdom_a"),
+        (eq, "$players_kingdom", ":kingdom_b"),
+
+        (ge, "$g_player_besiege_town", 0),
+        (party_is_active, "$g_player_besiege_town"),
+
+        (store_faction_of_party, ":besieged_center_faction_no", "$g_player_besiege_town"),
+
+        (this_or_next|eq, ":besieged_center_faction_no", ":kingdom_a"),
+        (eq, ":besieged_center_faction_no", ":kingdom_b"),
+
+        (call_script, "script_lift_siege", "$g_player_besiege_town", 0),
+        (assign, "$g_player_besiege_town", -1),
+      (try_end),
+
+      (try_begin),
+        (eq, ":initializing_war_peace_cond", 1),
+        (str_store_faction_name_link, s1, ":kingdom_a"),
+        (str_store_faction_name_link, s2, ":kingdom_b"),
+        (display_log_message, "@{s1} and {s2} have made peace with each other.", message_alert),
+        (call_script, "script_add_notification_menu", "mnu_notification_peace_declared", ":kingdom_a", ":kingdom_b"), #stability penalty for early peace is in the menu
+        (call_script, "script_event_kingdom_make_peace_with_kingdom", ":kingdom_a", ":kingdom_b"), #cancels quests
+        (call_script, "script_event_kingdom_make_peace_with_kingdom", ":kingdom_b", ":kingdom_a"), #cancels quests
+        (assign, "$g_recalculate_ais", 1),
+      (try_end),
+
+	  (try_begin), #add truce
+		(store_add, ":truce_slot", ":kingdom_a", slot_faction_truce_days_with_factions_begin),
+		(val_sub, ":truce_slot", kingdoms_begin),
+		##diplomacy begin
+	    #(faction_set_slot, ":kingdom_b", ":truce_slot", 40),
+        ##nested diplomacy start+ replace "20" with constant for truce length
+#        (faction_set_slot, ":kingdom_b", ":truce_slot", 20),
+        (faction_set_slot, ":kingdom_b", ":truce_slot", dplmc_treaty_truce_days_initial),
+        ##nested diplomacy end+
+	    ##diplomacy end
+		(store_add, ":truce_slot", ":kingdom_b", slot_faction_truce_days_with_factions_begin),
+		(val_sub, ":truce_slot", kingdoms_begin),
+	    ##diplomacy begin
+	    #(faction_set_slot, ":kingdom_a", ":truce_slot", 40),
+        ##nested diplomacy start+ replace "20" with constant for truce length
+        #(faction_set_slot, ":kingdom_a", ":truce_slot", 20),
+        (faction_set_slot, ":kingdom_a", ":truce_slot", dplmc_treaty_truce_days_initial),
+        ##nested diplomacy end+
+        ##diplomacy end
+		(store_add, ":slot_war_damage_inflicted_on_b", ":kingdom_b", slot_faction_war_damage_inflicted_on_factions_begin),
+		(val_sub, ":slot_war_damage_inflicted_on_b", kingdoms_begin),
+		#(faction_get_slot, ":damage_inflicted_by_a", ":kingdom_a", ":slot_war_damage_inflicted_on_b"),
+		(faction_set_slot, ":kingdom_a", ":slot_war_damage_inflicted_on_b", 0),
+		(store_add, ":slot_war_damage_inflicted_on_a", ":kingdom_a", slot_faction_war_damage_inflicted_on_factions_begin),
+		(val_sub, ":slot_war_damage_inflicted_on_a", kingdoms_begin),
+		#(faction_get_slot, ":damage_inflicted_by_b", ":kingdom_b", ":slot_war_damage_inflicted_on_a"),
+		(faction_set_slot, ":kingdom_b", ":slot_war_damage_inflicted_on_a", 0),
+	  (try_end),
+  ]),
+
+("event_kingdom_make_peace_with_kingdom",
+    [
+      (store_script_param_1, ":source_kingdom"),
+      (store_script_param_2, ":target_kingdom"),
+      (try_begin),
+        (check_quest_active, "qst_capture_prisoners"),
+        (try_begin),
+          (eq, "$players_kingdom", ":source_kingdom"),
+          (quest_slot_eq, "qst_capture_prisoners", slot_quest_target_faction, ":target_kingdom"),
+          (call_script, "script_cancel_quest", "qst_capture_prisoners"),
+        (else_try),
+          (eq, "$players_kingdom", ":target_kingdom"),
+          (quest_slot_eq, "qst_capture_prisoners", slot_quest_target_faction, ":source_kingdom"),
+          (call_script, "script_cancel_quest", "qst_capture_prisoners"),
+        (try_end),
+      (try_end),
+
+      (try_begin),
+        (check_quest_active, "qst_capture_enemy_hero"),
+        (try_begin),
+          (eq, "$players_kingdom", ":source_kingdom"),
+          (quest_slot_eq, "qst_capture_enemy_hero", slot_quest_target_faction, ":target_kingdom"),
+          (call_script, "script_cancel_quest", "qst_capture_enemy_hero"),
+        (else_try),
+          (eq, "$players_kingdom", ":target_kingdom"),
+          (quest_slot_eq, "qst_capture_enemy_hero", slot_quest_target_faction, ":source_kingdom"),
+          (call_script, "script_cancel_quest", "qst_capture_enemy_hero"),
+        (try_end),
+      (try_end),
+
+
+
+      (try_begin),
+        (check_quest_active, "qst_persuade_lords_to_make_peace"),
+        (quest_get_slot, ":lord_1", "qst_persuade_lords_to_make_peace", slot_quest_target_troop),
+        (quest_get_slot, ":lord_2", "qst_persuade_lords_to_make_peace", slot_quest_object_troop),
+
+        (try_begin),
+            (lt, ":lord_1", 0),
+            (val_mul, ":lord_1", -1),
+        (try_end),
+        (try_begin),
+            (lt, ":lord_2", 0),
+            (val_mul, ":lord_2", -1),
+        (try_end),
+
+
+        (store_faction_of_troop, ":lord_1_faction", ":lord_1"),
+        (store_faction_of_troop, ":lord_2_faction", ":lord_2"),
+
+        (this_or_next|eq, ":lord_1_faction", ":source_kingdom"),
+            (eq, ":lord_2_faction", ":source_kingdom"),
+
+        (this_or_next|eq, ":lord_1_faction", ":target_kingdom"),
+            (eq, ":lord_2_faction", ":target_kingdom"),
+
+        (call_script, "script_cancel_quest", "qst_persuade_lords_to_make_peace"),
+
+      (try_end),
+
+      #Rescue prisoners cancelled in simple_triggers
+
+      (try_begin),
+        #SB : better checking, also adds rtr for co-ruler
+        (this_or_next|eq, "$players_kingdom", ":source_kingdom"),
+        (eq, "$players_kingdom", ":target_kingdom"),
+        (call_script, "script_dplmc_get_troop_standing_in_faction", "trp_player", "$players_kingdom"),
+        (ge, reg0, DPLMC_FACTION_STANDING_LEADER_SPOUSE),
+        (call_script, "script_change_player_right_to_rule", 3),
+      (try_end),
+
+  ]),
 ]

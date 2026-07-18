@@ -371,4 +371,137 @@ training_ground_scripts = [
      ]),
 
   #script_start_fucking
+
+("get_random_melee_training_weapon",
+   [
+     (assign, ":weapon_1", -1),
+     (assign, ":weapon_2", -1),
+     (store_random_in_range, ":random_no", 0, 3),
+     (try_begin),
+       (eq, ":random_no", 0),
+       (assign, ":weapon_1", "itm_practice_staff"),
+     (else_try),
+       (eq, ":random_no", 1),
+       (assign, ":weapon_1", "itm_practice_sword"),
+       (assign, ":weapon_2", "itm_practice_shield"),
+     (else_try),
+       (assign, ":weapon_1", "itm_heavy_practice_sword"),
+     (try_end),
+     (assign, reg0, ":weapon_1"),
+     (assign, reg1, ":weapon_2"),
+     ]),
+
+("cf_is_melee_weapon_for_tutorial",
+    [
+      (store_script_param, ":item_no", 1),
+      (assign, ":result", 0),
+      (try_begin),
+        (this_or_next|eq, ":item_no", "itm_quarter_staff"),
+        (eq, ":item_no", "itm_practice_sword"),
+        (assign, ":result", 1),
+      (try_end),
+      (eq, ":result", 1),
+     ]),
+
+("agents_cheer_during_training", [
+      (party_get_morale, ":cur_morale", "p_main_party"),
+      (assign, ":boundary", 150),
+    #first aid double-stacks since it's not a battle
+      (try_for_agents, ":agent_no"),
+        (agent_is_active, ":agent_no"),
+        (agent_is_human, ":agent_no"),
+        # (agent_get_troop_id, ":troop_no", ":agent_no"), #a spectator
+        (neg|agent_has_item_equipped, ":agent_no", "itm_practice_boots"),
+        (store_random_in_range, ":random_no", ":cur_morale", 250),
+        (gt, ":random_no", ":boundary"),
+        (val_add, ":boundary", 15),
+        (agent_set_animation, ":agent_no", "anim_cheer"),
+        (store_random_in_range, ":random_no", 0, 100),
+        (agent_set_animation_progress, ":agent_no", ":random_no"),
+      (try_end),
+    ]),
+
+("troop_set_training_health_from_agent", [
+      (party_get_skill_level, ":first_aid", "p_main_party", "skl_first_aid"),
+    #first aid double-stacks since it's not a battle
+      (try_for_agents, ":agent_no"),
+        # (agent_is_active, ":agent_no"),
+        (agent_is_human, ":agent_no"),
+        (agent_get_troop_id, ":troop_no", ":agent_no"),
+        (troop_is_hero, ":troop_no"),
+        (store_troop_health, ":health", ":troop_no", 0), #this is not yet deducted
+        (store_agent_hit_points, ":hp", ":agent_no", 0),
+        (val_sub, ":hp", ":health"), #this is the difference
+        (try_begin),
+          (agent_is_alive, ":agent_no"),
+          (store_skill_level, ":skill", "skl_first_aid", ":troop_no"),
+          (val_add, ":skill", ":first_aid"),
+        (else_try),
+          (assign, ":skill", ":first_aid"),
+        (try_end),
+        (val_mul, ":skill", -5),  #as per skill description
+        (val_add, ":skill", 100), # 100 - skill effect
+        #apply skill effect and set health
+        (val_mul, ":hp", ":skill"),
+        (val_div, ":hp", 100),
+        (val_add, ":hp", ":health"), #subtract modified difference
+        (troop_set_health, ":troop_no", ":hp", 0),
+      (try_end),
+    ]),
+
+("agent_apply_training_health", [
+      (store_script_param_1, ":agent_no"),
+      # (store_script_param_2, "$current_town"),
+
+      (party_get_skill_level, ":first_aid", "p_main_party", "skl_first_aid"),
+      (party_get_slot, ":relation", "$current_town", slot_center_player_relation), #range from -100 to 100
+      (store_sub, ":relation", 200, ":relation"), #300 to 100
+
+      (store_troop_health, ":health", "trp_player", 0), #this is not yet deducted
+      (store_agent_hit_points, ":hp", ":agent_no", 0),
+
+      (val_sub, ":hp", ":health"), #this is the difference (non-positive)
+      (try_begin),
+        (agent_is_alive, ":agent_no"),
+        (store_skill_level, ":skill", "skl_first_aid", "trp_player"),
+      (else_try),
+        (assign, ":skill", 0),
+      (try_end),
+      (val_add, ":skill", ":first_aid"),
+      (val_mul, ":skill", -5),  #as per skill description
+      (val_add, ":skill", 100), # 100 - skill effect
+      #apply skill effect, relation effect and set health
+      (val_mul, ":hp", ":skill"),
+      (val_div, ":hp", 100),
+      (val_mul, ":hp", ":relation"),
+      (val_div, ":hp", 200),
+      (val_add, ":health", ":hp"), #subtract modified difference
+      (val_max, ":health", 5),
+      (troop_set_health, "trp_player", ":health", 0),
+    ]),
+
+("get_proficient_melee_training_weapon",
+    [
+        (store_script_param, ":troop_no", 1),
+        (store_proficiency_level, ":onehands", ":troop_no", wpt_one_handed_weapon),
+        (store_proficiency_level, ":twohands", ":troop_no", wpt_two_handed_weapon),
+        (store_proficiency_level, ":polearms", ":troop_no", wpt_polearm),
+
+        (assign, ":item_no", -1),
+        (try_begin), #practice shield will be added automatically
+          (ge, ":onehands", ":twohands"),
+          (ge, ":onehands", ":polearms"),
+          # (agent_equip_item, ":agent_no", "itm_practice_shield"),
+          (assign, ":item_no", "itm_practice_sword"),
+        (else_try),
+          (ge, ":twohands", ":onehands"),
+          (ge, ":twohands", ":polearms"),
+          (assign, ":item_no", "itm_heavy_practice_sword"),
+        (else_try),
+          (ge, ":polearms", ":onehands"),
+          (ge, ":polearms", ":twohands"),
+          (assign, ":item_no", "itm_practice_staff"),
+        (try_end),
+        (assign, reg0, ":item_no"),
+    ]),
 ]
