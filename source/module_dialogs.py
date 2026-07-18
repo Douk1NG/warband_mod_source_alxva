@@ -37518,33 +37518,20 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
                     ], "We are the free brothers.\
  We will fight only for ourselves from now on.\
  Now give us your gold or taste our steel.", "deserter_talk",[]],
-##  [anyone|plyr,"deserter_talk", [(check_quest_active, "qst_bring_back_deserters"),
-##                                 (quest_get_slot, ":target_deserter_troop", "qst_bring_back_deserters", slot_quest_target_troop),
-##                                 (party_count_members_of_type, ":num_deserters", "$g_encountered_party",":target_deserter_troop"),
-##                                 (gt, ":num_deserters", 1)],
-##   "If you surrender to me now, you will rejoin the army of your kingdom without being punished. Otherwise you'll get a taste of my sword.", "deserter_join_as_prisoner",[]],
   [anyone|plyr,"deserter_talk", [], "When I'm done with you, you'll regret ever leaving your army.", "close_window",[]],
   [anyone|plyr,"deserter_talk", [], "There's no need to fight. I am ready to pay for free passage.", "deserter_barter",[]],
 
-##  [anyone,"deserter_join_as_prisoner", [(call_script, "script_party_calculate_strength", "p_main_party"),
-##                                        (assign, ":player_strength", reg0),
-##                                        (store_encountered_party,":encountered_party"),
-##                                        (call_script, "script_party_calculate_strength", ":encountered_party"),
-##                                        (assign, ":enemy_strength", reg0),
-##                                        (val_mul, ":enemy_strength", 2),
-##                                        (ge, ":player_strength", ":enemy_strength")],
-##   "All right we join you then.", "close_window",[(assign, "$g_enemy_surrenders", 1)]],
-##  [anyone,"deserter_join_as_prisoner", [], "TODO: We will never surrender!", "close_window",[(encounter_attack)]],
 ## CC
   [anyone|plyr,"deserter_talk",
     [
-      # (store_num_free_stacks,":stack_left","p_main_party"),
-      # (party_stack_get_troop_id, ":troop_no", "$g_encountered_party", 0),
-      # (this_or_next|gt, ":stack_left", 0),
-      # (main_party_has_troop, ":troop_no"),
       (party_can_join),
-
+      #SB : gate on player renown (variable, not hardcoded) so the option actually appears
+      (troop_get_slot, ":player_renown", "trp_player", slot_troop_renown),
+      (ge, ":player_renown", dplmc_deserter_recruit_renown),
+      #SB : and only when the deserter faction matches the player's faction (kingdom or its rebels)
       (store_troop_faction, ":faction", "$g_talk_troop"), #top stack rarely dies from attrition
+      (this_or_next|eq, "$players_kingdom", ":faction"),
+      (eq, "$supported_pretender_old_faction", ":faction"),
       (try_begin), #allow player's kingdom to accept deserters of same culture
         (faction_slot_eq, "fac_player_supporters_faction", slot_faction_state, sfs_active),
         (is_between, "$g_player_culture", npc_kingdoms_begin, npc_kingdoms_end),
@@ -37555,10 +37542,21 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
         (call_script, "script_faction_get_adjective_to_s10", ":faction"),
         (assign, reg10, 0),
       (try_end),
-      (this_or_next|eq, "$players_kingdom", ":faction"),
-      (eq, "$supported_pretender_old_faction", ":faction"),
 
     ], "I will reward you and provide protection if you {reg10?enlist in my:rejoin the {s10}} army.", "deserter_recruit",[]],
+  #SB : free recruit when the player outnumbers/outmatches the deserters (no penalty)
+  [anyone|plyr,"deserter_talk",
+    [
+      (ge, "$g_strength_ratio", 100), #player party is stronger than the deserters
+      (party_can_join),
+    ], "You're outmatched here. Lay down your arms and join my banner -- no coin, no questions.", "deserter_recruit_free",[]],
+  [anyone,"deserter_recruit_free", [], "A winning cause beats starving in the hills. We're with you.", "close_window",
+    [
+      (call_script, "script_party_add_party", "p_main_party", "$g_encountered_party"),
+      (party_detach, "$g_encountered_party"),
+      (remove_party, "$g_encountered_party"),
+      (assign, "$g_leave_encounter", 1),
+    ]],
   [anyone,"deserter_recruit", [
   (call_script, "script_dplmc_print_subordinate_says_sir_madame_to_s0"),
   ], "How generous, {s0}. Show us {reg5} denars, then we will consider joining you.", "deserter_recruit_2",

@@ -5237,12 +5237,13 @@ npcs_scripts = [
      (store_current_hours, ":current_time"),
      (store_sub, ":entry_hours_elapsed", ":current_time", ":entry_time"),
 
-#Post 0907 changes begin
+	#Post 0907 changes begin
      (assign, ":players_kingdom_relation", 0), ##the below is so that lords will not congratulate player on attacking neutrals
-	 (try_begin),
+     (try_begin),
         (gt, "$players_kingdom", 0),
+        (gt, ":troop_object_faction", 0),
 		(store_relation, ":players_kingdom_relation", "$players_kingdom", ":troop_object_faction"),
-	 (try_end),
+     (try_end),
 
      (try_begin),
        (eq, "$cheat_mode", -1), #temporarily disabled

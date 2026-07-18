@@ -1261,6 +1261,7 @@ slot_party_template_lair_party    		= 4
 slot_party_template_lair_spawnpoint     = 5
 
 slot_party_template_lair_next_spawn = 6
+slot_party_template_respawn_cooldown = 2  #SB : armed respawn cooldown for bandit/pirate types
 
 
 # Ryan END
@@ -1872,6 +1873,19 @@ num_desert_bandit_spawn_points = 1
 num_black_khergit_spawn_points = 1
 num_sea_raider_spawn_points = 2
 
+#SB : bandit / deserter population control
+num_max_bandit_parties_per_type = 18   #max active parties per bandit type (was 16)
+num_max_deserter_party_size = 20       #max troops in a deserter party (was player_level*2+11)
+num_max_bandit_party_size = 20        #max troops in a roaming bandit/looter party (mirrors deserter cap)
+bandit_lair_respawn_hours = 72         #hours a destroyed lair stays gone (3 days)
+bandit_respawn_cooldown_hours = 336    #(legacy) was the old full-wipe block; respawn is now a per-type 1/day trickle
+bandit_respawn_interval_hours = 24     #hours between individual party respawns (trickle rhythm, cap at max_parties)
+manhunter_bandits_per_manhunter = 2    #manhunter cap = total active bandits / this (2:1 bandit-to-manhunter)
+num_max_manhunters = 36                #hard cap on manhunter parties
+num_max_pirate_ships = 5               #total active pirate ships across all 3 types (treated as one bandit type)
+num_max_pirate_ship_size = 15          #max troops in a single pirate ship party
+num_max_looters = 18                   #max active looter parties
+
 peak_prisoner_trains = 4
 peak_kingdom_caravans = 12
 peak_kingdom_messengers = 3
@@ -2360,6 +2374,8 @@ dplmc_ransom_debt_mask = 100000
 dplmc_companion_skill_renown = 3
 dplmc_companion_emissary_renown = 2
 dplmc_companion_battle_renown = 1
+
+dplmc_deserter_recruit_renown = 500 #minimum player renown required to recruit deserters into the party
 
 #the following used in mnu_party_size_report, script_game_get_party_companion_limit, script_party_get_ideal_size
 dplmc_castle_party_bonus  = 20

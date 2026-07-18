@@ -1864,6 +1864,16 @@ economy_scripts = [
 	    (assign, ":final_price_for_secondary_input", 0),
 	  (try_end),
 
+	  #Scale production by town prosperity tier (rich towns produce more, poor towns less; overhead stays fixed)
+	  (call_script, "script_get_enterprise_prosperity_numerator", ":center"),
+	  (assign, ":prosperity_num", reg0),
+	  (val_mul, ":final_price_for_total_produced_goods", ":prosperity_num"),
+	  (val_div, ":final_price_for_total_produced_goods", 100),
+	  (val_mul, ":final_price_for_total_inputs", ":prosperity_num"),
+	  (val_div, ":final_price_for_total_inputs", 100),
+	  (val_mul, ":final_price_for_secondary_input", ":prosperity_num"),
+	  (val_div, ":final_price_for_secondary_input", 100),
+
 	  (store_sub, ":profit_per_cycle", ":final_price_for_total_produced_goods", ":final_price_for_total_inputs"),
 	  (val_sub, ":profit_per_cycle", ":price_of_labor"),
 	  (val_sub, ":profit_per_cycle", ":final_price_for_secondary_input"),
@@ -2644,4 +2654,29 @@ economy_scripts = [
 	(try_end),
     ]
   ),
+
+("get_enterprise_prosperity_numerator", [
+	#reg0: prosperity quantity numerator (denominator is 100) for the given center.
+	#      very poor (<30): 50 | poor (30-49): 75 | normal (50-69): 100 | rich (70-89): 150 | very rich (90-100): 200
+	#Used so rich towns produce more goods (and earn more) while poor towns produce less.
+	# INPUTS:
+	#   arg1: center
+      (store_script_param, ":center", 1),
+      (party_get_slot, ":prosperity", ":center", slot_town_prosperity),
+      (try_begin),
+        (lt, ":prosperity", 30),
+        (assign, reg0, 50),
+      (else_try),
+        (lt, ":prosperity", 50),
+        (assign, reg0, 75),
+      (else_try),
+        (lt, ":prosperity", 70),
+        (assign, reg0, 100),
+      (else_try),
+        (lt, ":prosperity", 90),
+        (assign, reg0, 150),
+      (else_try),
+        (assign, reg0, 200),
+      (try_end),
+    ]),
 ]

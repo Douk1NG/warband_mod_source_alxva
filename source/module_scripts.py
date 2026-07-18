@@ -40,6 +40,7 @@ from scripts.centers.tavern_scripts import tavern_scripts
 from scripts.features.item_modifiers_scripts import item_modifiers_scripts
 from scripts.features.inventory_scripts import inventory_scripts
 from scripts.features.weapon_toggle_scripts import weapon_toggle_scripts
+from scripts.features.bandit_spawn_scripts import bandit_spawn_scripts
 
 ##diplomacy start+
 from module_factions import dplmc_factions_begin, dplmc_factions_end, dplmc_non_generic_factions_begin
@@ -123,6 +124,7 @@ scripts.extend(feast_scripts)
 scripts.extend(item_modifiers_scripts)
 scripts.extend(inventory_scripts)
 scripts.extend(weapon_toggle_scripts)
+scripts.extend(bandit_spawn_scripts)
 
 
 # modmerger_start version=201 type=2

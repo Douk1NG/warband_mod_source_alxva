@@ -3527,7 +3527,24 @@ scripts = [
 			(call_script, "script_tpe_initialize_default_design_settings", ":center_no"),
 		(try_end),
 	]),
-	
+
+  # script_tpe_fix_save
+  # Save-repair routine for loaded saves (game_start only runs on new games, so a save loaded
+  # without it can boot with stale/missing TPE design state and spawn garbage combatants). Re-runs
+  # the standard player-settings init (active=1, default weapons, per-town design settings) and clears
+  # any stale tournament participant/roster slots so they rebuild from current module data on entry.
+  # Called once per loaded save from a simple trigger.
+  # Input: none
+  # Output: none
+#   ("tpe_fix_save",
+#     [
+# 		(call_script, "script_tpe_initialize_player_settings"),
+# 		(try_for_range, ":slot", 0, wp_tpe_max_tournament_participants),
+# 			(troop_set_slot, "trp_tournament_participants", ":slot", -1),
+# 			(troop_set_slot, tpe_tournament_roster, ":slot", -1),
+# 		(try_end),
+# 	]),
+
 # script_tpe_hook_switch_between_native_or_tpe
 # Evaluates if TPE is activated and sends the player to the TPE or native menus.
 # Input: none

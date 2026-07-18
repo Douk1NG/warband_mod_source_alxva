@@ -800,10 +800,15 @@ game_menus = [
       ("view_bank_report",[],"View Financial Report",
        [(start_presentation, "prsnt_bank_quickview"),]),
       ("dplmc_show_economic_report",[],"View prosperity report.",
-       [
-        (jump_to_menu, "mnu_dplmc_economic_report"),
+        [
+         (jump_to_menu, "mnu_dplmc_economic_report"),
+         ]
+        ),
+      ("view_spawn_diagnostics",[],"View bandit/pirate population & respawn diagnostics.",
+        [
+          (start_presentation, "prsnt_spawn_diagnostics"),
         ]
-       ),
+        ),
       ("rtr_reports_economy",[],"Return.",
        [(jump_to_menu, "mnu_reports"),
         ]
@@ -3575,24 +3580,6 @@ TOTAL:  {reg5}"),
 
 ##diplomacy end
 
-      ###(((toggle_weapons
-      ("toggle_weapons",
-        [
-          (try_begin),
-            (eq, "$g_weapons_set_no", 0),
-            (assign, reg1, 2),
-          (else_try),
-            (assign, reg1, 1),
-          (try_end),
-        ],
-        "Toggle weapons to set {reg1} for all heroes.",
-        [
-          (val_add, "$g_weapons_set_no", 1),
-          (val_mod, "$g_weapons_set_no", 2),
-          # strict_mode
-          (call_script, "script_all_toggle_weapons_set", 1),
-        ]),
-      ###)))
       ###(((manage_inventory
       ("camp_manage_inventory",[],"Manage your inventory.",
         [
@@ -5165,6 +5152,25 @@ TOTAL:  {reg5}"),
         (try_end),
     ],
     [
+      ("toggle_weapons",
+        [
+          (call_script, "script_get_num_heroes_of_party", "p_main_party", 0),
+          (assign, ":num_of_heroes", reg0),
+          (gt, ":num_of_heroes", 1),
+          (try_begin),
+            (eq, "$g_weapons_set_no", 0),
+            (assign, reg1, 2),
+          (else_try),
+            (assign, reg1, 1),
+          (try_end),
+        ],
+        "Toggle weapons to set {reg1} for heroes.",
+        [
+          (val_add, "$g_weapons_set_no", 1),
+          (val_mod, "$g_weapons_set_no", 2),
+          (call_script, "script_all_toggle_weapons_set", 0),
+        ]),
+
       ("encounter_attack",
       [
         (eq, "$encountered_party_friendly", 0),
@@ -6546,6 +6552,25 @@ TOTAL:  {reg5}"),
         (try_end),
       ],
     [
+      ("toggle_weapons",
+        [
+          (call_script, "script_get_num_heroes_of_party", "p_main_party", 0),
+          (assign, ":num_of_heroes", reg0),
+          (gt, ":num_of_heroes", 1),
+          (try_begin),
+            (eq, "$g_weapons_set_no", 0),
+            (assign, reg1, 2),
+          (else_try),
+            (assign, reg1, 1),
+          (try_end),
+        ],
+        "Toggle weapons to set {reg1} for heroes.",
+        [
+          (val_add, "$g_weapons_set_no", 1),
+          (val_mod, "$g_weapons_set_no", 2),
+          (call_script, "script_all_toggle_weapons_set", 0),
+        ]),
+
       ("join_attack",
       [
         (neg|troop_is_wounded, "trp_player"),
@@ -6977,6 +7002,25 @@ TOTAL:  {reg5}"),
         (try_end),
         ],
     [
+      ("toggle_weapons",
+        [
+          (call_script, "script_get_num_heroes_of_party", "p_main_party", 0),
+          (assign, ":num_of_heroes", reg0),
+          (gt, ":num_of_heroes", 1),
+          (try_begin),
+            (eq, "$g_weapons_set_no", 0),
+            (assign, reg1, 2),
+          (else_try),
+            (assign, reg1, 1),
+          (try_end),
+        ],
+        "Toggle weapons to set {reg1} for heroes.",
+        [
+          (val_add, "$g_weapons_set_no", 1),
+          (val_mod, "$g_weapons_set_no", 2),
+          (call_script, "script_all_toggle_weapons_set", 0),
+        ]),
+
       ("talk_to_siege_commander",[]," Request a meeting with the commander.",[
                                 (call_script, "script_get_meeting_scene"), (assign, ":meeting_scene", reg0),
                                 (modify_visitors_at_site,":meeting_scene"),(reset_visitors),
@@ -8023,6 +8067,25 @@ TOTAL:  {reg5}"),
         (try_end),
     ],
     [
+      ("toggle_weapons",
+        [
+          (call_script, "script_get_num_heroes_of_party", "p_main_party", 0),
+          (assign, ":num_of_heroes", reg0),
+          (gt, ":num_of_heroes", 1),
+          (try_begin),
+            (eq, "$g_weapons_set_no", 0),
+            (assign, reg1, 2),
+          (else_try),
+            (assign, reg1, 1),
+          (try_end),
+        ],
+        "Toggle weapons to set {reg1} for heroes.",
+        [
+          (val_add, "$g_weapons_set_no", 1),
+          (val_mod, "$g_weapons_set_no", 2),
+          (call_script, "script_all_toggle_weapons_set", 0),
+        ]),
+
       ("siege_request_meeting",[(eq, "$cant_talk_to_enemy", 0)],"Call for a meeting with the castle commander.", [
           (assign, "$cant_talk_to_enemy", 1),
           (assign, "$g_enemy_surrenders",0),
@@ -9555,6 +9618,25 @@ TOTAL:  {reg5}"),
         # (assign, "$new_encounter", 0),
         ],
     [
+      ("toggle_weapons",
+        [
+          (call_script, "script_get_num_heroes_of_party", "p_main_party", 0),
+          (assign, ":num_of_heroes", reg0),
+          (gt, ":num_of_heroes", 1),
+          (try_begin),
+            (eq, "$g_weapons_set_no", 0),
+            (assign, reg1, 2),
+          (else_try),
+            (assign, reg1, 1),
+          (try_end),
+        ],
+        "Toggle weapons to set {reg1} for heroes.",
+        [
+          (val_add, "$g_weapons_set_no", 1),
+          (val_mod, "$g_weapons_set_no", 2),
+          (call_script, "script_all_toggle_weapons_set", 0),
+        ]),
+
       ("siege_defender_castle",
       [
 
@@ -18776,9 +18858,9 @@ goods, and books will never be sold. ^^You can change some settings here freely.
           (party_template_slot_eq, ":bandit_template", slot_party_template_lair_party, "$g_encountered_party"),
           (party_template_set_slot, ":bandit_template", slot_party_template_lair_party, 0),
 
-          #dckplmc
+           #dckplmc
            (store_current_hours, ":cur_hours"),
-           (val_add, ":cur_hours", 168), #spawn again 1 week later
+           (val_add, ":cur_hours", bandit_lair_respawn_hours), #spawn again after configured delay
            (party_template_set_slot, ":bandit_template", slot_party_template_lair_next_spawn, ":cur_hours"),
 
         (try_end),
@@ -18953,6 +19035,10 @@ goods, and books will never be sold. ^^You can change some settings here freely.
         (try_for_range, ":bandit_template", bandit_party_templates_begin, bandit_party_templates_end), #SB : template range
           (party_template_slot_eq, ":bandit_template", slot_party_template_lair_party, "$g_encountered_party"),
           (party_template_set_slot, ":bandit_template", slot_party_template_lair_party, 0),
+          #dckplmc : keep this bandit type suppressed for the configured delay
+          (store_current_hours, ":cur_hours"),
+          (val_add, ":cur_hours", bandit_lair_respawn_hours),
+          (party_template_set_slot, ":bandit_template", slot_party_template_lair_next_spawn, ":cur_hours"),
         (try_end),
 
         (party_get_template_id, ":template", "$g_encountered_party"),
@@ -19034,6 +19120,10 @@ goods, and books will never be sold. ^^You can change some settings here freely.
         (try_for_range, ":bandit_template", bandit_party_templates_begin, bandit_party_templates_end), #SB : template range
           (party_template_slot_eq, ":bandit_template", slot_party_template_lair_party, "$g_encountered_party"),
           (party_template_set_slot, ":bandit_template", slot_party_template_lair_party, 0),
+          #dckplmc : keep this bandit type suppressed for the configured delay
+          (store_current_hours, ":cur_hours"),
+          (val_add, ":cur_hours", bandit_lair_respawn_hours),
+          (party_template_set_slot, ":bandit_template", slot_party_template_lair_next_spawn, ":cur_hours"),
         (try_end),
 
         (try_begin),
