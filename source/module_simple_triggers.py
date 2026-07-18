@@ -42,6 +42,11 @@ simple_triggers = [
   # after a game is loaded, so saved games pick up retuned values without requiring a new game.
   # script_initialize_item_info is also called from script_game_start on a new game; this covers loaded
   # saves, whose item slots are frozen at first start. Runs once per session via the guard flag.
+  (1.0,
+   [
+     (assign, ":ctdn_1", 0),
+   ]),
+
   # (1.0,
   #  [
   #    (eq, "$g_enterprise_init_done", 0),
@@ -52,6 +57,11 @@ simple_triggers = [
   # Repair TPE tournament state on loaded saves (game_start only runs on new games, so a loaded
   # save can boot with stale/missing TPE design state). Mirrors the script_initialize_item_info
   # load-fix above. Runs once per loaded save via the guard flag; harmless on healthy saves.
+  (1.0,
+   [
+     (assign, ":ctdn_2", 0),
+   ]),
+
   # (1.0,
   #  [
   #    (eq, "$g_tpe_save_repaired", 0),
@@ -1771,21 +1781,22 @@ simple_triggers = [
     # This strips trp_player from any non-p_main_party party where it is a member,
     # while keeping it in p_main_party so siege/garrison leadership works.
     # TODO: find the actual siege merge/split path and remove this once fixed.
-    # (try_begin),
-         # (main_party_has_troop, "trp_player"),
-         # Strip trp_player from any OTHER party it may be stuck in after a siege merge.
-         # (try_for_parties, ":party_no"),
-            # (neg|eq, ":party_no", "p_main_party"),
-            # (party_count_members_of_type, ":count", ":party_no", "trp_player"),
-            # (gt, ":count", 0),
-            # (party_remove_members, ":party_no", "trp_player", ":count"),
-         # (try_end),
-      # (else_try),
-         # (party_add_members, "p_main_party", "trp_player", 1),
-         # (display_message, "@DEBUG: PLAYER CHARACTER RESTORED TO PARTY",0xFF2222),
-      # (try_end),
+    #  (try_begin),
+    #       (main_party_has_troop, "trp_player"),
+    #       #Strip trp_player from any OTHER party it may be stuck in after a siege merge.
+    #       (try_for_parties, ":party_no"),
+    #          (neg|eq, ":party_no", "p_main_party"),
+    #          (party_count_members_of_type, ":count", ":party_no", "trp_player"),
+    #          (gt, ":count", 0),
+    #          (party_remove_members, ":party_no", "trp_player", ":count"),
+    #       (try_end),
+    #    (else_try),
+    #       (party_add_members, "p_main_party", "trp_player", 1),
+    #       (display_message, "@DEBUG: PLAYER CHARACTER RESTORED TO PARTY",0xFF2222),
+    #    (try_end),
    
-      #(call_script, "script_process_kingdom_parties_ai"), #moved to below trigger (per 1 hour) in order to allow it processed more frequent.
+    #   (call_script, "script_process_kingdom_parties_ai"),
+      #moved to below trigger (per 1 hour) in order to allow it processed more frequent.
     ]),
 
    # Process alarms - perhaps break this down into several groups, with a modula
