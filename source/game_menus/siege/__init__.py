@@ -1,0 +1,26 @@
+# -*- coding: cp1254 -*-
+# package initializer for siege menus
+
+from game_menus.siege.mnu_cut_siege_without_fight import cut_siege_without_fight_menu
+from game_menus.siege.mnu_besiegers_camp_with_allies import besiegers_camp_with_allies_menu
+from game_menus.siege.mnu_siege_attack_meets_sally import siege_attack_meets_sally_menu
+from game_menus.siege.mnu_castle_besiege_inner_battle import castle_besiege_inner_battle_menu
+from game_menus.siege.mnu_construct_ladders import construct_ladders_menu
+from game_menus.siege.mnu_construct_siege_tower import construct_siege_tower_menu
+from game_menus.siege.mnu_castle_attack_walls_simulate import castle_attack_walls_simulate_menu
+from game_menus.siege.mnu_castle_attack_walls_with_allies_simulate import castle_attack_walls_with_allies_simulate_menu
+from game_menus.siege.mnu_siege_join_defense import siege_join_defense_menu
+from game_menus.siege.mnu_enter_your_own_castle import enter_your_own_castle_menu
+
+siege_menus = []
+siege_menus.extend(cut_siege_without_fight_menu)
+siege_menus.extend(besiegers_camp_with_allies_menu)
+siege_menus.extend(siege_attack_meets_sally_menu)
+siege_menus.extend(castle_besiege_inner_battle_menu)
+siege_menus.extend(construct_ladders_menu)
+siege_menus.extend(construct_siege_tower_menu)
+siege_menus.extend(castle_attack_walls_simulate_menu)
+siege_menus.extend(castle_attack_walls_with_allies_simulate_menu)
+siege_menus.extend(siege_join_defense_menu)
+siege_menus.extend(enter_your_own_castle_menu)
+

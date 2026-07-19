@@ -1,0 +1,14 @@
+# -*- coding: cp1254 -*-
+# package initializer for sneak menus
+
+from game_menus.sneak.mnu_sneak_into_town_suceeded import sneak_into_town_suceeded_menu
+from game_menus.sneak.mnu_sneak_into_town_caught import sneak_into_town_caught_menu
+from game_menus.sneak.mnu_sneak_into_town_caught_dispersed_guards import sneak_into_town_caught_dispersed_guards_menu
+from game_menus.sneak.mnu_sneak_into_town_caught_ran_away import sneak_into_town_caught_ran_away_menu
+
+sneak_menus = []
+sneak_menus.extend(sneak_into_town_suceeded_menu)
+sneak_menus.extend(sneak_into_town_caught_menu)
+sneak_menus.extend(sneak_into_town_caught_dispersed_guards_menu)
+sneak_menus.extend(sneak_into_town_caught_ran_away_menu)
+

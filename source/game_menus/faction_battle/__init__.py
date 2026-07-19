@@ -1,0 +1,16 @@
+# -*- coding: cp1254 -*-
+# package initializer for faction_battle menus
+
+from game_menus.faction_battle.mnu_leave_faction import leave_faction_menu
+from game_menus.faction_battle.mnu_give_center_to_player import give_center_to_player_menu
+from game_menus.faction_battle.mnu_give_center_to_player_2 import give_center_to_player_2_menu
+from game_menus.faction_battle.mnu_oath_fulfilled import oath_fulfilled_menu
+from game_menus.faction_battle.mnu_siege_started_defender import siege_started_defender_menu
+
+faction_battle_menus = []
+faction_battle_menus.extend(leave_faction_menu)
+faction_battle_menus.extend(give_center_to_player_menu)
+faction_battle_menus.extend(give_center_to_player_2_menu)
+faction_battle_menus.extend(oath_fulfilled_menu)
+faction_battle_menus.extend(siege_started_defender_menu)
+

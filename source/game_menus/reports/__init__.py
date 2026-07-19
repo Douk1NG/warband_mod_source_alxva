@@ -1,0 +1,38 @@
+# -*- coding: cp1254 -*-
+# package initializer for reports menus
+
+from game_menus.reports.mnu_reports import reports_menu
+from game_menus.reports.mnu_reports_character import reports_character_menu
+from game_menus.reports.mnu_reports_faction import reports_faction_menu
+from game_menus.reports.mnu_reports_economy import reports_economy_menu
+from game_menus.reports.mnu_cheat_reports import cheat_reports_menu
+from game_menus.reports.mnu_morale_report import morale_report_menu
+from game_menus.reports.mnu_courtship_relations import courtship_relations_menu
+from game_menus.reports.mnu_lord_relations import lord_relations_menu
+from game_menus.reports.mnu_companion_report import companion_report_menu
+from game_menus.reports.mnu_character_report import character_report_menu
+from game_menus.reports.mnu_party_size_report import party_size_report_menu
+from game_menus.reports.mnu_faction_relations_report import faction_relations_report_menu
+from game_menus.reports.mnu_center_reports import center_reports_menu
+from game_menus.reports.mnu_price_and_production import price_and_production_menu
+from game_menus.reports.mnu_dplmc_affiliated_family_report import dplmc_affiliated_family_report_menu
+from game_menus.reports.mnu_dplmc_economic_report import dplmc_economic_report_menu
+
+reports_menus = []
+reports_menus.extend(reports_menu)
+reports_menus.extend(reports_character_menu)
+reports_menus.extend(reports_faction_menu)
+reports_menus.extend(reports_economy_menu)
+reports_menus.extend(cheat_reports_menu)
+reports_menus.extend(morale_report_menu)
+reports_menus.extend(courtship_relations_menu)
+reports_menus.extend(lord_relations_menu)
+reports_menus.extend(companion_report_menu)
+reports_menus.extend(character_report_menu)
+reports_menus.extend(party_size_report_menu)
+reports_menus.extend(faction_relations_report_menu)
+reports_menus.extend(center_reports_menu)
+reports_menus.extend(price_and_production_menu)
+reports_menus.extend(dplmc_affiliated_family_report_menu)
+reports_menus.extend(dplmc_economic_report_menu)
+

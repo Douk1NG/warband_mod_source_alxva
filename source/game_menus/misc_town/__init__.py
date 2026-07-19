@@ -1,0 +1,42 @@
+# -*- coding: cp1254 -*-
+# package initializer for misc_town menus
+
+from game_menus.misc_town.mnu_town_bandits_failed import town_bandits_failed_menu
+from game_menus.misc_town.mnu_town_bandits_succeeded import town_bandits_succeeded_menu
+from game_menus.misc_town.mnu_village_steal_cattle_confirm import village_steal_cattle_confirm_menu
+from game_menus.misc_town.mnu_cannot_enter_court import cannot_enter_court_menu
+from game_menus.misc_town.mnu_lady_visit import lady_visit_menu
+from game_menus.misc_town.mnu_disembark import disembark_menu
+from game_menus.misc_town.mnu_ship_reembark import ship_reembark_menu
+from game_menus.misc_town.mnu_enemy_offer_ransom_for_prisoner import enemy_offer_ransom_for_prisoner_menu
+from game_menus.misc_town.mnu_town_cheats import town_cheats_menu
+from game_menus.misc_town.mnu_town_cheats_2 import town_cheats_2_menu
+from game_menus.misc_town.mnu_rename_court import rename_court_menu
+from game_menus.misc_town.mnu_export_import import export_import_menu
+from game_menus.misc_town.mnu_display_party_slots import display_party_slots_menu
+from game_menus.misc_town.mnu_party_cheat import party_cheat_menu
+from game_menus.misc_town.mnu_display_troop_slots import display_troop_slots_menu
+from game_menus.misc_town.mnu_town_tavern_prostitution import town_tavern_prostitution_menu
+from game_menus.misc_town.mnu_town_tavern_prostitution_results import town_tavern_prostitution_results_menu
+from game_menus.misc_town.mnu_buy_ship import buy_ship_menu
+
+misc_town_menus = []
+misc_town_menus.extend(town_bandits_failed_menu)
+misc_town_menus.extend(town_bandits_succeeded_menu)
+misc_town_menus.extend(village_steal_cattle_confirm_menu)
+misc_town_menus.extend(cannot_enter_court_menu)
+misc_town_menus.extend(lady_visit_menu)
+misc_town_menus.extend(disembark_menu)
+misc_town_menus.extend(ship_reembark_menu)
+misc_town_menus.extend(enemy_offer_ransom_for_prisoner_menu)
+misc_town_menus.extend(town_cheats_menu)
+misc_town_menus.extend(town_cheats_2_menu)
+misc_town_menus.extend(rename_court_menu)
+misc_town_menus.extend(export_import_menu)
+misc_town_menus.extend(display_party_slots_menu)
+misc_town_menus.extend(party_cheat_menu)
+misc_town_menus.extend(display_troop_slots_menu)
+misc_town_menus.extend(town_tavern_prostitution_menu)
+misc_town_menus.extend(town_tavern_prostitution_results_menu)
+misc_town_menus.extend(buy_ship_menu)
+

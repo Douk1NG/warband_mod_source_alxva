@@ -1,0 +1,30 @@
+# -*- coding: cp1254 -*-
+# package initializer for town menus
+
+from game_menus.town.mnu_town import town_menu
+from game_menus.town.mnu_town_trade import town_trade_menu
+from game_menus.town.mnu_dickplo_town_manage import dickplo_town_manage_menu
+from game_menus.town.mnu_dplmc_trade_auto_sell_begin import dplmc_trade_auto_sell_begin_menu
+from game_menus.town.mnu_dplmc_trade_auto_buy_food_begin import dplmc_trade_auto_buy_food_begin_menu
+from game_menus.town.mnu_town_trade_assessment_begin import town_trade_assessment_begin_menu
+from game_menus.town.mnu_town_pre_hire_troops import town_pre_hire_troops_menu
+from game_menus.town.mnu_town_hire_troops import town_hire_troops_menu
+from game_menus.town.mnu_town_hire_farmers import town_hire_farmers_menu
+from game_menus.town.mnu_town_hire_cutthroats import town_hire_cutthroats_menu
+from game_menus.town.mnu_town_hire_knights import town_hire_knights_menu
+from game_menus.town.mnu_town_trade_assessment import town_trade_assessment_menu
+
+town_menus = []
+town_menus.extend(town_menu)
+town_menus.extend(town_trade_menu)
+town_menus.extend(dickplo_town_manage_menu)
+town_menus.extend(dplmc_trade_auto_sell_begin_menu)
+town_menus.extend(dplmc_trade_auto_buy_food_begin_menu)
+town_menus.extend(town_trade_assessment_begin_menu)
+town_menus.extend(town_pre_hire_troops_menu)
+town_menus.extend(town_hire_troops_menu)
+town_menus.extend(town_hire_farmers_menu)
+town_menus.extend(town_hire_cutthroats_menu)
+town_menus.extend(town_hire_knights_menu)
+town_menus.extend(town_trade_assessment_menu)
+

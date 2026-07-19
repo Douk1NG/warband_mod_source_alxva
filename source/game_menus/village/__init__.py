@@ -1,0 +1,42 @@
+# -*- coding: cp1254 -*-
+# package initializer for village menus
+
+from game_menus.village.mnu_village import village_menu
+from game_menus.village.mnu_village_hostile_action import village_hostile_action_menu
+from game_menus.village.mnu_recruit_volunteers_dickplo_main import recruit_volunteers_dickplo_main_menu
+from game_menus.village.mnu_recruit_volunteers import recruit_volunteers_menu
+from game_menus.village.mnu_village_hunt_down_fugitive_defeated import village_hunt_down_fugitive_defeated_menu
+from game_menus.village.mnu_village_hunt_down_fugitive_persuaded import village_hunt_down_fugitive_persuaded_menu
+from game_menus.village.mnu_village_infest_bandits_result import village_infest_bandits_result_menu
+from game_menus.village.mnu_village_infestation_removed import village_infestation_removed_menu
+from game_menus.village.mnu_village_steal_cattle import village_steal_cattle_menu
+from game_menus.village.mnu_village_take_food_confirm import village_take_food_confirm_menu
+from game_menus.village.mnu_village_take_food import village_take_food_menu
+from game_menus.village.mnu_village_start_attack import village_start_attack_menu
+from game_menus.village.mnu_village_loot_no_resist import village_loot_no_resist_menu
+from game_menus.village.mnu_village_loot_complete import village_loot_complete_menu
+from game_menus.village.mnu_village_enslave_complete import village_enslave_complete_menu
+from game_menus.village.mnu_village_loot_defeat import village_loot_defeat_menu
+from game_menus.village.mnu_village_loot_continue import village_loot_continue_menu
+from game_menus.village.mnu_close import close_menu
+
+village_menus = []
+village_menus.extend(village_menu)
+village_menus.extend(village_hostile_action_menu)
+village_menus.extend(recruit_volunteers_dickplo_main_menu)
+village_menus.extend(recruit_volunteers_menu)
+village_menus.extend(village_hunt_down_fugitive_defeated_menu)
+village_menus.extend(village_hunt_down_fugitive_persuaded_menu)
+village_menus.extend(village_infest_bandits_result_menu)
+village_menus.extend(village_infestation_removed_menu)
+village_menus.extend(village_steal_cattle_menu)
+village_menus.extend(village_take_food_confirm_menu)
+village_menus.extend(village_take_food_menu)
+village_menus.extend(village_start_attack_menu)
+village_menus.extend(village_loot_no_resist_menu)
+village_menus.extend(village_loot_complete_menu)
+village_menus.extend(village_enslave_complete_menu)
+village_menus.extend(village_loot_defeat_menu)
+village_menus.extend(village_loot_continue_menu)
+village_menus.extend(close_menu)
+
