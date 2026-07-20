@@ -1,0 +1,157 @@
+# -*- coding: cp1254 -*-
+from header_common import *
+from header_operations import *
+from module_constants import *
+from module_constants import *
+from header_parties import *
+from header_skills import *
+from header_mission_templates import *
+from header_items import *
+from header_triggers import *
+from header_terrain_types import *
+from header_music import *
+from header_map_icons import *
+from ID_animations import *
+from ID_strings import str_key_0
+from module_factions import dplmc_factions_begin, dplmc_factions_end, dplmc_non_generic_factions_begin
+
+setup_random_scene_scripts = [
+("setup_random_scene",
+    [
+      (party_get_current_terrain, ":terrain_type", "p_main_party"),
+      (assign, ":scene_to_use", "scn_random_scene"),
+      (try_begin),
+        (eq, ":terrain_type", rt_steppe),
+        (assign, ":scene_to_use", "scn_random_scene_steppe"),
+      (else_try),
+        (eq, ":terrain_type", rt_plain),
+        (assign, ":scene_to_use", "scn_random_scene_plain"),
+      (else_try),
+        (eq, ":terrain_type", rt_snow),
+        (assign, ":scene_to_use", "scn_random_scene_snow"),
+      (else_try),
+        (eq, ":terrain_type", rt_desert),
+        (assign, ":scene_to_use", "scn_random_scene_desert"),
+      (else_try),
+        (eq, ":terrain_type", rt_steppe_forest),
+        (assign, ":scene_to_use", "scn_random_scene_steppe_forest"),
+      (else_try),
+        (eq, ":terrain_type", rt_forest),
+        (assign, ":scene_to_use", "scn_random_scene_plain_forest"),
+      (else_try),
+        (eq, ":terrain_type", rt_snow_forest),
+        (assign, ":scene_to_use", "scn_random_scene_snow_forest"),
+      (else_try),
+        (eq, ":terrain_type", rt_desert_forest),
+        (assign, ":scene_to_use", "scn_random_scene_desert_forest"),
+      (else_try),
+        (this_or_next|eq, ":terrain_type", rt_river),
+        (eq, ":terrain_type", rt_water),
+        (assign,  ":scene_to_use", "scn_sea_boarding_a_a"),
+
+        (party_get_slot, ":ship_type", "p_main_party", slot_party_ship_type),
+
+        (try_begin),
+          (eq, "$g_joined_battle_to_help", 1),
+          (party_get_slot, ":ship_type", "$g_ally_party", slot_party_ship_type),
+        (try_end),
+
+        (party_get_slot, ":enemy_ship_type", "$g_enemy_party", slot_party_ship_type),
+
+        (assign, reg0, ":ship_type"),
+        (assign, reg1, ":enemy_ship_type"),
+        (display_message, "@our ship: {reg0}, enemy ship: {reg1}"),
+
+        (try_begin),
+          (eq, ":ship_type", 1),
+          (assign, "$g_player_attacker", 1),
+          (try_begin),
+            (eq, ":enemy_ship_type", 1),
+            (assign,  ":scene_to_use", "scn_sea_boarding_a_a"),
+          (else_try),
+            (eq, ":enemy_ship_type", 2),
+            (assign,  ":scene_to_use", "scn_sea_boarding_a_b"),
+          (else_try),
+            (eq, ":enemy_ship_type", 3),
+            (assign,  ":scene_to_use", "scn_sea_boarding_a_c"),
+          (else_try),
+            (eq, ":enemy_ship_type", 4),
+            (assign,  ":scene_to_use", "scn_sea_boarding_a_d"),
+          (try_end),
+        (else_try),
+          (eq,  ":ship_type", 2),
+          (assign, "$g_player_attacker", 1),
+          (try_begin),
+            (eq, ":enemy_ship_type", 1),
+            (assign, "$g_player_attacker", 0),
+            (assign,  ":scene_to_use", "scn_sea_boarding_a_b"),
+          (else_try),
+            (eq, ":enemy_ship_type", 2),
+            (assign,  ":scene_to_use", "scn_sea_boarding_b_b"),
+          (else_try),
+            (eq, ":enemy_ship_type", 3),
+            (assign,  ":scene_to_use", "scn_sea_boarding_b_c"),
+          (else_try),
+            (eq, ":enemy_ship_type", 4),
+            (assign,  ":scene_to_use", "scn_sea_boarding_b_d"),
+          (try_end),
+        (else_try),
+          (eq,  ":ship_type", 3),
+          (assign, "$g_player_attacker", 1),
+          (try_begin),
+            (eq, ":enemy_ship_type", 1),
+            (assign, "$g_player_attacker", 0),
+            (assign,  ":scene_to_use", "scn_sea_boarding_a_c"),
+          (else_try),
+            (eq, ":enemy_ship_type", 2),
+            (assign, "$g_player_attacker", 0),
+            (assign,  ":scene_to_use", "scn_sea_boarding_b_c"),
+          (else_try),
+            (eq, ":enemy_ship_type", 3),
+            (assign,  ":scene_to_use", "scn_sea_boarding_c_c"),
+          (else_try),
+            (eq, ":enemy_ship_type", 4),
+            (assign, "$g_player_attacker", 0), #
+            (assign,  ":scene_to_use", "scn_sea_boarding_c_d"),
+          (try_end),
+        (else_try),
+          (eq,  ":ship_type", 4),
+          (assign, "$g_player_attacker", 0),
+          (try_begin),
+            (eq, ":enemy_ship_type", 1),
+            (assign,  ":scene_to_use", "scn_sea_boarding_a_d"),
+          (else_try),
+            (eq, ":enemy_ship_type", 2),
+            (assign,  ":scene_to_use", "scn_sea_boarding_b_d"),
+          (else_try),
+            (eq, ":enemy_ship_type", 3),
+            (assign, "$g_player_attacker", 1), #
+            (assign,  ":scene_to_use", "scn_sea_boarding_c_d"),
+          (else_try),
+            (eq, ":enemy_ship_type", 4),
+            (assign, "$g_player_attacker", 1),
+            (assign,  ":scene_to_use", "scn_sea_boarding_d_d"),
+          (try_end),
+        (try_end),
+
+        (try_begin),
+          (eq, "$g_joined_battle_to_help", 1),
+          (set_jump_mission,"mt_ship_battle"),
+        (else_try),
+          (eq, "$g_player_attacker", 1),
+          (set_jump_mission,"mt_ship_battle"),
+        (else_try),
+          (set_jump_mission,"mt_ship_battle_reversed"),
+        (try_end),
+
+       (try_for_range, ":entry_no", 0, 5),
+         (mission_tpl_entry_set_override_flags, "mt_ship_battle", ":entry_no", af_override_horse),
+         (mission_tpl_entry_set_override_flags, "mt_ship_battle_reversed", ":entry_no", af_override_horse),
+       (try_end),
+      (else_try),
+        (eq, ":terrain_type", rt_bridge),
+        (assign, ":scene_to_use", "scn_random_scene_plain"),
+      (try_end),
+      (jump_to_scene,":scene_to_use"),
+  ])
+]

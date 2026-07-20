@@ -1,3 +1,9 @@
+# ======================================================================
+# SHARED DEPENDENCY
+# Entity: total_victory (menu)
+# Called by menus in 2 domains: battle, siege
+# ======================================================================
+
 # -*- coding: cp1254 -*-
 from header_game_menus import *
 from header_parties import *

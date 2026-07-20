@@ -1,3 +1,9 @@
+# ======================================================================
+# SHARED DEPENDENCY
+# Entity: auto_return (menu)
+# Called by menus in 2 domains: character_creation, court
+# ======================================================================
+
 # -*- coding: cp1254 -*-
 from header_game_menus import *
 from header_parties import *

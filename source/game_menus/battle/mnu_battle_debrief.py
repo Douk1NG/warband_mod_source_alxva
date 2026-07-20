@@ -1,3 +1,9 @@
+# ======================================================================
+# SHARED DEPENDENCY
+# Entity: battle_debrief (menu)
+# Called by menus in 3 domains: battle, siege, village
+# ======================================================================
+
 # -*- coding: cp1254 -*-
 from header_game_menus import *
 from header_parties import *

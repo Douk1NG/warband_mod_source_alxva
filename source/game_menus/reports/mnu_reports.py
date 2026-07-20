@@ -1,3 +1,9 @@
+# ======================================================================
+# SHARED DEPENDENCY
+# Entity: reports (menu)
+# Called by menus in 4 domains: cheats, diplomacy, kingdom_management, reports
+# ======================================================================
+
 # -*- coding: cp1254 -*-
 from header_game_menus import *
 from header_parties import *

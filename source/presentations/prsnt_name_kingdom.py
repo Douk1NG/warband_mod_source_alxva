@@ -1,3 +1,9 @@
+# ======================================================================
+# SHARED DEPENDENCY
+# Entity: name_kingdom (presentation)
+# Called by menus in 5 domains: camp, character_creation, cheats, kingdom_management, town
+# ======================================================================
+
 # -*- coding: cp1254 -*-
 import string
 from header_common import *

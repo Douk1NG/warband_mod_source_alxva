@@ -1,3 +1,9 @@
+# ======================================================================
+# SHARED DEPENDENCY
+# Entity: center_manage (menu)
+# Called by menus in 5 domains: center_management, cheats, court, town, village
+# ======================================================================
+
 # -*- coding: cp1254 -*-
 from header_game_menus import *
 from header_parties import *

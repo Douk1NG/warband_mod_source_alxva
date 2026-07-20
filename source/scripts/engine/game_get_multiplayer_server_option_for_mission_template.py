@@ -1,0 +1,147 @@
+# -*- coding: cp1254 -*-
+from header_common import *
+from header_operations import *
+from module_constants import *
+from header_parties import *
+from header_skills import *
+from header_mission_templates import *
+from header_items import *
+from header_triggers import *
+from header_terrain_types import *
+from header_music import *
+from header_map_icons import *
+from ID_animations import *
+
+game_get_multiplayer_server_option_for_mission_template_scripts = [
+# script_game_get_multiplayer_server_option_for_mission_template
+# Input: arg1 = mission_template_id, arg2 = option_index
+# Output: trigger_result = 1 for option available, 0 for not available
+# reg0 = option_value
+("game_get_multiplayer_server_option_for_mission_template",
+   [
+     (store_script_param, ":mission_template_id", 1),
+     (store_script_param, ":option_index", 2),
+     (try_begin),
+       (eq, ":option_index", 0),
+       (assign, reg0, "$g_multiplayer_team_1_faction"),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 1),
+       (assign, reg0, "$g_multiplayer_team_2_faction"),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 2),
+       (assign, reg0, "$g_multiplayer_num_bots_team_1"),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 3),
+       (assign, reg0, "$g_multiplayer_num_bots_team_2"),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 4),
+       (server_get_friendly_fire, reg0),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 5),
+       (server_get_melee_friendly_fire, reg0),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 6),
+       (server_get_friendly_fire_damage_self_ratio, reg0),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 7),
+       (server_get_friendly_fire_damage_friend_ratio, reg0),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 8),
+       (server_get_ghost_mode, reg0),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 9),
+       (server_get_control_block_dir, reg0),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 10),
+       (server_get_combat_speed, reg0),
+       (set_trigger_result, 1),
+     (else_try),
+       (try_begin),
+         (eq, ":mission_template_id", "mt_multiplayer_hq"),
+         (val_add, ":option_index", 1), #max game time
+       (try_end),
+       (eq, ":option_index", 11),
+       (assign, reg0, "$g_multiplayer_game_max_minutes"),
+       (set_trigger_result, 1),
+     (else_try),
+       (try_begin),
+         (neq, ":mission_template_id", "mt_multiplayer_bt"),
+         (neq, ":mission_template_id", "mt_multiplayer_fd"),
+         (neq, ":mission_template_id", "mt_multiplayer_sg"),
+         (val_add, ":option_index", 1), #max round time
+       (try_end),
+       (eq, ":option_index", 12),
+       (assign, reg0, "$g_multiplayer_round_max_seconds"),
+       (set_trigger_result, 1),
+     (else_try),
+       (try_begin),
+         (neq, ":mission_template_id", "mt_multiplayer_bt"),
+         (neq, ":mission_template_id", "mt_multiplayer_fd"),
+         (val_add, ":option_index", 1), #respawn as bot
+       (try_end),
+       (eq, ":option_index", 13),
+       (assign, reg0, "$g_multiplayer_player_respawn_as_bot"),
+       (set_trigger_result, 1),
+     (else_try),
+       (try_begin),
+         (neq, ":mission_template_id", "mt_multiplayer_sg"),
+         (val_add, ":option_index", 1), #respawn limit
+       (try_end),
+       (eq, ":option_index", 14),
+       (assign, reg0, "$g_multiplayer_number_of_respawn_count"),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 15),
+       (assign, reg0, "$g_multiplayer_game_max_points"),
+       (set_trigger_result, 1),
+     (else_try),
+       (try_begin),
+         (neq, ":mission_template_id", "mt_multiplayer_hq"),
+         (val_add, ":option_index", 1), #point gained from flags
+       (try_end),
+       (eq, ":option_index", 16),
+       (assign, reg0, "$g_multiplayer_point_gained_from_flags"),
+       (set_trigger_result, 1),
+     (else_try),
+       (try_begin),
+         (neq, ":mission_template_id", "mt_multiplayer_cf"),
+         (val_add, ":option_index", 1), #point gained from capturing flag
+       (try_end),
+       (eq, ":option_index", 17),
+       (assign, reg0, "$g_multiplayer_point_gained_from_capturing_flag"),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 18),
+       (assign, reg0, "$g_multiplayer_respawn_period"),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 19),
+       (assign, reg0, "$g_multiplayer_initial_gold_multiplier"),
+       (set_trigger_result, 1),
+     (else_try),
+       (eq, ":option_index", 20),
+       (assign, reg0, "$g_multiplayer_battle_earnings_multiplier"),
+       (set_trigger_result, 1),
+     (else_try),
+       (try_begin),
+         (neq, ":mission_template_id", "mt_multiplayer_bt"),
+         (neq, ":mission_template_id", "mt_multiplayer_fd"),
+         (neq, ":mission_template_id", "mt_multiplayer_sg"),
+         (val_add, ":option_index", 1),
+       (try_end),
+       (eq, ":option_index", 21),
+       (assign, reg0, "$g_multiplayer_round_earnings_multiplier"),
+       (set_trigger_result, 1),
+     (try_end),
+     ])
+]

@@ -1,0 +1,191 @@
+# -*- coding: cp1254 -*-
+from header_common import *
+from header_operations import *
+from module_constants import *
+from module_constants import *
+from header_parties import *
+from header_skills import *
+from header_mission_templates import *
+from header_items import *
+from header_triggers import *
+from header_terrain_types import *
+from header_music import *
+from header_map_icons import *
+from ID_animations import *
+
+troop_agent_set_banner_scripts = [
+#script_troop_agent_set_banner
+# INPUT: agent_no
+# OUTPUT: none
+("troop_agent_set_banner",
+    [
+       (store_script_param, ":tableau_no",1),
+       (store_script_param, ":agent_no", 2),
+       (store_script_param, ":troop_no", 3),
+       # (call_script, "script_agent_troop_get_banner_mesh", ":agent_no", ":troop_no"),
+       # (cur_agent_set_banner_tableau_material, ":tableau_no", reg0),
+
+       (assign, ":banner_troop", -1),
+       #(assign, ":banner_mesh", 0),
+
+       (try_begin),
+         (lt, ":agent_no", 0),
+         (try_begin),
+           (ge, ":troop_no", 0),
+           (this_or_next|troop_slot_ge, ":troop_no", slot_troop_banner_scene_prop, 1),
+           (eq, ":troop_no", "trp_player"),
+           (assign, ":banner_troop", ":troop_no"),
+         (else_try),
+           (ge, ":troop_no", 0),
+           (troop_slot_eq, ":troop_no", slot_troop_banner_scene_prop, -1),
+           (troop_slot_ge, ":troop_no", slot_troop_custom_banner_map_flag_type, 0),
+           (assign, ":banner_troop", ":troop_no"),
+         (else_try),
+           (is_between, ":troop_no", companions_begin, companions_end),
+           (assign, ":banner_troop", "trp_player"),
+         (else_try),
+           (is_between, ":troop_no", kingdom_ladies_begin, kingdom_ladies_end),
+           (neg|troop_slot_eq, ":troop_no", slot_troop_occupation, slto_kingdom_hero),
+           (troop_slot_eq, ":troop_no", slot_troop_spouse, "trp_player"),
+           (assign, ":banner_troop", "trp_player"),
+         (else_try),
+           (assign, ":banner_troop", -2),
+         (try_end),
+       (else_try),
+         (eq, "$g_is_quick_battle", 1),
+         (agent_get_team, ":agent_team", ":agent_no"),
+         (try_begin),
+           (eq, ":agent_team", 0),
+           (assign, ":banner_troop", -2),
+         (else_try),
+           (assign, ":banner_troop", -3),
+         (try_end),
+         # (try_begin),
+            # (is_between, ":banner_mesh", banner_meshes_begin, arms_meshes_begin), #dckplmc - back colors
+            # (store_sub, ":banner_offset", ":banner_mesh", banner_meshes_begin),
+            # (store_add, ":banner_mesh", ":banner_offset", arms_meshes_begin),
+         # (try_end),
+       (else_try),
+         (game_in_multiplayer_mode),
+         (agent_get_group, ":agent_group", ":agent_no"),
+         (try_begin),
+           (neg|player_is_active, ":agent_group"),
+           (agent_get_player_id, ":agent_group", ":agent_no"),
+         (try_end),
+         (try_begin),
+           #if player banners are not allowed, use the default banner mesh
+           (eq, "$g_multiplayer_allow_player_banners", 1),
+           (player_is_active, ":agent_group"),
+           (player_get_banner_id, ":player_banner", ":agent_group"),
+           (ge, ":player_banner", 0),
+           (store_add, ":banner_troop", ":player_banner", arms_meshes_begin),
+           (assign, ":already_used", 0),
+           (try_for_range, ":cur_faction", npc_kingdoms_begin, npc_kingdoms_end), #wrong client data check
+             (faction_slot_eq, ":cur_faction", slot_faction_banner, ":banner_troop"),
+             (assign, ":already_used", 1),
+           (try_end),
+           (eq, ":already_used", 0), #otherwise use the default banner mesh
+         (else_try),
+           (agent_get_team, ":agent_team", ":agent_no"),
+           (team_get_faction, ":team_faction_no", ":agent_team"),
+
+           (try_begin),
+             (agent_is_human, ":agent_no"),
+             (faction_get_slot, ":banner_troop", ":team_faction_no", slot_faction_banner),
+           (else_try),
+             (agent_get_rider, ":rider_agent_no", ":agent_no"),
+             #(agent_get_position, pos1, ":agent_no"),
+             #(position_get_x, ":pos_x", pos1),
+             #(position_get_y, ":pos_y", pos1),
+             #(assign, reg0, ":pos_x"),
+             #(assign, reg1, ":pos_y"),
+             #(assign, reg2, ":agent_no"),
+             #(display_message, "@{!}agent_no:{reg2}, pos_x:{reg0} , posy:{reg1}"),
+             (try_begin),
+               (ge, ":rider_agent_no", 0),
+               (agent_is_active, ":rider_agent_no"),
+               (agent_get_team, ":rider_agent_team", ":rider_agent_no"),
+               (team_get_faction, ":rider_team_faction_no", ":rider_agent_team"),
+               (faction_get_slot, ":banner_troop", ":rider_team_faction_no", slot_faction_banner),
+             (else_try),
+               (assign, ":banner_troop", -4),
+             (try_end),
+           (try_end),
+         (try_end),
+       (else_try),
+         #(agent_get_troop_id, ":troop_id", ":agent_no"),
+         #(this_or_next|troop_slot_ge,  ":troop_id", slot_troop_banner_scene_prop, 1),
+         (this_or_next|troop_slot_ge,  ":troop_no", slot_troop_banner_scene_prop, 1),
+         (eq, ":troop_no", "trp_player"),
+         (assign, ":banner_troop", ":troop_no"),
+       (else_try),
+         (troop_slot_eq,  ":troop_no", slot_troop_banner_scene_prop, -1),
+         (troop_slot_ge, ":troop_no", slot_troop_custom_banner_map_flag_type, 0),
+         (assign, ":banner_troop", ":troop_no"),
+
+       (else_try),
+         (agent_get_troop_id, ":troop_id", ":agent_no"),
+         (agent_get_party_id, ":agent_party", ":agent_no"),
+         (try_begin),
+           (lt, ":agent_party", 0),
+           (is_between, ":troop_id", companions_begin, companions_end),
+           (main_party_has_troop, ":troop_id"),
+           (assign, ":agent_party", "p_main_party"),
+         (try_end),
+         (ge, ":agent_party", 0),
+         (party_get_template_id, ":party_template", ":agent_party"),
+         (try_begin),
+           (eq, ":party_template", "pt_deserters"),
+           (assign, ":banner_troop", -3),
+         (else_try),
+           (is_between, ":agent_party", centers_begin, centers_end),
+           (is_between, ":troop_id", companions_begin, companions_end),
+           (neg|troop_slot_eq, ":troop_no", slot_troop_occupation, slto_kingdom_hero), #dckplmc
+           (neq, "$talk_context", tc_tavern_talk),
+           #this should be a captured companion in prison
+           (assign, ":banner_troop", "trp_player"),
+         (else_try),
+           (is_between, ":agent_party", centers_begin, centers_end),
+           (party_get_slot, ":town_lord", "$g_encountered_party", slot_town_lord),
+           (ge, ":town_lord", 0),
+           (assign, ":banner_troop", ":town_lord"),
+         (else_try),
+           (this_or_next|party_slot_eq, ":agent_party", slot_party_type, spt_kingdom_hero_party),
+           (eq, ":agent_party", "p_main_party"),
+           (party_get_num_companion_stacks, ":num_stacks", ":agent_party"),
+           (gt, ":num_stacks", 0),
+           (party_stack_get_troop_id, ":leader_troop_id", ":agent_party", 0),
+           (this_or_next|troop_slot_ge,  ":leader_troop_id", slot_troop_banner_scene_prop, 1),
+           (eq, ":leader_troop_id", "trp_player"),
+           (assign, ":banner_troop", ":leader_troop_id"),
+         (else_try),
+           (party_slot_eq, ":agent_party", slot_party_type, spt_kingdom_hero_party),
+           (party_get_num_companion_stacks, ":num_stacks", ":agent_party"),
+           (gt, ":num_stacks", 0),
+           (party_stack_get_troop_id, ":leader_troop_id", ":agent_party", 0),
+           (troop_slot_eq,  ":leader_troop_id", slot_troop_banner_scene_prop, -1),
+           (troop_slot_ge, ":leader_troop_id", slot_troop_custom_banner_map_flag_type, 0),
+           (assign, ":banner_troop", ":leader_troop_id"),
+         (try_end),
+       (else_try), #Check if we are in a tavern
+         (eq, "$talk_context", tc_tavern_talk),
+         (neq, ":troop_no", "trp_player"),
+         (assign, ":banner_troop", -4),
+       (else_try), #camp
+         (eq, "$talk_context", tc_camp_talk),
+         (assign, ":banner_troop", "trp_player"),
+       (else_try), #can't find party, this can be a town guard
+         (neq, ":troop_no", "trp_player"),
+         (is_between, "$g_encountered_party", walled_centers_begin, walled_centers_end),
+         (party_get_slot, ":town_lord", "$g_encountered_party", slot_town_lord),
+         (ge, ":town_lord", 0),
+         (assign, ":banner_troop", ":town_lord"),
+       (try_end),
+
+       # (str_store_troop_name, s0, ":troop_no"),
+       # (display_message, s0),
+       #(cur_agent_set_banner_tableau_material, ":tableau_no", ":troop_no"),
+       (cur_agent_set_banner_tableau_material, ":tableau_no", ":banner_troop"),
+
+     ])
+]

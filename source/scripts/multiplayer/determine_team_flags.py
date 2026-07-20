@@ -1,0 +1,126 @@
+# -*- coding: cp1254 -*-
+from header_common import *
+from header_operations import *
+from module_constants import *
+from header_parties import *
+from header_skills import *
+from header_mission_templates import *
+from header_items import *
+from header_triggers import *
+from header_terrain_types import *
+from header_music import *
+from header_map_icons import *
+from ID_animations import *
+
+determine_team_flags_scripts = [
+("determine_team_flags",
+   [
+     (store_script_param, ":team_no", 1),
+
+     (try_begin),
+       (eq, "$g_multiplayer_game_type", multiplayer_game_type_capture_the_flag),
+
+       (try_begin),
+         (eq, ":team_no", 0),
+
+         (team_get_faction, ":team_faction_no", 0),
+         (try_begin),
+           (eq, ":team_faction_no", "fac_kingdom_1"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_1"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_2"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_2"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_3"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_3"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_4"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_4"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_5"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_5"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_6"),
+           (assign, "$team_1_flag_scene_prop", "spr_ctf_flag_kingdom_6"),
+         (try_end),
+       (else_try),
+         (team_get_faction, ":team_faction_no", 1),
+         (try_begin),
+           (eq, ":team_faction_no", "fac_kingdom_1"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_1"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_2"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_2"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_3"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_3"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_4"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_4"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_5"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_5"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_6"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_6"),
+         (try_end),
+
+         (try_begin),
+           (eq, "$team_1_flag_scene_prop", "$team_2_flag_scene_prop"),
+           (assign, "$team_2_flag_scene_prop", "spr_ctf_flag_kingdom_7"),
+         (try_end),
+       (try_end),
+     (else_try),
+       (try_begin),
+         (eq, ":team_no", 0),
+
+         (team_get_faction, ":team_faction_no", 0),
+         (try_begin),
+           (eq, ":team_faction_no", "fac_kingdom_1"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_swadian"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_2"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_vaegir"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_3"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_khergit"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_4"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_nord"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_5"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_rhodok"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_6"),
+           (assign, "$team_1_flag_scene_prop", "spr_headquarters_flag_sarranid"),
+         (try_end),
+       (else_try),
+         (team_get_faction, ":team_faction_no", 1),
+         (try_begin),
+           (eq, ":team_faction_no", "fac_kingdom_1"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_swadian"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_2"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_vaegir"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_3"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_khergit"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_4"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_nord"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_5"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_rhodok"),
+         (else_try),
+           (eq, ":team_faction_no", "fac_kingdom_6"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_sarranid"),
+         (try_end),
+
+         (try_begin),
+           (eq, "$team_1_flag_scene_prop", "$team_2_flag_scene_prop"),
+           (assign, "$team_2_flag_scene_prop", "spr_headquarters_flag_rebel"),
+         (try_end),
+       (try_end),
+     (try_end),
+   ])
+]

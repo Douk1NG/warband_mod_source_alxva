@@ -1,3 +1,9 @@
+# ======================================================================
+# SHARED DEPENDENCY
+# Entity: dplmc_policy_management (presentation)
+# Called by menus in 2 domains: camp, diplomacy
+# ======================================================================
+
 # -*- coding: cp1254 -*-
 import string
 from header_common import *

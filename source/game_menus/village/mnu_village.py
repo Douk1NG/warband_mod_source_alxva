@@ -1,3 +1,9 @@
+# ======================================================================
+# SHARED DEPENDENCY
+# Entity: village (menu)
+# Called by menus in 6 domains: cheats, dickplomacy, diplomacy, reports, taxes, village
+# ======================================================================
+
 # -*- coding: cp1254 -*-
 from header_game_menus import *
 from header_parties import *

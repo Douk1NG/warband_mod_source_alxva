@@ -1,0 +1,328 @@
+# -*- coding: cp1254 -*-
+from header_common import *
+from header_operations import *
+from module_constants import *
+from module_constants import *
+from header_parties import *
+from header_skills import *
+from header_mission_templates import *
+from header_items import *
+from header_triggers import *
+from header_terrain_types import *
+from header_music import *
+from header_map_icons import *
+from ID_animations import *
+
+party_set_ai_state_scripts = [
+("party_set_ai_state",
+    [
+      (store_script_param, ":party_no", 1),
+      (store_script_param, ":new_ai_state", 2),
+      (store_script_param, ":new_ai_object", 3),
+
+      (party_get_slot, ":old_ai_state", ":party_no", slot_party_ai_state),
+      (party_get_slot, ":old_ai_object", ":party_no", slot_party_ai_object),
+      (party_get_attached_to, ":attached_to_party", ":party_no"),
+      (assign, ":party_is_in_town", 0),
+      (try_begin),
+        (is_between, ":attached_to_party", centers_begin, centers_end),
+        (assign, ":party_is_in_town", ":attached_to_party"),
+      (try_end),
+
+      (assign, ":commander", -1),
+      (try_begin),
+        (party_is_active, ":party_no"),
+	    (party_stack_get_troop_id, ":commander", ":party_no", 0),
+	    (store_faction_of_party, ":faction_no", ":party_no"),
+	  (try_end),
+
+	  (try_begin),
+	    (lt, ":commander", 0),
+        #sometimes 0 sized parties enter "party_set_ai_state" script. So only discard them
+	    #(try_begin),
+        #  (eq, "$cheat_mode", 1),
+	    #  (str_store_troop_name, s6, ":party_no"),
+        #  (party_get_num_companions, reg6, ":party_no"),
+        #  (display_message, "@{!}DEBUGS : party name is : {s6}, party size is : {reg6}, new ai discarded."),
+        #(try_end),
+	  (else_try),
+	    #Party does any business in town
+	    (try_begin),
+	      (is_between, ":party_is_in_town", walled_centers_begin, walled_centers_end),
+	      (party_slot_eq, ":party_is_in_town", slot_center_is_besieged_by, -1),
+	      (call_script, "script_troop_does_business_in_center", ":commander", ":party_is_in_town"),
+	    (else_try),
+	      (party_slot_eq, ":party_no", slot_party_ai_state, spai_visiting_village),
+	      (party_get_slot, ":party_is_in_village", ":party_no", slot_party_ai_object),
+	      (is_between, ":party_is_in_village", villages_begin, villages_end),
+	      #(party_slot_eq, ":party_is_in_village", slot_center_is_looted_by, -1),
+          (call_script, "script_cf_village_normal_cond", ":party_is_in_village"), #SB : script condition
+		  # (neg|party_slot_eq, ":party_is_in_village", slot_village_state, svs_being_raided),
+		  # (neg|party_slot_eq, ":party_is_in_village", slot_village_state, svs_deserted), #SB : deserted condition
+		  # (neg|party_slot_eq, ":party_is_in_village", slot_village_state, svs_looted),
+	      (store_distance_to_party_from_party, ":distance", ":party_no", ":party_is_in_village"),
+	      (lt, ":distance", 3),
+	      (call_script, "script_troop_does_business_in_center", ":commander", ":party_is_in_village"),
+	    (try_end),
+
+	    (party_set_slot, ":party_no", slot_party_follow_me, 0),
+
+	    (try_begin),
+	      (eq, ":old_ai_state", ":new_ai_state"),
+	      (eq, ":old_ai_object", ":new_ai_object"),
+          #do nothing. Nothing is changed.
+        (else_try),
+          (assign, ":initiative", 100),
+          (assign, ":aggressiveness", 8),
+          (assign, ":courage", 8),
+
+          (try_begin),
+            (this_or_next|eq, ":new_ai_state", spai_accompanying_army),
+            (eq, ":new_ai_state", spai_screening_army),
+
+            (party_set_ai_behavior, ":party_no", ai_bhvr_escort_party),
+            (party_set_ai_object, ":party_no", ":new_ai_object"),
+            (party_set_flags, ":party_no", pf_default_behavior, 0),
+
+            (try_begin),
+              (gt, ":party_is_in_town", 0),
+              (party_detach, ":party_no"),
+            (try_end),
+
+            (try_begin),
+              (eq, ":new_ai_state", spai_screening_army),
+              (assign, ":aggressiveness", 9),
+              (assign, ":courage", 9),
+              (assign, ":initiative", 80),
+            (else_try),
+              (assign, ":aggressiveness", 6),
+              (assign, ":courage", 9),
+              (assign, ":initiative", 10),
+            (try_end),
+          (else_try),
+            (eq, ":new_ai_state", spai_besieging_center),
+
+            (party_get_position, pos1, ":new_ai_object"),
+            (map_get_random_position_around_position, pos2, pos1, 2),
+            (party_set_ai_behavior, ":party_no", ai_bhvr_travel_to_point),
+            (party_set_ai_target_position, ":party_no", pos2),
+            (party_set_ai_object, ":party_no", ":new_ai_object"),
+            (party_set_flags, ":party_no", pf_default_behavior, 0),
+            (party_set_slot, ":party_no", slot_party_follow_me, 1),
+            (party_set_slot, ":party_no", slot_party_ai_substate, 0),
+
+            (try_begin),
+              (gt, ":party_is_in_town", 0),
+              (neq, ":party_is_in_town", ":new_ai_object"),
+              (party_detach, ":party_no"),
+            (try_end),
+
+            (assign, ":aggressiveness", 1),
+            (assign, ":courage", 9),
+            (assign, ":initiative", 20),
+            #(assign, ":initiative", 100),
+          (else_try),
+            (eq, ":new_ai_state", spai_holding_center),
+
+            (party_set_ai_behavior, ":party_no", ai_bhvr_travel_to_party),
+            (party_set_ai_object, ":party_no", ":new_ai_object"),
+            (party_set_flags, ":party_no", pf_default_behavior, 0),
+
+            (try_begin),
+              (gt, ":party_is_in_town", 0),
+              (neq, ":party_is_in_town", ":new_ai_object"),
+              (party_detach, ":party_no"),
+            (try_end),
+
+            (assign, ":aggressiveness", 7),
+            (assign, ":courage", 9),
+            (assign, ":initiative", 100),
+            #(party_set_ai_initiative, ":party_no", 99),
+          (else_try),
+            (eq, ":new_ai_state", spai_patrolling_around_center),
+            (party_get_position, pos1, ":new_ai_object"),
+            (map_get_random_position_around_position, pos2, pos1, 1),
+            (party_set_ai_behavior, ":party_no", ai_bhvr_travel_to_point),
+            (party_set_ai_target_position, ":party_no", pos2),
+            (party_set_ai_object, ":party_no", ":new_ai_object"),
+
+            (try_begin),
+              (faction_slot_eq, ":faction_no", slot_faction_ai_state, sfai_attacking_enemies_around_center),
+              (party_set_ai_patrol_radius, ":party_no", 1), #line 100
+            (else_try),
+              (party_set_ai_patrol_radius, ":party_no", 5), #line 100
+            (try_end),
+
+            (party_set_flags, ":party_no", pf_default_behavior, 0),
+            (party_set_slot, ":party_no", slot_party_follow_me, 1),
+            (party_set_slot, ":party_no", slot_party_ai_substate, 0),
+
+            (try_begin),
+              (gt, ":party_is_in_town", 0),
+              (party_detach, ":party_no"),
+            (try_end),
+
+            (try_begin),
+              #new to avoid losing time of marshal with attacking unimportant targets while there is a threat in our centers.
+              (ge, ":commander", 0),
+              (faction_slot_eq, ":faction_no", slot_faction_marshall, ":commander"),
+	          (faction_slot_eq, ":faction_no", slot_faction_ai_state, sfai_attacking_enemies_around_center),
+
+	          (party_get_position, pos3, ":party_no"),
+	          (get_distance_between_positions, ":distance_to_center", pos1, pos3),
+
+	          (try_begin),
+	            (ge, ":distance_to_center", 800), #added new (1.122)
+                (assign, ":initiative", 10),
+                (assign, ":aggressiveness", 1),
+                (assign, ":courage", 8),
+              (else_try), #below added new (1.122)
+                (assign, ":initiative", 100),
+                (assign, ":aggressiveness", 8),
+                (assign, ":courage", 8),
+              (try_end),
+            (else_try),
+              (assign, ":aggressiveness", 8),
+              (assign, ":courage", 8),
+              (assign, ":initiative", 100),
+            (try_end),
+          (else_try),
+            (eq, ":new_ai_state", spai_visiting_village),
+            (party_get_position, pos1, ":new_ai_object"),
+            (map_get_random_position_around_position, pos2, pos1, 2),
+            (party_set_ai_behavior, ":party_no", ai_bhvr_travel_to_point),
+            (party_set_ai_target_position, ":party_no", pos2),
+            (party_set_ai_object, ":party_no", ":new_ai_object"),
+            (party_set_flags, ":party_no", pf_default_behavior, 0),
+            (party_set_slot, ":party_no", slot_party_ai_substate, 0),
+            (try_begin),
+              (gt, ":party_is_in_town", 0),
+              (neq, ":party_is_in_town", ":new_ai_object"),
+              (party_detach, ":party_no"),
+            (try_end),
+
+            (assign, ":aggressiveness", 8),
+            (assign, ":courage", 8),
+            (assign, ":initiative", 100),
+          (else_try), #0.660: this is where the 1625/1640 bugs happen with an improper ai_object
+            (eq, ":new_ai_state", spai_raiding_around_center),
+            (party_get_position, pos1, ":new_ai_object"),
+            (map_get_random_position_around_position, pos2, pos1, 1),
+            (party_set_ai_behavior, ":party_no", ai_bhvr_patrol_location),
+            (party_set_ai_patrol_radius, ":party_no", 10),
+            (party_set_ai_target_position, ":party_no", pos2),
+            (party_set_ai_object, ":party_no", ":new_ai_object"),
+            (party_set_flags, ":party_no", pf_default_behavior, 0),
+	        (party_set_slot, ":party_no", slot_party_follow_me, 1),
+	        (party_set_slot, ":party_no", slot_party_ai_substate, 0),
+	        (try_begin),
+	          (gt, ":party_is_in_town", 0),
+	          (neq, ":party_is_in_town", ":new_ai_object"),
+	          (party_detach, ":party_no"),
+	        (try_end),
+
+	        (try_begin),
+	          (ge, ":commander", 0),
+	          (faction_slot_eq, ":faction_no", slot_faction_marshall, ":commander"),
+	          (assign, ":aggressiveness", 1),
+	          (assign, ":courage", 8),
+	          (assign, ":initiative", 20),
+	        (else_try),
+	          (assign, ":aggressiveness", 7),
+	          (assign, ":courage", 8),
+	          (assign, ":initiative", 100),
+	        (try_end),
+	      (else_try),
+	        (eq, ":new_ai_state", spai_engaging_army),
+
+	        (party_set_ai_behavior, ":party_no", ai_bhvr_attack_party),
+	        (party_set_ai_object, ":party_no", ":new_ai_object"),
+	        (party_set_flags, ":party_no", pf_default_behavior, 0),
+	        (try_begin),
+	          (gt, ":party_is_in_town", 0),
+	          (party_detach, ":party_no"),
+	        (try_end),
+
+            (try_begin),
+              #new to avoid losing time of marshal with attacking unimportant targets while there is a threat in our centers.
+              (ge, ":commander", 0),
+              (faction_slot_eq, ":faction_no", slot_faction_marshall, ":commander"),
+	          (faction_slot_eq, ":faction_no", slot_faction_ai_state, sfai_attacking_enemies_around_center),
+              (assign, ":initiative", 10),
+              (assign, ":aggressiveness", 1),
+              (assign, ":courage", 8),
+            (else_try),
+              (assign, ":aggressiveness", 8),
+	          (assign, ":courage", 8),
+	          (assign, ":initiative", 100),
+	        (try_end),
+	      (else_try),
+	        (eq, ":new_ai_state", spai_retreating_to_center),
+	        (party_set_ai_behavior, ":party_no", ai_bhvr_travel_to_party),
+	        (party_set_ai_object, ":party_no", ":new_ai_object"),
+	        (party_set_flags, ":party_no", pf_default_behavior, 1),
+	        (party_set_slot, ":party_no", slot_party_commander_party, -1),
+	        (try_begin),
+	          (gt, ":party_is_in_town", 0),
+	          (neq, ":party_is_in_town", ":new_ai_object"),
+	          (party_detach, ":party_no"),
+	        (try_end),
+
+	        (assign, ":aggressiveness", 3),
+	        (assign, ":courage", 4),
+	        (assign, ":initiative", 100),
+	      (else_try),
+	        (eq, ":new_ai_state", spai_undefined),
+	        (party_set_ai_behavior, ":party_no", ai_bhvr_hold),
+	        (party_set_flags, ":party_no", pf_default_behavior, 0),
+	      (try_end),
+
+	      (try_begin),
+	        (troop_slot_eq, ":commander", slot_lord_reputation_type, lrep_martial),
+	        (val_add, ":aggressiveness", 2),
+	        (val_add, ":courage", 2),
+	      (else_try),
+			  ##diplomacy start+ support lady personality types
+			  (neg|troop_slot_eq, ":commander", slot_lord_reputation_type, lrep_adventurous),
+			  (this_or_next|troop_slot_ge, ":commander", slot_lord_reputation_type, dplmc_lrep_ladies_begin),
+			  ##diplomacy end+
+	        (troop_slot_eq, ":commander", slot_lord_reputation_type, lrep_debauched),
+	        (val_sub, ":aggressiveness", 1),
+	        (val_sub, ":courage", 1),
+	      (try_end),
+
+	      (party_set_slot, ":party_no", slot_party_ai_state, ":new_ai_state"),
+	      (party_set_slot, ":party_no", slot_party_ai_object, ":new_ai_object"),
+	      (party_set_aggressiveness, ":party_no", ":aggressiveness"),
+	      (party_set_courage, ":party_no", ":courage"),
+	      (party_set_ai_initiative, ":party_no", ":initiative"),
+	    (try_end),
+	  (try_end),
+
+	  #Helpfulness
+	  (try_begin),
+	    (ge, ":commander", 0),
+
+	    (party_set_helpfulness, ":party_no", 101),
+	    (try_begin),
+  	      (troop_slot_eq, ":commander", slot_lord_reputation_type, lrep_martial),
+ 	      (party_set_helpfulness, ":party_no", 200),
+	    (else_try),
+  	      (troop_slot_eq, ":commander", slot_lord_reputation_type, lrep_upstanding),
+	      (party_set_helpfulness, ":party_no", 150),
+	    (else_try),
+	      (party_slot_eq, ":party_no", slot_party_ai_state, spai_accompanying_army),
+	      (party_set_helpfulness, ":party_no", 110),
+	    (else_try),
+	      (troop_slot_eq, ":commander", slot_lord_reputation_type, lrep_quarrelsome),
+	      (party_set_helpfulness, ":party_no", 90),
+	    (else_try),
+	      (troop_slot_eq, ":commander", slot_lord_reputation_type, lrep_selfrighteous),
+	      (party_set_helpfulness, ":party_no", 80),
+	    (else_try),
+	      (troop_slot_eq, ":commander", slot_lord_reputation_type, lrep_debauched),
+	      (party_set_helpfulness, ":party_no", 50),
+	    (try_end),
+	  (try_end),
+  ])
+]

@@ -1,3 +1,9 @@
+# ======================================================================
+# SHARED DEPENDENCY
+# Entity: dplmc_manage_loot_pool (menu)
+# Called by menus in 4 domains: battle, camp, diplomacy, siege
+# ======================================================================
+
 # -*- coding: cp1254 -*-
 from header_game_menus import *
 from header_parties import *

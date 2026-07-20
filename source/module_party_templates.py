@@ -3,7 +3,7 @@ from header_parties import *
 from ID_troops import *
 from ID_factions import *
 from ID_map_icons import *
-from module_constants import num_max_bandit_party_size
+from module_constants import num_max_bandit_party_size, num_max_pirate_ship_size
 
 pmf_is_prisoner = 0x0001
 

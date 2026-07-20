@@ -1,3 +1,9 @@
+# ======================================================================
+# SHARED DEPENDENCY
+# Entity: modify_slots (presentation)
+# Called by menus in 2 domains: kingdom_management, town
+# ======================================================================
+
 # -*- coding: cp1254 -*-
 import string
 from header_common import *
