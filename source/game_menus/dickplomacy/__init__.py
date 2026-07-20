@@ -1,0 +1,26 @@
+# -*- coding: cp1254 -*-
+# package initializer for dickplomacy menus
+
+from game_menus.dickplomacy.mnu_town_tavern_prostitution import town_tavern_prostitution_menu
+from game_menus.dickplomacy.mnu_fucked_by_enemy import fucked_by_enemy_menu
+from game_menus.dickplomacy.mnu_fucked_by_enemy_prison import fucked_by_enemy_prison_menu
+from game_menus.dickplomacy.mnu_fuck_encounter import fuck_encounter_menu
+from game_menus.dickplomacy.mnu_village_enslave_complete import village_enslave_complete_menu
+from game_menus.dickplomacy.mnu_recruit_volunteers_dickplo_main import recruit_volunteers_dickplo_main_menu
+from game_menus.dickplomacy.mnu_fuck_3 import fuck_3_menu
+from game_menus.dickplomacy.mnu_fuck import fuck_menu
+from game_menus.dickplomacy.mnu_town_tavern_prostitution_results import town_tavern_prostitution_results_menu
+from game_menus.dickplomacy.mnu_fuck_2 import fuck_2_menu
+
+dickplomacy_menus = []
+dickplomacy_menus.extend(town_tavern_prostitution_menu)
+dickplomacy_menus.extend(fucked_by_enemy_menu)
+dickplomacy_menus.extend(fucked_by_enemy_prison_menu)
+dickplomacy_menus.extend(fuck_encounter_menu)
+dickplomacy_menus.extend(village_enslave_complete_menu)
+dickplomacy_menus.extend(recruit_volunteers_dickplo_main_menu)
+dickplomacy_menus.extend(fuck_3_menu)
+dickplomacy_menus.extend(fuck_menu)
+dickplomacy_menus.extend(town_tavern_prostitution_results_menu)
+dickplomacy_menus.extend(fuck_2_menu)
+

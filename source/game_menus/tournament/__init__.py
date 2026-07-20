@@ -1,0 +1,22 @@
+# -*- coding: cp1254 -*-
+# package initializer for tournament menus
+
+from game_menus.tournament.mnu_tournament_withdraw_verify import tournament_withdraw_verify_menu
+from game_menus.tournament.mnu_town_tournament_lost import town_tournament_lost_menu
+from game_menus.tournament.mnu_tournament_bet import tournament_bet_menu
+from game_menus.tournament.mnu_town_tournament import town_tournament_menu
+from game_menus.tournament.mnu_town_tournament_won import town_tournament_won_menu
+from game_menus.tournament.mnu_town_tournament_won_by_another import town_tournament_won_by_another_menu
+from game_menus.tournament.mnu_tournament_bet_confirm import tournament_bet_confirm_menu
+from game_menus.tournament.mnu_tournament_participants import tournament_participants_menu
+
+tournament_menus = []
+tournament_menus.extend(tournament_withdraw_verify_menu)
+tournament_menus.extend(town_tournament_lost_menu)
+tournament_menus.extend(tournament_bet_menu)
+tournament_menus.extend(town_tournament_menu)
+tournament_menus.extend(town_tournament_won_menu)
+tournament_menus.extend(town_tournament_won_by_another_menu)
+tournament_menus.extend(tournament_bet_confirm_menu)
+tournament_menus.extend(tournament_participants_menu)
+
