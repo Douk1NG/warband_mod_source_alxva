@@ -1,30 +1,62 @@
 # -*- coding: cp1254 -*-
 # package initializer for town menus
 
-from game_menus.town.mnu_town import town_menu
-from game_menus.town.mnu_town_trade import town_trade_menu
-from game_menus.town.mnu_dickplo_town_manage import dickplo_town_manage_menu
-from game_menus.town.mnu_dplmc_trade_auto_sell_begin import dplmc_trade_auto_sell_begin_menu
-from game_menus.town.mnu_dplmc_trade_auto_buy_food_begin import dplmc_trade_auto_buy_food_begin_menu
-from game_menus.town.mnu_town_trade_assessment_begin import town_trade_assessment_begin_menu
+from game_menus.town.mnu_buy_ship import buy_ship_menu
+from game_menus.town.mnu_sneak_into_town_caught_ran_away import sneak_into_town_caught_ran_away_menu
 from game_menus.town.mnu_town_pre_hire_troops import town_pre_hire_troops_menu
+from game_menus.town.mnu_display_party_slots import display_party_slots_menu
+from game_menus.town.mnu_sneak_into_town_suceeded import sneak_into_town_suceeded_menu
+from game_menus.town.mnu_kill_local_merchant_begin import kill_local_merchant_begin_menu
 from game_menus.town.mnu_town_hire_troops import town_hire_troops_menu
+from game_menus.town.mnu_arena_duel_conclusion import arena_duel_conclusion_menu
+from game_menus.town.mnu_arena_duel_fight import arena_duel_fight_menu
+from game_menus.town.mnu_rename_court import rename_court_menu
 from game_menus.town.mnu_town_hire_farmers import town_hire_farmers_menu
-from game_menus.town.mnu_town_hire_cutthroats import town_hire_cutthroats_menu
+from game_menus.town.mnu_disembark import disembark_menu
+from game_menus.town.mnu_town_trade import town_trade_menu
+from game_menus.town.mnu_ship_reembark import ship_reembark_menu
+from game_menus.town.mnu_cannot_enter_court import cannot_enter_court_menu
+from game_menus.town.mnu_auto_trade import auto_trade_menu
+from game_menus.town.mnu_sneak_into_town_caught_dispersed_guards import sneak_into_town_caught_dispersed_guards_menu
+from game_menus.town.mnu_sneak_into_town_caught import sneak_into_town_caught_menu
+from game_menus.town.mnu_town_trade_assessment_begin import town_trade_assessment_begin_menu
+from game_menus.town.mnu_lost_tavern_duel import lost_tavern_duel_menu
 from game_menus.town.mnu_town_hire_knights import town_hire_knights_menu
+from game_menus.town.mnu_town_bandits_failed import town_bandits_failed_menu
+from game_menus.town.mnu_town_hire_cutthroats import town_hire_cutthroats_menu
+from game_menus.town.mnu_display_troop_slots import display_troop_slots_menu
+from game_menus.town.mnu_town_bandits_succeeded import town_bandits_succeeded_menu
+from game_menus.town.mnu_town import town_menu
 from game_menus.town.mnu_town_trade_assessment import town_trade_assessment_menu
+from game_menus.town.mnu_enemy_offer_ransom_for_prisoner import enemy_offer_ransom_for_prisoner_menu
 
 town_menus = []
-town_menus.extend(town_menu)
-town_menus.extend(town_trade_menu)
-town_menus.extend(dickplo_town_manage_menu)
-town_menus.extend(dplmc_trade_auto_sell_begin_menu)
-town_menus.extend(dplmc_trade_auto_buy_food_begin_menu)
-town_menus.extend(town_trade_assessment_begin_menu)
+town_menus.extend(buy_ship_menu)
+town_menus.extend(sneak_into_town_caught_ran_away_menu)
 town_menus.extend(town_pre_hire_troops_menu)
+town_menus.extend(display_party_slots_menu)
+town_menus.extend(sneak_into_town_suceeded_menu)
+town_menus.extend(kill_local_merchant_begin_menu)
 town_menus.extend(town_hire_troops_menu)
+town_menus.extend(arena_duel_conclusion_menu)
+town_menus.extend(arena_duel_fight_menu)
+town_menus.extend(rename_court_menu)
 town_menus.extend(town_hire_farmers_menu)
-town_menus.extend(town_hire_cutthroats_menu)
+town_menus.extend(disembark_menu)
+town_menus.extend(town_trade_menu)
+town_menus.extend(ship_reembark_menu)
+town_menus.extend(cannot_enter_court_menu)
+town_menus.extend(auto_trade_menu)
+town_menus.extend(sneak_into_town_caught_dispersed_guards_menu)
+town_menus.extend(sneak_into_town_caught_menu)
+town_menus.extend(town_trade_assessment_begin_menu)
+town_menus.extend(lost_tavern_duel_menu)
 town_menus.extend(town_hire_knights_menu)
+town_menus.extend(town_bandits_failed_menu)
+town_menus.extend(town_hire_cutthroats_menu)
+town_menus.extend(display_troop_slots_menu)
+town_menus.extend(town_bandits_succeeded_menu)
+town_menus.extend(town_menu)
 town_menus.extend(town_trade_assessment_menu)
+town_menus.extend(enemy_offer_ransom_for_prisoner_menu)
 

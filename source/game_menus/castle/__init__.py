@@ -1,34 +1,32 @@
 # -*- coding: cp1254 -*-
 # package initializer for castle menus
 
-from game_menus.castle.mnu_castle_outside import castle_outside_menu
-from game_menus.castle.mnu_castle_guard import castle_guard_menu
-from game_menus.castle.mnu_castle_entry_granted import castle_entry_granted_menu
-from game_menus.castle.mnu_castle_entry_denied import castle_entry_denied_menu
-from game_menus.castle.mnu_castle_meeting import castle_meeting_menu
-from game_menus.castle.mnu_castle_meeting_selected import castle_meeting_selected_menu
-from game_menus.castle.mnu_castle_besiege import castle_besiege_menu
 from game_menus.castle.mnu_castle_taken_by_friends import castle_taken_by_friends_menu
+from game_menus.castle.mnu_castle_entry_granted import castle_entry_granted_menu
 from game_menus.castle.mnu_castle_taken import castle_taken_menu
-from game_menus.castle.mnu_castle_taken_2 import castle_taken_2_menu
+from game_menus.castle.mnu_castle_outside import castle_outside_menu
 from game_menus.castle.mnu_requested_castle_granted_to_player import requested_castle_granted_to_player_menu
+from game_menus.castle.mnu_castle_guard import castle_guard_menu
+from game_menus.castle.mnu_castle_meeting import castle_meeting_menu
+from game_menus.castle.mnu_requested_castle_granted_to_another_female import requested_castle_granted_to_another_female_menu
+from game_menus.castle.mnu_castle_taken_2 import castle_taken_2_menu
 from game_menus.castle.mnu_requested_castle_granted_to_player_husband import requested_castle_granted_to_player_husband_menu
 from game_menus.castle.mnu_requested_castle_granted_to_another import requested_castle_granted_to_another_menu
-from game_menus.castle.mnu_requested_castle_granted_to_another_female import requested_castle_granted_to_another_female_menu
+from game_menus.castle.mnu_castle_entry_denied import castle_entry_denied_menu
+from game_menus.castle.mnu_castle_meeting_selected import castle_meeting_selected_menu
 
 castle_menus = []
-castle_menus.extend(castle_outside_menu)
-castle_menus.extend(castle_guard_menu)
-castle_menus.extend(castle_entry_granted_menu)
-castle_menus.extend(castle_entry_denied_menu)
-castle_menus.extend(castle_meeting_menu)
-castle_menus.extend(castle_meeting_selected_menu)
-castle_menus.extend(castle_besiege_menu)
 castle_menus.extend(castle_taken_by_friends_menu)
+castle_menus.extend(castle_entry_granted_menu)
 castle_menus.extend(castle_taken_menu)
-castle_menus.extend(castle_taken_2_menu)
+castle_menus.extend(castle_outside_menu)
 castle_menus.extend(requested_castle_granted_to_player_menu)
+castle_menus.extend(castle_guard_menu)
+castle_menus.extend(castle_meeting_menu)
+castle_menus.extend(requested_castle_granted_to_another_female_menu)
+castle_menus.extend(castle_taken_2_menu)
 castle_menus.extend(requested_castle_granted_to_player_husband_menu)
 castle_menus.extend(requested_castle_granted_to_another_menu)
-castle_menus.extend(requested_castle_granted_to_another_female_menu)
+castle_menus.extend(castle_entry_denied_menu)
+castle_menus.extend(castle_meeting_selected_menu)
 
