@@ -49,11 +49,7 @@ reports_menu = [
         ]
        ),
 
-      ("action_view_world_map",[],"View the world map.",
-       [
-           (start_presentation, "prsnt_world_map"),
-        ]
-       ),
+
 
       ###(((reports_character
       ("reports_character",[],"View character/party reports.",

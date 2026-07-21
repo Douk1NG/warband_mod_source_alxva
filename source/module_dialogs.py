@@ -4527,6 +4527,7 @@ Still I am sorry that I'll leave you soon. You must promise me, you'll come visi
 ##Alternate use of this slot so we don't forget the enfeoffment, even if later
 ##the companion's occupation changes and he loses the fief.
 (troop_set_slot, "$g_talk_troop", slot_troop_playerparty_history, dplmc_pp_history_granted_fief),
+(call_script, "script_change_player_right_to_rule", 1),
 
 #Handle player is co-ruler of NPC faction
 ##OLD:
@@ -12146,6 +12147,7 @@ What kind of recruits do you want?", "dplmc_constable_recruit_select",
 [
 (store_faction_of_troop, "$g_notification_menu_var2", "$diplomacy_var"),
 (call_script, "script_change_troop_faction", "$diplomacy_var", "$players_kingdom"),
+(call_script, "script_change_player_right_to_rule", 3),
 (troop_set_slot, "$diplomacy_var", slot_troop_occupation, slto_kingdom_hero),
 (call_script, "script_add_notification_menu", "mnu_notification_troop_joined_players_faction", "$diplomacy_var", "$g_notification_menu_var2"),
 (assign, "$g_recalculate_ais", 1),
@@ -12587,7 +12589,7 @@ What kind of recruits do you want?", "dplmc_constable_recruit_select",
   #SB : add 2 relation between emissary
   (call_script, "script_troop_change_relation_with_troop", "$g_talk_troop", ":target_troop", 2),
   (call_script, "script_change_troop_renown", "$g_talk_troop", dplmc_companion_skill_renown), #total of 5 for success
-  (call_script, "script_change_player_right_to_rule", 2),
+  (call_script, "script_change_player_right_to_rule", 1),
 ]],
 
 ##spy mission
@@ -22919,6 +22921,7 @@ I'll send some men to take him to our prison with due haste.", "lord_pretalk", [
 (try_end),
 
 (call_script, "script_change_troop_faction", "$g_talk_troop", "$players_kingdom"),
+(call_script, "script_change_player_right_to_rule", 1),
 ###(((lord_recruit_pledge FIX
 (troop_set_slot, "$g_talk_troop", slot_lord_recruitment_candidate, ":recruitment_candidate"),
 ###)))

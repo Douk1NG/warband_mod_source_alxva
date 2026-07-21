@@ -387,6 +387,16 @@ game_menus = [
            (jump_to_menu, "mnu_tpe_tournament_withdraw_verify"),
         ]),
 
+      ###(((tpe_cheat_autowin
+      ("tpe_cheat_autowin",[(ge, "$cheat_mode", 1),],"{!}Cheat: Win tournament",
+       [
+           (troop_set_slot, "trp_player", slot_troop_tournament_total_points, 9999),
+           (call_script, "script_tpe_sort_troops_and_points_without_player", slot_troop_tournament_total_points),
+           (assign, "$g_tournament_cur_tier", wp_tpe_max_tournament_tiers),
+           (display_message, "@Cheat: Tournament won!", 0x00FF0000),
+        ]),
+      ###)))
+
 ###########################################################################################################################
 #####                                                TPE 1.1 Additions                                                #####
 ###########################################################################################################################

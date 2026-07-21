@@ -80,6 +80,7 @@ dplmc_auto_sell_scripts = [
 	     (eq, ":imod", imod_rotten),
 	  (neg|is_between, ":item", trade_goods_begin, trade_goods_end),
 	  (neq, ":imod", imod_lordly),#dplmc+: never sell "lordly" items
+	  (troop_slot_eq, "trp_temp_array_lock", ":i_slot", 0),#dplmc+: skip locked inventory slots
 	  #dplmc+ end added constraints
 
       (call_script, "script_dplmc_get_item_value_with_imod", ":item", ":imod"),

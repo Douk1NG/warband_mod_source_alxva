@@ -274,6 +274,18 @@ camp_cheat_menu = [
         ]
        ),
 
+      ###(((remove_ships
+      ("remove_ships",[],"CHEAT: Remove all ships.",
+       [
+         (try_for_parties, ":cur_party"),
+           (party_slot_eq, ":cur_party", slot_party_type, spt_ship),
+           (disable_party, ":cur_party"),
+         (try_end),
+         (display_message, "@All ships removed.", 0x00FF0000),
+        ]
+       ),
+      ###)))
+
       ("to_advanced_cheats",[],"{!}Advanced Cheats",
 		[
          (jump_to_menu, "mnu_camp_cheat_adv"),
