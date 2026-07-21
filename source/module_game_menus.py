@@ -302,297 +302,302 @@ from game_menus.mnu_village_take_food_confirm import village_take_food_confirm_m
 from game_menus.mnu_zendar import zendar_menu
 
 game_menus = []
-game_menus.extend(arena_duel_conclusion_menu)
-game_menus.extend(arena_duel_fight_menu)
-game_menus.extend(auto_return_menu)
-game_menus.extend(auto_return_to_map_menu)
-game_menus.extend(auto_trade_menu)
-game_menus.extend(bandit_lair_menu)
-game_menus.extend(battle_debrief_menu)
-game_menus.extend(battlefields_menu)
-game_menus.extend(besiegers_camp_with_allies_menu)
-game_menus.extend(buy_ship_menu)
-game_menus.extend(camp_menu)
-game_menus.extend(camp_action_menu)
-game_menus.extend(camp_action_read_book_menu)
-game_menus.extend(camp_action_read_book_start_menu)
-game_menus.extend(camp_action_sort_inventory_menu)
-game_menus.extend(camp_cheat_menu)
-game_menus.extend(camp_cheat_adv_menu)
-game_menus.extend(camp_no_prisoners_menu)
-game_menus.extend(camp_recruit_prisoners_menu)
-game_menus.extend(cannot_enter_court_menu)
-game_menus.extend(captivity_avoid_wilderness_menu)
-game_menus.extend(captivity_castle_check_menu)
-game_menus.extend(captivity_castle_remain_menu)
-game_menus.extend(captivity_castle_taken_prisoner_menu)
-game_menus.extend(captivity_end_exchanged_with_prisoner_menu)
-game_menus.extend(captivity_end_propose_ransom_menu)
-game_menus.extend(captivity_end_wilderness_escape_menu)
-game_menus.extend(captivity_rescue_lord_taken_prisoner_menu)
-game_menus.extend(captivity_start_castle_defeat_menu)
-game_menus.extend(captivity_start_castle_surrender_menu)
-game_menus.extend(captivity_start_under_siege_defeat_menu)
-game_menus.extend(captivity_start_wilderness_menu)
-game_menus.extend(captivity_start_wilderness_defeat_menu)
-game_menus.extend(captivity_start_wilderness_surrender_menu)
-game_menus.extend(captivity_wilderness_check_menu)
-game_menus.extend(captivity_wilderness_taken_prisoner_menu)
-game_menus.extend(castle_attack_walls_simulate_menu)
-game_menus.extend(castle_attack_walls_with_allies_simulate_menu)
-game_menus.extend(castle_besiege_menu)
-game_menus.extend(castle_besiege_inner_battle_menu)
-game_menus.extend(castle_entry_denied_menu)
-game_menus.extend(castle_entry_granted_menu)
-game_menus.extend(castle_guard_menu)
-game_menus.extend(castle_meeting_menu)
-game_menus.extend(castle_meeting_selected_menu)
-game_menus.extend(castle_outside_menu)
-game_menus.extend(castle_taken_menu)
-game_menus.extend(castle_taken_2_menu)
-game_menus.extend(castle_taken_by_friends_menu)
-game_menus.extend(cattle_herd_menu)
-game_menus.extend(cattle_herd_kill_menu)
-game_menus.extend(cattle_herd_kill_end_menu)
-game_menus.extend(center_improve_menu)
-game_menus.extend(center_manage_menu)
-game_menus.extend(center_reports_menu)
-game_menus.extend(character_report_menu)
-game_menus.extend(cheat_change_weather_menu)
-game_menus.extend(cheat_find_item_menu)
+# CRITICAL: The order of .extend() calls determines menu IDs at compile time.
+# The Warband engine hardcodes menu ID 0 as the new-game start menu.
+# This ordering must match the original pre-atomization ID_menus.py exactly.
+# DO NOT sort alphabetically — doing so will break the game.
+game_menus.extend(start_game_0_menu)                                              # 0
+game_menus.extend(start_phase_2_menu)                                             # 1
+game_menus.extend(start_game_3_menu)                                              # 2
+game_menus.extend(tutorial_menu)                                                  # 3
+game_menus.extend(reports_menu)                                                   # 4
+game_menus.extend(custom_battle_scene_menu)                                       # 5
+game_menus.extend(custom_battle_end_menu)                                         # 6
+game_menus.extend(start_game_1_menu)                                              # 7
+game_menus.extend(start_character_1_menu)                                         # 8
+game_menus.extend(start_character_2_menu)                                         # 9
+game_menus.extend(start_character_3_menu)                                         # 10
+game_menus.extend(start_character_4_menu)                                         # 11
+game_menus.extend(choose_skill_menu)                                              # 12
+game_menus.extend(past_life_explanation_menu)                                     # 13
+game_menus.extend(auto_return_menu)                                               # 14
+game_menus.extend(morale_report_menu)                                             # 15
+game_menus.extend(courtship_relations_menu)                                       # 16
+game_menus.extend(lord_relations_menu)                                            # 17
+game_menus.extend(companion_report_menu)                                          # 18
+game_menus.extend(faction_orders_menu)                                            # 19
+game_menus.extend(character_report_menu)                                          # 20
+game_menus.extend(party_size_report_menu)                                         # 21
+game_menus.extend(faction_relations_report_menu)                                  # 22
+game_menus.extend(camp_menu)                                                      # 23
+game_menus.extend(camp_cheat_menu)                                                # 24
+game_menus.extend(camp_cheat_adv_menu)                                            # 25
+game_menus.extend(cheat_find_item_menu)                                           # 26
+game_menus.extend(cheat_change_weather_menu)                                      # 27
+game_menus.extend(camp_action_menu)                                               # 28
+game_menus.extend(camp_recruit_prisoners_menu)                                    # 29
+game_menus.extend(camp_no_prisoners_menu)                                         # 30
+game_menus.extend(camp_action_sort_inventory_menu)                                # 31
+game_menus.extend(camp_action_read_book_menu)                                     # 32
+game_menus.extend(camp_action_read_book_start_menu)                               # 33
+game_menus.extend(retirement_verify_menu)                                         # 34
+game_menus.extend(end_game_menu)                                                  # 35
+game_menus.extend(cattle_herd_menu)                                               # 36
+game_menus.extend(cattle_herd_kill_menu)                                          # 37
+game_menus.extend(cattle_herd_kill_end_menu)                                      # 38
+game_menus.extend(arena_duel_fight_menu)                                          # 39
+game_menus.extend(arena_duel_conclusion_menu)                                     # 40
+game_menus.extend(simple_encounter_menu)                                          # 41
+game_menus.extend(encounter_retreat_confirm_menu)                                 # 42
+game_menus.extend(encounter_retreat_menu)                                         # 43
+game_menus.extend(order_attack_begin_menu)                                        # 44
+game_menus.extend(order_attack_2_menu)                                            # 45
+game_menus.extend(battle_debrief_menu)                                            # 46
+game_menus.extend(total_victory_menu)                                             # 47
+game_menus.extend(enemy_slipped_away_menu)                                        # 48
+game_menus.extend(total_defeat_menu)                                              # 49
+game_menus.extend(permanent_damage_menu)                                          # 50
+game_menus.extend(pre_join_menu)                                                  # 51
+game_menus.extend(join_battle_menu)                                               # 52
+game_menus.extend(join_order_attack_menu)                                         # 53
+game_menus.extend(zendar_menu)                                                    # 54
+game_menus.extend(salt_mine_menu)                                                 # 55
+game_menus.extend(four_ways_inn_menu)                                             # 56
+game_menus.extend(test_scene_menu)                                                # 57
+game_menus.extend(battlefields_menu)                                              # 58
+game_menus.extend(dhorak_keep_menu)                                               # 59
+game_menus.extend(join_siege_outside_menu)                                        # 60
+game_menus.extend(cut_siege_without_fight_menu)                                   # 61
+game_menus.extend(besiegers_camp_with_allies_menu)                                # 62
+game_menus.extend(castle_outside_menu)                                            # 63
+game_menus.extend(castle_guard_menu)                                              # 64
+game_menus.extend(castle_entry_granted_menu)                                      # 65
+game_menus.extend(castle_entry_denied_menu)                                       # 66
+game_menus.extend(castle_meeting_menu)                                            # 67
+game_menus.extend(castle_meeting_selected_menu)                                   # 68
+game_menus.extend(castle_besiege_menu)                                            # 69
+game_menus.extend(siege_attack_meets_sally_menu)                                  # 70
+game_menus.extend(castle_besiege_inner_battle_menu)                               # 71
+game_menus.extend(construct_ladders_menu)                                         # 72
+game_menus.extend(construct_siege_tower_menu)                                     # 73
+game_menus.extend(castle_attack_walls_simulate_menu)                              # 74
+game_menus.extend(castle_attack_walls_with_allies_simulate_menu)                  # 75
+game_menus.extend(castle_taken_by_friends_menu)                                   # 76
+game_menus.extend(castle_taken_menu)                                              # 77
+game_menus.extend(castle_taken_2_menu)                                            # 78
+game_menus.extend(requested_castle_granted_to_player_menu)                        # 79
+game_menus.extend(requested_castle_granted_to_player_husband_menu)                # 80
+game_menus.extend(requested_castle_granted_to_another_menu)                       # 81
+game_menus.extend(requested_castle_granted_to_another_female_menu)                # 82
+game_menus.extend(leave_faction_menu)                                             # 83
+game_menus.extend(give_center_to_player_menu)                                     # 84
+game_menus.extend(give_center_to_player_2_menu)                                   # 85
+game_menus.extend(oath_fulfilled_menu)                                            # 86
+game_menus.extend(siege_started_defender_menu)                                    # 87
+game_menus.extend(siege_join_defense_menu)                                        # 88
+game_menus.extend(enter_your_own_castle_menu)                                     # 89
+game_menus.extend(village_menu)                                                   # 90
+game_menus.extend(village_hostile_action_menu)                                    # 91
+game_menus.extend(recruit_volunteers_dickplo_main_menu)                           # 92
+game_menus.extend(recruit_volunteers_menu)                                        # 93
+game_menus.extend(village_hunt_down_fugitive_defeated_menu)                       # 94
+game_menus.extend(village_hunt_down_fugitive_persuaded_menu)                      # 95
+game_menus.extend(village_infest_bandits_result_menu)                             # 96
+game_menus.extend(village_infestation_removed_menu)                               # 97
+game_menus.extend(center_manage_menu)                                             # 98
+game_menus.extend(center_improve_menu)                                            # 99
+game_menus.extend(town_bandits_failed_menu)                                       # 100
+game_menus.extend(town_bandits_succeeded_menu)                                    # 101
+game_menus.extend(village_steal_cattle_confirm_menu)                              # 102
+game_menus.extend(village_steal_cattle_menu)                                      # 103
+game_menus.extend(village_take_food_confirm_menu)                                 # 104
+game_menus.extend(village_take_food_menu)                                         # 105
+game_menus.extend(village_start_attack_menu)                                      # 106
+game_menus.extend(village_loot_no_resist_menu)                                    # 107
+game_menus.extend(village_loot_complete_menu)                                     # 108
+game_menus.extend(village_enslave_complete_menu)                                  # 109
+game_menus.extend(village_loot_defeat_menu)                                       # 110
+game_menus.extend(village_loot_continue_menu)                                     # 111
+game_menus.extend(close_menu)                                                     # 112
+game_menus.extend(town_menu)                                                      # 113
+game_menus.extend(cannot_enter_court_menu)                                        # 114
+game_menus.extend(lady_visit_menu)                                                # 115
+game_menus.extend(town_tournament_lost_menu)                                      # 116
+game_menus.extend(town_tournament_won_menu)                                       # 117
+game_menus.extend(town_tournament_won_by_another_menu)                            # 118
+game_menus.extend(town_tournament_menu)                                           # 119
+game_menus.extend(tournament_withdraw_verify_menu)                                # 120
+game_menus.extend(tournament_bet_menu)                                            # 121
+game_menus.extend(tournament_bet_confirm_menu)                                    # 122
+game_menus.extend(tournament_participants_menu)                                   # 123
+game_menus.extend(collect_taxes_menu)                                             # 124
+game_menus.extend(collect_taxes_complete_menu)                                     # 125
+game_menus.extend(collect_taxes_rebels_killed_menu)                               # 126
+game_menus.extend(collect_taxes_failed_menu)                                      # 127
+game_menus.extend(collect_taxes_revolt_warning_menu)                              # 128
+game_menus.extend(collect_taxes_revolt_menu)                                      # 129
+game_menus.extend(train_peasants_against_bandits_menu)                            # 130
+game_menus.extend(train_peasants_against_bandits_ready_menu)                      # 131
+game_menus.extend(train_peasants_against_bandits_training_result_menu)            # 132
+game_menus.extend(train_peasants_against_bandits_attack_menu)                     # 133
+game_menus.extend(train_peasants_against_bandits_attack_result_menu)              # 134
+game_menus.extend(train_peasants_against_bandits_success_menu)                    # 135
+game_menus.extend(disembark_menu)                                                 # 136
+game_menus.extend(ship_reembark_menu)                                             # 137
+game_menus.extend(center_reports_menu)                                            # 138
+game_menus.extend(price_and_production_menu)                                      # 139
+game_menus.extend(town_trade_menu)                                                # 140
+game_menus.extend(dickplo_town_manage_menu)                                       # 141
+game_menus.extend(dplmc_trade_auto_sell_begin_menu)                               # 142
+game_menus.extend(dplmc_trade_auto_buy_food_begin_menu)                           # 143
+game_menus.extend(town_trade_assessment_begin_menu)                               # 144
+game_menus.extend(town_pre_hire_troops_menu)                                      # 145
+game_menus.extend(town_hire_troops_menu)                                          # 146
+game_menus.extend(town_hire_farmers_menu)                                         # 147
+game_menus.extend(town_hire_cutthroats_menu)                                      # 148
+game_menus.extend(town_hire_knights_menu)                                         # 149
+game_menus.extend(town_trade_assessment_menu)                                     # 150
+game_menus.extend(sneak_into_town_suceeded_menu)                                  # 151
+game_menus.extend(sneak_into_town_caught_menu)                                    # 152
+game_menus.extend(sneak_into_town_caught_dispersed_guards_menu)                   # 153
+game_menus.extend(sneak_into_town_caught_ran_away_menu)                           # 154
+game_menus.extend(enemy_offer_ransom_for_prisoner_menu)                           # 155
+game_menus.extend(training_ground_menu)                                           # 156
+game_menus.extend(training_ground_selection_details_melee_1_menu)                 # 157
+game_menus.extend(training_ground_selection_details_melee_2_menu)                 # 158
+game_menus.extend(training_ground_selection_details_mounted_menu)                 # 159
+game_menus.extend(training_ground_selection_details_ranged_1_menu)                # 160
+game_menus.extend(training_ground_selection_details_ranged_2_menu)                # 161
+game_menus.extend(training_ground_description_menu)                               # 162
+game_menus.extend(training_ground_training_result_menu)                           # 163
+game_menus.extend(marshall_selection_candidate_ask_menu)                          # 164
+game_menus.extend(captivity_avoid_wilderness_menu)                                # 165
+game_menus.extend(captivity_start_wilderness_menu)                                # 166
+game_menus.extend(captivity_start_wilderness_surrender_menu)                      # 167
+game_menus.extend(captivity_start_wilderness_defeat_menu)                         # 168
+game_menus.extend(captivity_start_castle_surrender_menu)                          # 169
+game_menus.extend(captivity_start_castle_defeat_menu)                             # 170
+game_menus.extend(captivity_start_under_siege_defeat_menu)                        # 171
+game_menus.extend(captivity_wilderness_taken_prisoner_menu)                       # 172
+game_menus.extend(captivity_wilderness_check_menu)                                # 173
+game_menus.extend(captivity_end_wilderness_escape_menu)                           # 174
+game_menus.extend(captivity_castle_taken_prisoner_menu)                           # 175
+game_menus.extend(captivity_rescue_lord_taken_prisoner_menu)                      # 176
+game_menus.extend(captivity_castle_check_menu)                                    # 177
+game_menus.extend(captivity_end_exchanged_with_prisoner_menu)                     # 178
+game_menus.extend(captivity_end_propose_ransom_menu)                              # 179
+game_menus.extend(captivity_castle_remain_menu)                                   # 180
+game_menus.extend(kingdom_army_quest_report_to_army_menu)                         # 181
+game_menus.extend(kingdom_army_quest_messenger_menu)                              # 182
+game_menus.extend(kingdom_army_quest_join_siege_order_menu)                       # 183
+game_menus.extend(kingdom_army_follow_failed_menu)                                # 184
+game_menus.extend(invite_player_to_faction_without_center_menu)                   # 185
+game_menus.extend(invite_player_to_faction_menu)                                  # 186
+game_menus.extend(invite_player_to_faction_accepted_menu)                         # 187
+game_menus.extend(question_peace_offer_menu)                                      # 188
+game_menus.extend(notification_truce_expired_menu)                                # 189
+game_menus.extend(notification_feast_quest_expired_menu)                          # 190
+game_menus.extend(notification_sortie_possible_menu)                              # 191
+game_menus.extend(notification_casus_belli_expired_menu)                          # 192
+game_menus.extend(notification_lord_defects_menu)                                 # 193
+game_menus.extend(notification_treason_indictment_menu)                           # 194
+game_menus.extend(notification_border_incident_menu)                              # 195
+game_menus.extend(notification_player_faction_active_menu)                        # 196
+game_menus.extend(minister_confirm_menu)                                          # 197
+game_menus.extend(notification_court_lost_menu)                                   # 198
+game_menus.extend(notification_player_faction_deactive_menu)                      # 199
+game_menus.extend(notification_player_wedding_day_menu)                           # 200
+game_menus.extend(notification_player_kingdom_holds_feast_menu)                   # 201
+game_menus.extend(notification_center_under_siege_menu)                           # 202
+game_menus.extend(notification_village_raided_menu)                               # 203
+game_menus.extend(notification_village_raid_started_menu)                         # 204
+game_menus.extend(notification_one_faction_left_menu)                             # 205
+game_menus.extend(notification_oath_renounced_faction_defeated_menu)              # 206
+game_menus.extend(notification_center_lost_menu)                                  # 207
+game_menus.extend(notification_troop_left_players_faction_menu)                   # 208
+game_menus.extend(notification_troop_joined_players_faction_menu)                 # 209
+game_menus.extend(notification_war_declared_menu)                                 # 210
+game_menus.extend(notification_peace_declared_menu)                               # 211
+game_menus.extend(notification_faction_defeated_menu)                             # 212
+game_menus.extend(notification_rebels_switched_to_faction_menu)                   # 213
+game_menus.extend(notification_player_should_consult_menu)                        # 214
+game_menus.extend(notification_player_feast_in_progress_menu)                     # 215
+game_menus.extend(notification_lady_requests_visit_menu)                          # 216
+game_menus.extend(garden_menu)                                                    # 217
+game_menus.extend(kill_local_merchant_begin_menu)                                 # 218
+game_menus.extend(debug_alert_from_s65_menu)                                      # 219
+game_menus.extend(auto_return_to_map_menu)                                        # 220
+game_menus.extend(bandit_lair_menu)                                               # 221
+game_menus.extend(notification_player_faction_political_issue_resolved_menu)      # 222
+game_menus.extend(notification_player_faction_political_issue_resolved_for_player_menu) # 223
+game_menus.extend(start_phase_2_5_menu)                                           # 224
+game_menus.extend(start_phase_3_menu)                                             # 225
+game_menus.extend(start_phase_4_menu)                                             # 226
+game_menus.extend(lost_tavern_duel_menu)                                          # 227
+game_menus.extend(establish_court_menu)                                           # 228
+game_menus.extend(notification_relieved_as_marshal_menu)                          # 229
+game_menus.extend(dplmc_manage_loot_pool_menu)                                    # 230
+game_menus.extend(dplmc_auto_loot_menu)                                           # 231
+game_menus.extend(dplmc_notification_alliance_declared_menu)                      # 232
+game_menus.extend(dplmc_notification_defensive_declared_menu)                     # 233
+game_menus.extend(dplmc_notification_trade_declared_menu)                         # 234
+game_menus.extend(dplmc_notification_nonaggression_declared_menu)                 # 235
+game_menus.extend(dplmc_question_alliance_offer_menu)                             # 236
+game_menus.extend(dplmc_question_defensive_offer_menu)                            # 237
+game_menus.extend(dplmc_question_trade_offer_menu)                                # 238
+game_menus.extend(dplmc_question_nonaggression_offer_menu)                        # 239
+game_menus.extend(dplmc_notification_alliance_expired_menu)                       # 240
+game_menus.extend(dplmc_notification_defensive_expired_menu)                      # 241
+game_menus.extend(dplmc_notification_trade_expired_menu)                          # 242
+game_menus.extend(dplmc_dictate_terms_menu)                                       # 243
+game_menus.extend(dplmc_deny_terms_menu)                                          # 244
+game_menus.extend(dplmc_village_riot_result_menu)                                 # 245
+game_menus.extend(dplmc_village_riot_removed_menu)                                # 246
+game_menus.extend(dplmc_town_riot_removed_menu)                                   # 247
+game_menus.extend(dplmc_riot_negotiate_menu)                                      # 248
+game_menus.extend(dplmc_notification_riot_menu)                                   # 249
+game_menus.extend(dplmc_notification_appoint_chamberlain_menu)                    # 250
+game_menus.extend(dplmc_chamberlain_confirm_menu)                                 # 251
+game_menus.extend(dplmc_notification_appoint_constable_menu)                      # 252
+game_menus.extend(dplmc_constable_confirm_menu)                                   # 253
+game_menus.extend(dplmc_notification_appoint_chancellor_menu)                     # 254
+game_menus.extend(dplmc_chancellor_confirm_menu)                                  # 255
+game_menus.extend(dplmc_deserters_menu)                                           # 256
+game_menus.extend(dplmc_negotiate_besieger_menu)                                  # 257
+game_menus.extend(dplmc_messenger_menu)                                           # 258
+game_menus.extend(dplmc_scout_menu)                                               # 259
+game_menus.extend(dplmc_domestic_policy_menu)                                     # 260
+game_menus.extend(dplmc_affiliate_end_menu)                                       # 261
+game_menus.extend(dplmc_preferences_menu)                                         # 262
+game_menus.extend(dplmc_affiliated_family_report_menu)                            # 263
+game_menus.extend(dplmc_start_select_prejudice_menu)                              # 264
+game_menus.extend(dplmc_economic_report_menu)                                     # 265
+game_menus.extend(town_cheats_menu)                                               # 266
+game_menus.extend(town_cheats_2_menu)                                             # 267
+game_menus.extend(rename_court_menu)                                              # 268
+game_menus.extend(export_import_menu)                                             # 269
+game_menus.extend(display_party_slots_menu)                                       # 270
+game_menus.extend(party_cheat_menu)                                               # 271
+game_menus.extend(display_troop_slots_menu)                                       # 272
+game_menus.extend(dplmc_choose_disguise_menu)                                     # 273
+game_menus.extend(fuck_menu)                                                      # 274
+game_menus.extend(fuck_2_menu)                                                    # 275
+game_menus.extend(fuck_3_menu)                                                    # 276
+game_menus.extend(fucked_by_enemy_menu)                                           # 277
+game_menus.extend(fucked_by_enemy_prison_menu)                                    # 278
+game_menus.extend(choose_banner_menu)                                             # 279
+game_menus.extend(content_options_menu)                                           # 280
+game_menus.extend(fuck_encounter_menu)                                            # 281
+game_menus.extend(town_tavern_prostitution_menu)                                  # 282
+game_menus.extend(town_tavern_prostitution_results_menu)                          # 283
+game_menus.extend(buy_ship_menu)                                                  # 284
+game_menus.extend(startgame_mod_options_menu)                                     # 285
+game_menus.extend(auto_trade_menu)                                                # 286
+# --- New menus added after atomization (not in original ID_menus.py) ---
 game_menus.extend(cheat_reports_menu)
-game_menus.extend(choose_banner_menu)
-game_menus.extend(choose_skill_menu)
-game_menus.extend(close_menu)
-game_menus.extend(collect_taxes_menu)
-game_menus.extend(collect_taxes_complete_menu)
-game_menus.extend(collect_taxes_failed_menu)
-game_menus.extend(collect_taxes_rebels_killed_menu)
-game_menus.extend(collect_taxes_revolt_menu)
-game_menus.extend(collect_taxes_revolt_warning_menu)
-game_menus.extend(companion_report_menu)
-game_menus.extend(construct_ladders_menu)
-game_menus.extend(construct_siege_tower_menu)
-game_menus.extend(content_options_menu)
-game_menus.extend(courtship_relations_menu)
-game_menus.extend(custom_battle_end_menu)
-game_menus.extend(custom_battle_scene_menu)
-game_menus.extend(cut_siege_without_fight_menu)
-game_menus.extend(debug_alert_from_s65_menu)
-game_menus.extend(dhorak_keep_menu)
-game_menus.extend(dickplo_town_manage_menu)
-game_menus.extend(disembark_menu)
-game_menus.extend(display_party_slots_menu)
-game_menus.extend(display_troop_slots_menu)
-game_menus.extend(dplmc_affiliate_end_menu)
-game_menus.extend(dplmc_affiliated_family_report_menu)
-game_menus.extend(dplmc_auto_loot_menu)
-game_menus.extend(dplmc_chamberlain_confirm_menu)
-game_menus.extend(dplmc_chancellor_confirm_menu)
-game_menus.extend(dplmc_choose_disguise_menu)
-game_menus.extend(dplmc_constable_confirm_menu)
-game_menus.extend(dplmc_deny_terms_menu)
-game_menus.extend(dplmc_deserters_menu)
-game_menus.extend(dplmc_dictate_terms_menu)
-game_menus.extend(dplmc_domestic_policy_menu)
-game_menus.extend(dplmc_economic_report_menu)
-game_menus.extend(dplmc_manage_loot_pool_menu)
-game_menus.extend(dplmc_messenger_menu)
-game_menus.extend(dplmc_negotiate_besieger_menu)
-game_menus.extend(dplmc_notification_alliance_declared_menu)
-game_menus.extend(dplmc_notification_alliance_expired_menu)
-game_menus.extend(dplmc_notification_appoint_chamberlain_menu)
-game_menus.extend(dplmc_notification_appoint_chancellor_menu)
-game_menus.extend(dplmc_notification_appoint_constable_menu)
-game_menus.extend(dplmc_notification_defensive_declared_menu)
-game_menus.extend(dplmc_notification_defensive_expired_menu)
-game_menus.extend(dplmc_notification_nonaggression_declared_menu)
-game_menus.extend(dplmc_notification_riot_menu)
-game_menus.extend(dplmc_notification_trade_declared_menu)
-game_menus.extend(dplmc_notification_trade_expired_menu)
-game_menus.extend(dplmc_preferences_menu)
-game_menus.extend(dplmc_question_alliance_offer_menu)
-game_menus.extend(dplmc_question_defensive_offer_menu)
-game_menus.extend(dplmc_question_nonaggression_offer_menu)
-game_menus.extend(dplmc_question_trade_offer_menu)
-game_menus.extend(dplmc_riot_negotiate_menu)
-game_menus.extend(dplmc_scout_menu)
-game_menus.extend(dplmc_start_select_prejudice_menu)
-game_menus.extend(dplmc_town_riot_removed_menu)
-game_menus.extend(dplmc_trade_auto_buy_food_begin_menu)
-game_menus.extend(dplmc_trade_auto_sell_begin_menu)
-game_menus.extend(dplmc_village_riot_removed_menu)
-game_menus.extend(dplmc_village_riot_result_menu)
-game_menus.extend(encounter_retreat_menu)
-game_menus.extend(encounter_retreat_confirm_menu)
-game_menus.extend(end_game_menu)
-game_menus.extend(enemy_offer_ransom_for_prisoner_menu)
-game_menus.extend(enemy_slipped_away_menu)
-game_menus.extend(enter_your_own_castle_menu)
-game_menus.extend(establish_court_menu)
-game_menus.extend(export_import_menu)
-game_menus.extend(faction_orders_menu)
-game_menus.extend(faction_relations_report_menu)
-game_menus.extend(four_ways_inn_menu)
-game_menus.extend(fuck_menu)
-game_menus.extend(fuck_2_menu)
-game_menus.extend(fuck_3_menu)
-game_menus.extend(fuck_encounter_menu)
-game_menus.extend(fucked_by_enemy_menu)
-game_menus.extend(fucked_by_enemy_prison_menu)
-game_menus.extend(garden_menu)
-game_menus.extend(give_center_to_player_menu)
-game_menus.extend(give_center_to_player_2_menu)
-game_menus.extend(invite_player_to_faction_menu)
-game_menus.extend(invite_player_to_faction_accepted_menu)
-game_menus.extend(invite_player_to_faction_without_center_menu)
-game_menus.extend(join_battle_menu)
-game_menus.extend(join_order_attack_menu)
-game_menus.extend(join_siege_outside_menu)
-game_menus.extend(kill_local_merchant_begin_menu)
-game_menus.extend(kingdom_army_follow_failed_menu)
-game_menus.extend(kingdom_army_quest_join_siege_order_menu)
-game_menus.extend(kingdom_army_quest_messenger_menu)
-game_menus.extend(kingdom_army_quest_report_to_army_menu)
-game_menus.extend(lady_visit_menu)
-game_menus.extend(leave_faction_menu)
-game_menus.extend(lord_relations_menu)
-game_menus.extend(lost_tavern_duel_menu)
-game_menus.extend(marshall_selection_candidate_ask_menu)
-game_menus.extend(minister_confirm_menu)
-game_menus.extend(morale_report_menu)
-game_menus.extend(notification_border_incident_menu)
-game_menus.extend(notification_casus_belli_expired_menu)
-game_menus.extend(notification_center_lost_menu)
-game_menus.extend(notification_center_under_siege_menu)
-game_menus.extend(notification_court_lost_menu)
-game_menus.extend(notification_faction_defeated_menu)
-game_menus.extend(notification_feast_quest_expired_menu)
-game_menus.extend(notification_lady_requests_visit_menu)
-game_menus.extend(notification_lord_defects_menu)
-game_menus.extend(notification_oath_renounced_faction_defeated_menu)
-game_menus.extend(notification_one_faction_left_menu)
-game_menus.extend(notification_peace_declared_menu)
-game_menus.extend(notification_player_faction_active_menu)
-game_menus.extend(notification_player_faction_deactive_menu)
-game_menus.extend(notification_player_faction_political_issue_resolved_menu)
-game_menus.extend(notification_player_faction_political_issue_resolved_for_player_menu)
-game_menus.extend(notification_player_feast_in_progress_menu)
-game_menus.extend(notification_player_kingdom_holds_feast_menu)
-game_menus.extend(notification_player_should_consult_menu)
-game_menus.extend(notification_player_wedding_day_menu)
-game_menus.extend(notification_rebels_switched_to_faction_menu)
-game_menus.extend(notification_relieved_as_marshal_menu)
-game_menus.extend(notification_sortie_possible_menu)
-game_menus.extend(notification_treason_indictment_menu)
-game_menus.extend(notification_troop_joined_players_faction_menu)
-game_menus.extend(notification_troop_left_players_faction_menu)
-game_menus.extend(notification_truce_expired_menu)
-game_menus.extend(notification_village_raid_started_menu)
-game_menus.extend(notification_village_raided_menu)
-game_menus.extend(notification_war_declared_menu)
-game_menus.extend(oath_fulfilled_menu)
-game_menus.extend(order_attack_2_menu)
-game_menus.extend(order_attack_begin_menu)
-game_menus.extend(party_cheat_menu)
-game_menus.extend(party_size_report_menu)
-game_menus.extend(past_life_explanation_menu)
-game_menus.extend(permanent_damage_menu)
-game_menus.extend(pre_join_menu)
-game_menus.extend(price_and_production_menu)
-game_menus.extend(question_peace_offer_menu)
-game_menus.extend(recruit_volunteers_menu)
-game_menus.extend(recruit_volunteers_dickplo_main_menu)
-game_menus.extend(rename_court_menu)
-game_menus.extend(reports_menu)
 game_menus.extend(reports_character_menu)
 game_menus.extend(reports_economy_menu)
 game_menus.extend(reports_faction_menu)
-game_menus.extend(requested_castle_granted_to_another_menu)
-game_menus.extend(requested_castle_granted_to_another_female_menu)
-game_menus.extend(requested_castle_granted_to_player_menu)
-game_menus.extend(requested_castle_granted_to_player_husband_menu)
-game_menus.extend(retirement_verify_menu)
-game_menus.extend(salt_mine_menu)
-game_menus.extend(ship_reembark_menu)
-game_menus.extend(siege_attack_meets_sally_menu)
-game_menus.extend(siege_join_defense_menu)
-game_menus.extend(siege_started_defender_menu)
-game_menus.extend(simple_encounter_menu)
-game_menus.extend(sneak_into_town_caught_menu)
-game_menus.extend(sneak_into_town_caught_dispersed_guards_menu)
-game_menus.extend(sneak_into_town_caught_ran_away_menu)
-game_menus.extend(sneak_into_town_suceeded_menu)
-game_menus.extend(start_character_1_menu)
-game_menus.extend(start_character_2_menu)
-game_menus.extend(start_character_3_menu)
-game_menus.extend(start_character_4_menu)
-game_menus.extend(start_game_0_menu)
-game_menus.extend(start_game_1_menu)
-game_menus.extend(start_game_3_menu)
-game_menus.extend(start_phase_2_menu)
-game_menus.extend(start_phase_2_5_menu)
-game_menus.extend(start_phase_3_menu)
-game_menus.extend(start_phase_4_menu)
-game_menus.extend(startgame_mod_options_menu)
-game_menus.extend(test_scene_menu)
-game_menus.extend(total_defeat_menu)
-game_menus.extend(total_victory_menu)
-game_menus.extend(tournament_bet_menu)
-game_menus.extend(tournament_bet_confirm_menu)
-game_menus.extend(tournament_participants_menu)
-game_menus.extend(tournament_withdraw_verify_menu)
-game_menus.extend(town_menu)
-game_menus.extend(town_bandits_failed_menu)
-game_menus.extend(town_bandits_succeeded_menu)
-game_menus.extend(town_cheats_menu)
-game_menus.extend(town_cheats_2_menu)
-game_menus.extend(town_hire_cutthroats_menu)
-game_menus.extend(town_hire_farmers_menu)
-game_menus.extend(town_hire_knights_menu)
-game_menus.extend(town_hire_troops_menu)
-game_menus.extend(town_pre_hire_troops_menu)
-game_menus.extend(town_tavern_prostitution_menu)
-game_menus.extend(town_tavern_prostitution_results_menu)
-game_menus.extend(town_tournament_menu)
-game_menus.extend(town_tournament_lost_menu)
-game_menus.extend(town_tournament_won_menu)
-game_menus.extend(town_tournament_won_by_another_menu)
-game_menus.extend(town_trade_menu)
-game_menus.extend(town_trade_assessment_menu)
-game_menus.extend(town_trade_assessment_begin_menu)
-game_menus.extend(train_peasants_against_bandits_menu)
-game_menus.extend(train_peasants_against_bandits_attack_menu)
-game_menus.extend(train_peasants_against_bandits_attack_result_menu)
-game_menus.extend(train_peasants_against_bandits_ready_menu)
-game_menus.extend(train_peasants_against_bandits_success_menu)
-game_menus.extend(train_peasants_against_bandits_training_result_menu)
-game_menus.extend(training_ground_menu)
-game_menus.extend(training_ground_description_menu)
-game_menus.extend(training_ground_selection_details_melee_1_menu)
-game_menus.extend(training_ground_selection_details_melee_2_menu)
-game_menus.extend(training_ground_selection_details_mounted_menu)
-game_menus.extend(training_ground_selection_details_ranged_1_menu)
-game_menus.extend(training_ground_selection_details_ranged_2_menu)
-game_menus.extend(training_ground_training_result_menu)
-game_menus.extend(tutorial_menu)
-game_menus.extend(village_menu)
-game_menus.extend(village_enslave_complete_menu)
-game_menus.extend(village_hostile_action_menu)
-game_menus.extend(village_hunt_down_fugitive_defeated_menu)
-game_menus.extend(village_hunt_down_fugitive_persuaded_menu)
-game_menus.extend(village_infest_bandits_result_menu)
-game_menus.extend(village_infestation_removed_menu)
-game_menus.extend(village_loot_complete_menu)
-game_menus.extend(village_loot_continue_menu)
-game_menus.extend(village_loot_defeat_menu)
-game_menus.extend(village_loot_no_resist_menu)
-game_menus.extend(village_start_attack_menu)
-game_menus.extend(village_steal_cattle_menu)
-game_menus.extend(village_steal_cattle_confirm_menu)
-game_menus.extend(village_take_food_menu)
-game_menus.extend(village_take_food_confirm_menu)
-game_menus.extend(zendar_menu)
 
 import header_scenes
 from template_tools import *
