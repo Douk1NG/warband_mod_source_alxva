@@ -187,7 +187,7 @@ from scripts.cf_village_recruit_volunteers_cond import cf_village_recruit_volunt
 from scripts.cf_weapons_have_the_same_important_properties import cf_weapons_have_the_same_important_properties_scripts
 from scripts.change_banners_and_chest import change_banners_and_chest_scripts
 from scripts.change_center_prosperity import change_center_prosperity_scripts
-from scripts.change_color import change_color_scripts
+# from scripts.change_color import change_color_scripts # unused - replaced by cc_color_editor
 from scripts.change_debt_to_troop import change_debt_to_troop_scripts
 from scripts.change_faction_troop_morale import change_faction_troop_morale_scripts
 from scripts.change_flag_owner import change_flag_owner_scripts
@@ -1064,7 +1064,7 @@ scripts.extend(cf_village_recruit_volunteers_cond_scripts)
 scripts.extend(cf_weapons_have_the_same_important_properties_scripts)
 scripts.extend(change_banners_and_chest_scripts)
 scripts.extend(change_center_prosperity_scripts)
-scripts.extend(change_color_scripts)
+# scripts.extend(change_color_scripts) # unused - replaced by cc_color_editor
 scripts.extend(change_debt_to_troop_scripts)
 scripts.extend(change_faction_troop_morale_scripts)
 scripts.extend(change_flag_owner_scripts)

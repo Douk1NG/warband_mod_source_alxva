@@ -27,7 +27,7 @@ from presentations.prsnt_battle import battle
 from presentations.prsnt_battle_old import battle_excluded
 from presentations.prsnt_blackjack import blackjack
 from presentations.prsnt_budget_report import budget_report
-from presentations.prsnt_change_color import change_color
+# from presentations.prsnt_change_color import change_color # unused - replaced by cc_color_editor
 from presentations.prsnt_color_selection import color_selection
 from presentations.prsnt_companion_overview import companion_overview
 from presentations.prsnt_custom_banner import custom_banner
@@ -90,6 +90,7 @@ from presentations.prsnt_world_map import world_map
 from presentations.prsnt_cc_relations_with_factions import cc_relations_with_factions
 from presentations.prsnt_cc_relations_with_lords_by_faction import cc_relations_with_lords_by_faction
 from presentations.prsnt_cc_color_editor import cc_color_editor
+from presentations.prsnt_party_size_and_morale import party_size_and_morale
 
 presentations = []
 presentations.append(all_items)
@@ -107,7 +108,7 @@ presentations.append(battle)
 presentations.append(battle_excluded)
 presentations.append(blackjack)
 presentations.append(budget_report)
-presentations.append(change_color)
+# presentations.append(change_color) # unused - replaced by cc_color_editor
 presentations.append(color_selection)
 presentations.append(companion_overview)
 presentations.append(custom_banner)
@@ -170,6 +171,7 @@ presentations.append(world_map)
 presentations.append(cc_relations_with_factions)
 presentations.append(cc_relations_with_lords_by_faction)
 presentations.append(cc_color_editor)
+presentations.append(party_size_and_morale)
 
 # modmerger_start version=201 type=2
 try:

@@ -18,17 +18,13 @@ reports_character_menu = [
        [(jump_to_menu, "mnu_character_report"),
         ]
        ),
-      ("view_party_size_report",[],"View party size report.",
-       [(jump_to_menu, "mnu_party_size_report"),
-        ]
-       ),
       ("view_npc_mission_report",[],"View companion mission report.",
        [(jump_to_menu, "mnu_companion_report"),
         (assign, "$g_player_troop", "trp_player"),
         ]
        ),
-      ("view_morale_report",[],"View party morale report.",
-       [(jump_to_menu, "mnu_morale_report"),
+      ("view_party_size_and_morale",[],"View combined morale and size report.",
+       [(start_presentation, "prsnt_party_size_and_morale"),
         ]
        ),
       ("rtr_reports_character",[],"Return.",

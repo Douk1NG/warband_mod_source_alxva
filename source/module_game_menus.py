@@ -167,7 +167,6 @@ from game_menus.mnu_lord_relations import lord_relations_menu
 from game_menus.mnu_lost_tavern_duel import lost_tavern_duel_menu
 from game_menus.mnu_marshall_selection_candidate_ask import marshall_selection_candidate_ask_menu
 from game_menus.mnu_minister_confirm import minister_confirm_menu
-from game_menus.mnu_morale_report import morale_report_menu
 from game_menus.mnu_notification_border_incident import notification_border_incident_menu
 from game_menus.mnu_notification_casus_belli_expired import notification_casus_belli_expired_menu
 from game_menus.mnu_notification_center_lost import notification_center_lost_menu
@@ -202,7 +201,6 @@ from game_menus.mnu_oath_fulfilled import oath_fulfilled_menu
 from game_menus.mnu_order_attack_2 import order_attack_2_menu
 from game_menus.mnu_order_attack_begin import order_attack_begin_menu
 from game_menus.mnu_party_cheat import party_cheat_menu
-from game_menus.mnu_party_size_report import party_size_report_menu
 from game_menus.mnu_past_life_explanation import past_life_explanation_menu
 from game_menus.mnu_permanent_damage import permanent_damage_menu
 from game_menus.mnu_pre_join import pre_join_menu
@@ -321,13 +319,13 @@ game_menus.extend(start_character_4_menu)                                       
 game_menus.extend(choose_skill_menu)                                              # 12
 game_menus.extend(past_life_explanation_menu)                                     # 13
 game_menus.extend(auto_return_menu)                                               # 14
-game_menus.extend(morale_report_menu)                                             # 15
+# game_menus.extend(morale_report_menu)                                           # 15 (unused - replaced by combined report)
 game_menus.extend(courtship_relations_menu)                                       # 16
 game_menus.extend(lord_relations_menu)                                            # 17
 game_menus.extend(companion_report_menu)                                          # 18
 game_menus.extend(faction_orders_menu)                                            # 19
 game_menus.extend(character_report_menu)                                          # 20
-game_menus.extend(party_size_report_menu)                                         # 21
+# game_menus.extend(party_size_report_menu)                                       # 21 (unused - replaced by combined report)
 game_menus.extend(faction_relations_report_menu)                                  # 22
 game_menus.extend(camp_menu)                                                      # 23
 game_menus.extend(camp_cheat_menu)                                                # 24
