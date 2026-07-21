@@ -1,8 +1,8 @@
 import bootstrap_paths
 import os
 
-SOURCE_ROOT = bootstrap_paths.SOURCE_ROOT
-IDS_DIR = os.path.join(SOURCE_ROOT, "ids")
+REPO_ROOT = bootstrap_paths.REPO_ROOT
+IDS_DIR = os.path.join(REPO_ROOT, "ids")
 
 
 def id_file(entity_name):
