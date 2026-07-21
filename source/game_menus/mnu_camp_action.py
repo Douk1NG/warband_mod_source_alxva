@@ -85,19 +85,12 @@ camp_action_menu = [
        ]
        ),
        # #SB : recolor from CC, call this from other presentation
-      # ("action_modify_factions_color",[],"Change the color of factions.",
-       # [
-          # (assign, "$g_presentation_state", recolor_kingdom),
-          # (try_begin),
-            # (is_between, "$players_kingdom", npc_kingdoms_begin, npc_kingdoms_end),
-            # (store_sub, "$temp", "$players_kingdom", npc_kingdoms_begin),
-            # (store_sub, "$temp", 8, "$temp"), #3 to 8 are npc kingdoms
-          # (else_try),
-            # (assign, "$temp", 9), #player faction
-          # (try_end),
-          # (start_presentation, "prsnt_change_color"),
-        # ]
-       # ),
+      ("action_modify_factions_color",[],"Change the color of factions.",
+       [
+          (assign, "$temp", 4),
+          (start_presentation, "prsnt_cc_color_editor"),
+       ]
+       ),
       ("action_rename_kingdom",
        [
          #SB : use bits

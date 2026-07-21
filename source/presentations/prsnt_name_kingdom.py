@@ -142,10 +142,9 @@ name_kingdom = ("name_kingdom",0,mesh_load_window,[
         (else_try), #SB : jump to recoloring kingdom(s)
           (eq, ":object", "$g_presentation_obj_banner_selection_1"),
           (eq, "$g_presentation_state", rename_kingdom), #carried over
-          (assign, "$temp", 9), #player kingdom
+          (assign, "$temp", 4), #player kingdom slot in cc_color_editor
           (assign, "$g_presentation_next_presentation", "prsnt_name_kingdom"),
-          (assign, "$g_presentation_state", recolor_kingdom), #carried over
-          (start_presentation, "prsnt_change_color"),
+          (start_presentation, "prsnt_cc_color_editor"),
         (try_end),
         ]),
       ])

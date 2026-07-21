@@ -89,6 +89,7 @@ from presentations.prsnt_tutorial_show_mouse_movement import tutorial_show_mouse
 from presentations.prsnt_world_map import world_map
 from presentations.prsnt_cc_relations_with_factions import cc_relations_with_factions
 from presentations.prsnt_cc_relations_with_lords_by_faction import cc_relations_with_lords_by_faction
+from presentations.prsnt_cc_color_editor import cc_color_editor
 
 presentations = []
 presentations.append(all_items)
@@ -168,6 +169,7 @@ presentations.append(tutorial_show_mouse_movement)
 presentations.append(world_map)
 presentations.append(cc_relations_with_factions)
 presentations.append(cc_relations_with_lords_by_faction)
+presentations.append(cc_color_editor)
 
 # modmerger_start version=201 type=2
 try:
