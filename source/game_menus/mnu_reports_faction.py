@@ -39,6 +39,11 @@ reports_faction_menu = [
         (start_presentation, "prsnt_jrider_faction_relations_report"),
         ]
        ),
+      ("view_cc_faction_relations_report",[],"View faction/lords relations report.",
+       [
+        (start_presentation, "prsnt_cc_relations_with_factions"),
+       ]
+       ),
       ("rtr_reports_faction",[],"Return.",
        [(jump_to_menu, "mnu_reports"),
         ]

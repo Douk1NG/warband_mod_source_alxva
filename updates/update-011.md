@@ -16,7 +16,7 @@ Porting features from 1175 and Custom Commander references, plus internal fixes.
 | 1.4 | Autosell respects inventory lock | DONE | Added lock check to dplmc_auto_sell.py |
 | 1.5 | Recruit lords → right to rule | DONE | +3 for kings/pretenders (minister dialog), +1 for lords/companions in module_dialogs.py |
 | 1.6 | TPE cheat autowin | DONE | Added to tpe_town_tournament menu |
-| 2.1 | CC relations report presentation | PENDING | New presentation, add alongside existing |
+| 2.1 | CC relations report presentation | DONE | New presentations: prsnt_cc_relations_with_factions.py + prsnt_cc_relations_with_lords_by_faction.py, added to module_presentations.py + menu option |
 | 2.2 | CC faction color editor | PENDING | New presentation, add alongside existing |
 | 2.3 | Combined morale + size report | PENDING | New presentation from CC |
 | 2.4 | Equip all NPC presentation | PENDING | Major port from CC |
@@ -33,3 +33,13 @@ Porting features from 1175 and Custom Commander references, plus internal fixes.
 ### 1.1 Enable manhunter → slave_driver upgrade
 - **File:** `source/module_troops.py:2760`
 - **Change:** Uncomment `upgrade(troops,"manhunter","slave_driver")`
+
+### 2.1 CC relations report presentation
+- **Files created:**
+  - `source/presentations/prsnt_cc_relations_with_factions.py` — faction totems with relation bars, clickable to drill down
+  - `source/presentations/prsnt_cc_relations_with_lords_by_faction.py` — vertical bars + portraits for each lord in selected faction
+- **Files edited:**
+  - `source/module_presentations.py` — added imports + extends for both presentations
+  - `source/game_menus/mnu_reports_faction.py` — added "View faction relations report (CC style)" menu option
+- **Meshes used:** `mesh_relation_bar`, `mesh_reln_pointer`, `mesh_relation_bar_vertical`, `mesh_reln_pointer_vertical`, `tableau_faction_note_mesh`, `tableau_faction_note_mesh_banner`, `tableau_troop_note_mesh` — all already exist in diplomacy
+- **Navigation:** CC factions view → click faction → CC lords view → Done returns to CC factions view

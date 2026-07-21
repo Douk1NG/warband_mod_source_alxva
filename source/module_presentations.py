@@ -87,6 +87,8 @@ from presentations.prsnt_three_card import three_card
 from presentations.prsnt_troop_ratio_bar import troop_ratio_bar
 from presentations.prsnt_tutorial_show_mouse_movement import tutorial_show_mouse_movement
 from presentations.prsnt_world_map import world_map
+from presentations.prsnt_cc_relations_with_factions import cc_relations_with_factions
+from presentations.prsnt_cc_relations_with_lords_by_faction import cc_relations_with_lords_by_faction
 
 presentations = []
 presentations.append(all_items)
@@ -164,6 +166,8 @@ presentations.append(three_card)
 presentations.append(troop_ratio_bar)
 presentations.append(tutorial_show_mouse_movement)
 presentations.append(world_map)
+presentations.append(cc_relations_with_factions)
+presentations.append(cc_relations_with_lords_by_faction)
 
 # modmerger_start version=201 type=2
 try:
