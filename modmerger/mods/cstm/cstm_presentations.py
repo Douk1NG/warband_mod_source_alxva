@@ -427,7 +427,7 @@ new_presentations = [
 			(try_begin),
 				(ge, ":remaining_funds", 0),
 				
-				(overlay_set_color, reg1, 0x00bb00),
+				(overlay_set_color, reg1, 0xffff00),
 			(else_try),
 				(overlay_set_color, reg1, 0xbb0000),
 			(try_end),
@@ -515,13 +515,9 @@ new_presentations = [
 				(call_script, "script_cstm_troop_get_proficiency_min_from_tree", "$cstm_troop_being_customised", "$cstm_troop_being_customised", ":proficiency"),
 				(val_max, ":min", reg0),
 				
-				(store_proficiency_level, ":max", ":dummy", ":proficiency"),
-				(troop_get_slot, ":max_points", "trp_cstm_proficiency_requirements", ":max"),
-				(call_script, "script_cstm_get_proficiency_points_available", ":dummy", ":proficiency"),
-				(val_add, ":max_points", reg0),
-				(call_script, "script_cstm_troop_get_highest_proficiency_from_points", ":max_points"),
+				(call_script, "script_cstm_troop_get_proficiency_max_from_points", ":dummy", ":proficiency"),
 				(assign, ":max", reg0),
-				
+
 				# Apply cap from weapon master
 				(store_skill_level, ":weapon_master", skl_weapon_master, ":dummy"),
 				(store_mul, ":cap", 40, ":weapon_master"),

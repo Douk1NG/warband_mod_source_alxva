@@ -3536,14 +3536,14 @@ scripts = [
   # Called once per loaded save from a simple trigger.
   # Input: none
   # Output: none
-#   ("tpe_fix_save",
-#     [
-# 		(call_script, "script_tpe_initialize_player_settings"),
-# 		(try_for_range, ":slot", 0, wp_tpe_max_tournament_participants),
-# 			(troop_set_slot, "trp_tournament_participants", ":slot", -1),
-# 			(troop_set_slot, tpe_tournament_roster, ":slot", -1),
-# 		(try_end),
-# 	]),
+  ("tpe_fix_save",
+    [
+		(call_script, "script_tpe_initialize_player_settings"),
+		(try_for_range, ":slot", 0, wp_tpe_max_tournament_participants),
+			(troop_set_slot, "trp_tournament_participants", ":slot", -1),
+			(troop_set_slot, tpe_tournament_roster, ":slot", -1),
+		(try_end),
+	]),
 
 # script_tpe_hook_switch_between_native_or_tpe
 # Evaluates if TPE is activated and sends the player to the TPE or native menus.

@@ -1430,41 +1430,24 @@ new_scripts = [
 		(try_end),
 		
 		# Add items
-		(assign, ":skip", 0),
-		(store_add, ":end_cond", all_items_end, 9999),
+		(assign, ":end_cond", all_items_end),
 		(try_for_range, ":item", all_items_begin, ":end_cond"),
-			(eq, ":skip", 1),
-			
-			(assign, ":skip", 0),
-		(else_try),
-			(ge, ":item", all_items_end),
-			
-			(item_get_type, ":type", ":item"),
-			(eq, ":type", 0),
-			
-			(assign, ":end_cond", 0),
-		(else_try),
-			(call_script, "script_cstm_cf_item_is_eligible_equipment_option", ":item"),
-			
-			(item_get_type, ":type", ":item"),
 			(try_begin),
-				(call_script, "script_cstm_get_items_array", ":type"),
-				(gt, reg0, 0),
+				(call_script, "script_cstm_cf_item_is_eligible_equipment_option", ":item"),
 				
-				(assign, ":array", reg0),
-				
-				(troop_get_slot, ":num_items", ":array", cstm_slot_array_num_items),
-				(store_add, ":slot", ":num_items", cstm_slot_array_items_begin),
-				(troop_set_slot, ":array", ":slot", ":item"),
-				(val_add, ":num_items", 1),
-				(troop_set_slot, ":array", cstm_slot_array_num_items, ":num_items"),
-			(try_end),
-			
-			(try_begin),
-				(is_between, ":type", itp_type_one_handed_wpn, itp_type_goods),
-				(item_has_property, ":item", itp_next_item_as_melee),
-				
-				(assign, ":skip", 1),
+				(item_get_type, ":type", ":item"),
+				(try_begin),
+					(call_script, "script_cstm_get_items_array", ":type"),
+					(gt, reg0, 0),
+					
+					(assign, ":array", reg0),
+					
+					(troop_get_slot, ":num_items", ":array", cstm_slot_array_num_items),
+					(store_add, ":slot", ":num_items", cstm_slot_array_items_begin),
+					(troop_set_slot, ":array", ":slot", ":item"),
+					(val_add, ":num_items", 1),
+					(troop_set_slot, ":array", cstm_slot_array_num_items, ":num_items"),
+				(try_end),
 			(try_end),
 		(try_end),
 		
@@ -1739,7 +1722,7 @@ new_scripts = [
 		(item_get_type, ":type", ":item"),
 		(call_script, "script_cstm_item_type_get_cost_modifier", ":type", ":imod"),
 		(store_add, ":modifier", reg0, 100),
-		(store_div, ":reduced_modifier", reg0, CSTM_IMOD_COST_DIVISOR),
+		(store_div, ":reduced_modifier", ":modifier", CSTM_IMOD_COST_DIVISOR),
 		(val_add, ":reduced_modifier", 100),
 		
 		(store_mul, ":price_multiplier", ":reduced_modifier", 100),

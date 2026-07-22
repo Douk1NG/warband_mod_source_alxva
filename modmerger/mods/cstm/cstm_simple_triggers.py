@@ -9,6 +9,7 @@ from header_music import *
 from module_constants import *
 
 from cstm_header_simple_triggers import *
+from cstm_constants import *
 
 ####################################################################################################################
 # Simple triggers are the alternative to old style triggers. They do not preserve state, and thus simpler to maintain.
@@ -18,26 +19,42 @@ from cstm_header_simple_triggers import *
 # 2) Operation block: This must be a valid operation block. See header_operations.py for reference. 
 ####################################################################################################################
 
+# Build comprehensive save-game fix operations (runs once on first load after mod update)
+fix_operations = [
+	(try_begin),
+		(neq, "$g_cstm_save_fix_applied", 1),
+		
+		# Rebuild item arrays from scratch (fixes invalid item IDs like 1938 in old saves)
+		(call_script, "script_cstm_setup_item_arrays"),
+]
+
+# Recalculate equipment funds for all troop levels (fixes negative funds on old saves)
+# 1.5x multiplier to compensate for the corrected price calculation
+for i in xrange(64):
+	inventory_value = equipment_funds_available(i)
+	inventory_value = int(round(inventory_value * 1.5))
+	fix_operations.append((troop_set_slot, "trp_cstm_inventory_values", i, inventory_value))
+
+# Recalculate proficiency requirements (in case they changed between versions)
+previous_requirement = 0
+for i in xrange(max(cstm_proficiency_requirements.keys()) + 1):
+	requirement = previous_requirement
+	if i in cstm_proficiency_requirements:
+		requirement = cstm_proficiency_requirements[i]
+		previous_requirement = requirement
+	fix_operations.append((troop_set_slot, "trp_cstm_proficiency_requirements", i, requirement))
+
+# Re-set item types on each array troop (ensures arrays are correctly categorized)
+for item_type in cstm_item_type_strings.keys():
+	fix_operations.append((troop_set_slot, "trp_" + cstm_items_array_id(item_type), cstm_slot_array_item_type, item_type))
+
+fix_operations.append((assign, "$g_cstm_save_fix_applied", 1))
+fix_operations.append((try_end,))
+
 new_simple_triggers = [
 
 	# This trigger will activate upon the game being loaded
-	(0,
-	[
-		(try_begin),
-			(store_item_kind_count, reg0, "itm_no_item", "trp_cstm_load_check"),
-			(eq, reg0, 0),
-			
-			# Restore custom troop inventories, which are reset upon loading
-			(try_for_range, ":troop", "$cstm_troops_begin", "$cstm_troops_end"),
-				(call_script, "script_cstm_replace_custom_troop_with_dummy", ":troop"),
-			(try_end),
-			
-			# Re-establish the item arrays used for troop equipment options in case new items have been added
-			(call_script, "script_cstm_setup_item_arrays"),
-			
-			(troop_add_item, "trp_cstm_load_check", "itm_no_item"),
-		(try_end),
-	]),
+	(0, fix_operations),
 	
 ]
 

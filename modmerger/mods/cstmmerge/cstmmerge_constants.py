@@ -2,7 +2,7 @@ import math
 from cstm_troop_trees import *
 
 def equipment_funds_available(level):
-	return round(240 * math.exp(level * 0.13) - 225, -1)
+	return round(480 * math.exp(level * 0.13) - 225, -1)
 
 class Skin:
 	def __init__(self, id, text, face_code_1, face_code_2):

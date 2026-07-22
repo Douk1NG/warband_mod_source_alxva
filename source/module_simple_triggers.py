@@ -44,7 +44,20 @@ simple_triggers = [
   # saves, whose item slots are frozen at first start. Runs once per session via the guard flag.
   (1.0,
    [
-     (assign, ":ctdn_1", 0),
+    (try_begin),
+      (neq, "$g_cstm_arrays_fixed", 1),
+      (eq, "$g_enterprise_init_done", 0),
+      (eq, "$g_tpe_save_repaired", 0),
+
+      (call_script, "script_initialize_item_info"),
+      (call_script, "script_cstm_setup_item_arrays"),
+      (call_script, "script_tpe_fix_save"),
+      (call_script, "script_initialize_item_info"),
+
+      (assign, "$g_tpe_save_repaired", 1),
+      (assign, "$g_cstm_arrays_fixed", 1),
+      (assign, "$g_tpe_save_repaired", 1),
+    (try_end),
    ]),
 
   # (1.0,

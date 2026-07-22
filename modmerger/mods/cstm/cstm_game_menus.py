@@ -73,54 +73,8 @@ for i in xrange(len(CSTM_SKINS)):
 		(val_add, "$cstm_reinforcement_templates_begin", ":offset"),
 		(val_add, "$cstm_reinforcement_templates_end", ":offset"),
 		
-		(assign, ":template", "$cstm_reinforcement_templates_begin"),
-		(faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_a, ":template"),
-		(val_add, ":template", 1),
-		(faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_b, ":template"),
-		(val_add, ":template", 1),
-		(faction_set_slot, "fac_player_supporters_faction",  slot_faction_reinforcements_c, ":template"),
-		
-		# Set the troops to show up as guards in player faction controlled towns/castles
-		(assign, ":troop", "$cstm_troops_begin"),
-		(try_for_range, ":i", 0, 5),
-			(gt, ":troop", 0),
-			
-			(store_add, ":slot", slot_faction_tier_1_troop, ":i"),
-			(faction_set_slot, "fac_culture_player", ":slot", ":troop"),
-			(faction_set_slot, "fac_player_faction", ":slot", ":troop"),
-			(faction_set_slot, "fac_player_supporters_faction", ":slot", ":troop"),
-			
-			(troop_get_upgrade_troop, ":troop", ":troop", 0),
-		(try_end),
-		
-		(store_sub, ":guard_troop", "$cstm_troops_end", 1),
-		(faction_set_slot, "fac_culture_player", slot_faction_guard_troop, ":guard_troop"),
-		(faction_set_slot, "fac_player_faction", slot_faction_guard_troop, ":guard_troop"),
-		(faction_set_slot, "fac_player_supporters_faction", slot_faction_guard_troop, ":guard_troop"),
-		
-		(faction_set_slot, "fac_culture_player", slot_faction_prison_guard_troop, ":guard_troop"),
-		(faction_set_slot, "fac_player_faction", slot_faction_prison_guard_troop, ":guard_troop"),
-		(faction_set_slot, "fac_player_supporters_faction", slot_faction_prison_guard_troop, ":guard_troop"),
-		
-		(faction_set_slot, "fac_culture_player", slot_faction_castle_guard_troop, ":guard_troop"),
-		(faction_set_slot, "fac_player_faction", slot_faction_castle_guard_troop, ":guard_troop"),
-		(faction_set_slot, "fac_player_supporters_faction", slot_faction_castle_guard_troop, ":guard_troop"),
-		
 		# Set the troop whose image will be used in the customisation screen (the dummy troop can't be used because for reasons it appears naked instead of with the equipment selected)
 		(assign, "$cstm_presentation_troop", "trp_cstm_presentation_troop_" + str(skin.id)),
-		
-		#(call_script, "script_cstm_add_troop_tree_to_main_party", "$cstm_troops_begin", 5),
-		
-		# Update village recruits
-		(try_for_range, ":village", villages_begin, villages_end),
-			(store_faction_of_party, ":faction", ":village"),
-			(eq, ":faction", "fac_player_supporters_faction"),
-			
-			(call_script, "script_cstm_center_set_culture", ":village", "fac_culture_player"),
-		(try_end),
-		
-		(call_script, "script_cstm_reset_lord_armies_in_player_faction"),
-		(call_script, "script_cstm_reset_garrisons_in_player_faction"),
 		
 		# Jump to the custom troop tree viewer where troops can be selected for customisation
 		(troop_set_name, cstm_troop_tree_prefix, "@Custom"),
