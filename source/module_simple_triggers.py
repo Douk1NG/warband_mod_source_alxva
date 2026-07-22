@@ -7707,7 +7707,8 @@ simple_triggers = [
     (try_end),
     (key_clicked, "$game_key_manage_inventory"),
     (assign, "$g_prsnt_param_1", "trp_player"),
-    (start_presentation, "prsnt_manage_inventory"),
+    (assign, "$g_selected_troop", "trp_player"),
+    (start_presentation, "prsnt_equip_npcs"),
   ]),
   ###)))
 

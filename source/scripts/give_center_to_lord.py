@@ -334,16 +334,22 @@ give_center_to_lord_scripts = [
 			(try_begin),
 				(ge, "$g_dplmc_ai_changes", DPLMC_AI_CHANGES_MEDIUM),
 				(try_begin),
-					#Optional change: Non-jerkish lords will not object to giving a village to
+					#Optional change: Non-jerkish lords will not object to giving a center to
 					#someone fiefless, unless they dislike him.
 					(neg|troop_slot_eq, ":other_lord", slot_lord_reputation_type, lrep_debauched),
 					(neg|troop_slot_eq, ":other_lord", slot_lord_reputation_type, lrep_selfrighteous),
 					(neg|troop_slot_eq, ":other_lord", slot_lord_reputation_type, lrep_quarrelsome),
 					(lt, ":relation_with_liege_change", 0),
-					(is_between, ":center_no", villages_begin, villages_end),
 					(troop_slot_eq, ":lord_troop_id", slot_troop_temp_slot, 0),
 					(ge, ":relation_with_troop", 0),
 					(val_max, ":relation_with_liege_change", 0),
+				(try_end),
+				(try_begin),
+					#Reduce jealousy penalty by half when granting to a fiefless lord,
+					#regardless of the other lord's personality type.
+					(lt, ":relation_with_liege_change", 0),
+					(troop_slot_eq, ":lord_troop_id", slot_troop_temp_slot, 0),
+					(val_div, ":relation_with_liege_change", 2),
 				(try_end),
 				(try_begin),
 					#Optional change: because taking a penalty for 'thrashing' the same fief

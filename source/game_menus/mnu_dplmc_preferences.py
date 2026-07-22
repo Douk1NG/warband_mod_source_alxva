@@ -21,6 +21,12 @@ dplmc_preferences_menu = [
       ("formation_mod_option",[],"Formations Mod Settings", [(start_presentation, "prsnt_formation_mod_option")]),
 	  # Camera Hotkeys
       ("dplmc_deathcam_keys",[ (eq, "$g_dplmc_battle_continuation", 0),],"Camera Keys Settings",[(assign, "$g_presentation_next_presentation", "prsnt_redefine_keys"),(start_presentation, "prsnt_redefine_keys"),]),
+      ("action_modify_factions_color",[],"Change the color of factions.",
+       [
+          (assign, "$temp", 4),
+          (start_presentation, "prsnt_cc_color_editor"),
+       ]
+       ),
       ("dplmc_back",[],"Return",
        [
            (jump_to_menu, "mnu_camp"),

@@ -36,6 +36,7 @@ from presentations.prsnt_deposit_withdraw_money import deposit_withdraw_money
 from presentations.prsnt_dices_game import dices_game
 from presentations.prsnt_dplmc_auto_sell_options import dplmc_auto_sell_options
 from presentations.prsnt_dplmc_autoloot_upgrade_management import dplmc_autoloot_upgrade_management
+from presentations.prsnt_equip_npcs import equip_npcs
 from presentations.prsnt_dplmc_peace_terms import dplmc_peace_terms
 from presentations.prsnt_dplmc_policy_management import dplmc_policy_management
 from presentations.prsnt_dplmc_set_vassal_title import dplmc_set_vassal_title
@@ -117,6 +118,7 @@ presentations.append(deposit_withdraw_money)
 presentations.append(dices_game)
 presentations.append(dplmc_auto_sell_options)
 presentations.append(dplmc_autoloot_upgrade_management)
+presentations.append(equip_npcs)
 presentations.append(dplmc_peace_terms)
 presentations.append(dplmc_policy_management)
 presentations.append(dplmc_set_vassal_title)

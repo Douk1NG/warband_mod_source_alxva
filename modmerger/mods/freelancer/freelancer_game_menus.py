@@ -438,7 +438,7 @@ def modmerge_game_menus(orig_game_menus, check_duplicates = False):
 		raise
 
 	try: #disabling menu options
-		find_i = list_find_first_match_i( orig_game_menus, "camp_action" )
+		find_i = list_find_first_match_i( orig_game_menus, "camp_cheat_player_kingdom" )
 		codeblock = GameMenuWrapper(orig_game_menus[find_i]).GetMenuOption("action_modify_banner").GetConditionBlock()
 		codeblock.InsertBefore(0, not_enlisted)
 		find_i = list_find_first_match_i( orig_game_menus, "join_battle" )

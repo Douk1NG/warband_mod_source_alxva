@@ -154,6 +154,16 @@ dplmc_manage_loot_pool_menu = [
         ]
       ),
 
+      ("dplmc_equip_npcs", [],
+        "Equip all NPCs (drag & drop).",
+        [
+          (call_script, "script_all_toggle_weapons_set", 1),
+          (assign, "$g_cur_page_of_loot_pool", 0),
+          (assign, "$g_selected_troop", "trp_player"),
+          (start_presentation, "prsnt_equip_npcs"),
+        ]
+      ),
+
       #all other options will reset player eventually, this is for convenience
       ("dplmc_auto_loot_reset_player", [(neq, "$lord_selected", "trp_player")],
          "Reset current troop to the player",

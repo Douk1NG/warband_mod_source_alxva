@@ -31,6 +31,62 @@ camp_action_menu = [
      ],
     [
 
+      ("camp_disembark", [(eq, "$g_player_icon_state", pis_ship),
+        (party_get_position, pos1, "p_main_party"),
+        (map_get_land_position_around_position, pos0, pos1, 3),
+        (get_distance_between_positions_in_meters, ":dist", pos1, pos0),
+        (lt, ":dist", 3),
+      ], "Disembark.",
+       [(assign, "$g_player_icon_state", pis_normal),
+        (party_set_flags, "p_main_party", pf_is_ship, 0),
+        (party_set_position, "p_main_party", pos0),
+        (party_get_slot, ":ship_type", "p_main_party", slot_party_ship_type),
+        (try_begin),
+          (le, "$g_main_ship_party", 0),
+          (set_spawn_radius, 0),
+          (spawn_around_party, "p_main_party", "pt_none"),
+          (assign, "$g_main_ship_party", reg0),
+          (party_set_flags, "$g_main_ship_party", pf_is_static|pf_always_visible|pf_hide_defenders|pf_is_ship, 1),
+          (str_store_troop_name, s1, "trp_player"),
+          (party_set_slot, "$g_main_ship_party", slot_party_ship_type, ":ship_type"),
+          (party_set_name, "$g_main_ship_party", "@{s1}'s Ship"),
+          (party_set_icon, "$g_main_ship_party", "icon_ship"),
+          (party_set_slot, "$g_main_ship_party", slot_party_type, spt_ship),
+          (try_begin),
+            (eq, ":ship_type", 1),
+            (party_set_name, "$g_main_ship_party", "@{s1}'s Longship"),
+          (else_try),
+            (eq, ":ship_type", 2),
+            (party_set_name, "$g_main_ship_party", "@{s1}'s Galley"),
+          (else_try),
+            (eq, ":ship_type", 3),
+            (party_set_name, "$g_main_ship_party", "@{s1}'s Cog"),
+          (else_try),
+            (eq, ":ship_type", 4),
+            (party_set_name, "$g_main_ship_party", "@{s1}'s Dhow"),
+          (try_end),
+        (try_end),
+        (enable_party, "$g_main_ship_party"),
+        (party_set_position, "$g_main_ship_party", pos0),
+        (party_set_icon, "$g_main_ship_party", "icon_ship_on_land"),
+        (assign, "$g_main_ship_party", -1),
+        (party_set_slot, "p_main_party", slot_party_ship_type, 0),
+        (change_screen_return),
+        ]),
+
+      ("camp_manage_inventory",[],"Manage your inventory.",
+        [
+          (assign, "$g_prsnt_param_1", "trp_player"),
+          (assign, "$g_selected_troop", "trp_player"),
+          (start_presentation, "prsnt_equip_npcs"),
+        ]),
+
+      ("camp_autoloot",[],"Configure autoloot for heroes.",
+        [
+          (assign, "$g_selected_troop", "trp_player"),
+          (start_presentation, "prsnt_dplmc_autoloot_upgrade_management"),
+        ]),
+
       ("camp_recruit_prisoners",
        [(troops_can_join, 1),
         (store_current_hours, ":cur_time"),
@@ -52,81 +108,41 @@ camp_action_menu = [
         ]
        ),
 
-      ("action_sort_inventory",[],"Sort player inventory.",
-       [(jump_to_menu, "mnu_camp_action_sort_inventory"),
-        ]
-        ),
-
-       #("queens_blade", [], "Queens blade options.",
-       #[(jump_to_menu, "mnu_queens_blade"),
-       # ],
-       #),
-
-	  #custom armor	#2/2
-	  ("custom_armor",[
+      ("custom_armor",[
         (neq, "$g_current_opened_item_details", -1),
         (str_store_item_name, s0, "$g_current_opened_item_details"),
       ],"Customize {s0}",
         [
         (start_presentation, "prsnt_customize_armor"),
         ]),
-	  #/custom armor
 
       ("action_food",[],"Change your party's food consumption habits.",
        [(start_presentation, "prsnt_food_options"),
         ]
        ),
 
-      #SB : rename changes
       ("camp_change_name",[],"Change the name of your party.",
        [(assign, "$g_presentation_state", rename_party),
        (assign, "$g_encountered_party", "p_main_party"),
        (start_presentation, "prsnt_name_kingdom"),
        ]
        ),
-       # #SB : recolor from CC, call this from other presentation
-      ("action_modify_factions_color",[],"Change the color of factions.",
-       [
-          (assign, "$temp", 4),
-          (start_presentation, "prsnt_cc_color_editor"),
-       ]
-       ),
+
       ("action_rename_kingdom",
        [
-         #SB : use bits
          (store_and, ":name_set", "$players_kingdom_name_set", rename_kingdom),
          (eq, ":name_set", rename_kingdom),
          (faction_slot_eq, "fac_player_supporters_faction", slot_faction_state, sfs_active),
          (faction_slot_eq, "fac_player_supporters_faction", slot_faction_leader, "trp_player"),
          ],"Rename your kingdom.",
        [
-         #SB : explicitly state kingdom
          (assign, "$g_presentation_state", rename_kingdom),
          (start_presentation, "prsnt_name_kingdom"),
         ]
        ),
-      # ("action_recolor_troops",
-       # [
-         # ],"Recolor your troop groups.",
-       # [(assign, "$g_presentation_state", recolor_groups),
-        # (jump_to_menu, "mnu_recolor_groups"),
-        # ]
-       # ),
 
-      # ("action_rename_troops",
-       # [
-         # (gt, "$g_player_constable", 0),
-         # (call_script, "script_cf_has_custom_troops"),
-         # ],"Rename your custom troops.",
-       # [
-        # (jump_to_menu, "mnu_custom_troops"),
-        # ]
-       # ),
-      ##diplomacy begin+
-      ##Custom player kingdom vassal titles, credit Caba'drin start
        ("action_change_vassal_title",
         [
-        #SB : allow action if co-ruler of $players_kingdom
           (assign, ":is_coruler", -1),
           (try_begin),
            (store_and, ":name_set", "$players_kingdom_name_set", rename_kingdom),
@@ -145,33 +161,12 @@ camp_action_menu = [
         [(start_presentation, "prsnt_dplmc_set_vassal_title"),
         ]
        ),
-       ("action_change_policies",
-        [
-            (gt, "$cheat_mode", 0),
-            #SB : name set bits
-            (store_and, ":name_set", "$players_kingdom_name_set", rename_kingdom),
-            (eq, ":name_set", rename_kingdom),
-            (faction_slot_eq, "fac_player_supporters_faction", slot_faction_state, sfs_active),
-            (faction_slot_eq, "fac_player_supporters_faction", slot_faction_leader, "trp_player"),
-        ],"{!}Cheat: Change kingdom policies",
-        [(start_presentation, "prsnt_dplmc_policy_management"),
 
-        ]
-       ),
-      ##Custom player kingdom vassal titles, credit Caba'drin end
-      ##diplomacy end+
-      ("action_modify_banner",[(eq, "$cheat_mode", 1)],"{!}Cheat: Modify your banner.",
-       [
-           #(start_presentation, "prsnt_banner_selection"),
-           #(start_presentation, "prsnt_custom_banner"),
-           (assign, "$g_edit_banner_troop", "trp_player"),
-           (jump_to_menu, "mnu_choose_banner"),
-        ]
-       ),
       ("action_retire",[],"Retire from adventuring.",
        [(jump_to_menu, "mnu_retirement_verify"),
         ]
        ),
+
       ("camp_action_4",[],"Back to camp menu.",
        [(jump_to_menu, "mnu_camp"),
         ]

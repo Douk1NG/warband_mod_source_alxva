@@ -25,7 +25,12 @@ from game_menus.mnu_camp_action_read_book import camp_action_read_book_menu
 from game_menus.mnu_camp_action_read_book_start import camp_action_read_book_start_menu
 from game_menus.mnu_camp_action_sort_inventory import camp_action_sort_inventory_menu
 from game_menus.mnu_camp_cheat import camp_cheat_menu
-from game_menus.mnu_camp_cheat_adv import camp_cheat_adv_menu
+# from game_menus.mnu_camp_cheat_adv import camp_cheat_adv_menu # unused - merged into camp_cheat
+from game_menus.mnu_camp_cheat_player_stats import camp_cheat_player_stats_menu
+from game_menus.mnu_camp_cheat_party import camp_cheat_party_menu
+from game_menus.mnu_camp_cheat_world import camp_cheat_world_menu
+from game_menus.mnu_camp_cheat_player_kingdom import camp_cheat_player_kingdom_menu
+from game_menus.mnu_camp_cheat_debug import camp_cheat_debug_menu
 from game_menus.mnu_camp_no_prisoners import camp_no_prisoners_menu
 from game_menus.mnu_camp_recruit_prisoners import camp_recruit_prisoners_menu
 from game_menus.mnu_cannot_enter_court import cannot_enter_court_menu
@@ -329,7 +334,12 @@ game_menus.extend(character_report_menu)                                        
 game_menus.extend(faction_relations_report_menu)                                  # 22
 game_menus.extend(camp_menu)                                                      # 23
 game_menus.extend(camp_cheat_menu)                                                # 24
-game_menus.extend(camp_cheat_adv_menu)                                            # 25
+game_menus.extend(camp_cheat_player_stats_menu)                                   # 25
+game_menus.extend(camp_cheat_party_menu)
+game_menus.extend(camp_cheat_world_menu)
+game_menus.extend(camp_cheat_player_kingdom_menu)
+game_menus.extend(camp_cheat_debug_menu)
+# game_menus.extend(camp_cheat_adv_menu)                                          # 25 (unused - merged into camp_cheat)
 game_menus.extend(cheat_find_item_menu)                                           # 26
 game_menus.extend(cheat_change_weather_menu)                                      # 27
 game_menus.extend(camp_action_menu)                                               # 28
