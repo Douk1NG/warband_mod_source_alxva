@@ -466,6 +466,11 @@ game_start_scripts = [
       (party_set_slot,"p_castle_41", slot_center_siege_with_belfry, 1),
       (party_set_slot,"p_castle_42", slot_center_siege_with_belfry, 1),
       (party_set_slot,"p_castle_43", slot_center_siege_with_belfry, 1),
+      ## CC
+      (party_set_slot,"p_castle_65", slot_center_siege_with_belfry, 1),
+      (party_set_slot,"p_castle_66", slot_center_siege_with_belfry, 1),
+      (party_set_slot,"p_castle_68", slot_center_siege_with_belfry, 1),
+      ## CC
 
 	  # Villages characters
       (try_for_range, ":village_no", villages_begin, villages_end),
@@ -683,7 +688,30 @@ game_start_scripts = [
       (call_script, "script_give_center_to_faction_aux", "p_castle_46", "fac_kingdom_6"),
       (call_script, "script_give_center_to_faction_aux", "p_castle_47", "fac_kingdom_6"),
       (call_script, "script_give_center_to_faction_aux", "p_castle_48", "fac_kingdom_6"),
-
+      ## CC
+      (call_script, "script_give_center_to_faction_aux", "p_castle_49", "fac_kingdom_1"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_50", "fac_kingdom_1"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_51", "fac_kingdom_5"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_52", "fac_kingdom_1"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_53", "fac_kingdom_1"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_54", "fac_kingdom_2"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_55", "fac_kingdom_2"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_56", "fac_kingdom_3"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_57", "fac_kingdom_4"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_58", "fac_kingdom_4"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_59", "fac_kingdom_5"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_60", "fac_kingdom_5"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_61", "fac_kingdom_5"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_62", "fac_kingdom_6"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_63", "fac_kingdom_6"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_64", "fac_kingdom_6"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_65", "fac_kingdom_1"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_66", "fac_kingdom_1"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_67", "fac_kingdom_2"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_68", "fac_kingdom_3"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_69", "fac_kingdom_4"),
+      (call_script, "script_give_center_to_faction_aux", "p_castle_70", "fac_kingdom_6"),
+      ## CC
 
 	  #Now give towns to great lords
 	  ##diplomacy+ notes added, otherwise unchanged
@@ -720,6 +748,23 @@ game_start_scripts = [
       (call_script, "script_give_center_to_lord", "p_castle_35", "trp_knight_1_3", 0), #Haringoth_Castle
       ##diplomacy start+
       (call_script, "script_give_center_to_lord", "p_castle_33", "trp_knight_5_11", 0), #Etrosq Castle -- why wasn't this being done already?
+      ## CC
+      (call_script, "script_give_center_to_lord", "p_castle_49", "trp_knight_1_5", 0), #Deglan_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_50", "trp_knight_1_6", 0), #Tredian_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_52", "trp_knight_1_8", 0), #Ryis_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_53", "trp_knight_1_11", 0), #Stamar_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_54", "trp_knight_2_5", 0), #Doru_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_55", "trp_knight_2_15", 0), #Gastya_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_56", "trp_knight_3_10", 0), #Sebula_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_57", "trp_knight_4_10", 0), #Turegor_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_58", "trp_knight_4_15", 0), #Rayeck_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_59", "trp_knight_5_5", 0), #Reland_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_60", "trp_knight_5_10", 0), #Falsevor_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_61", "trp_knight_5_20", 0), #Reichsin_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_62", "trp_knight_6_10", 0), #Ghulassen_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_63", "trp_knight_6_15", 0), #Muhnir_Castle
+      (call_script, "script_give_center_to_lord", "p_castle_64", "trp_knight_6_20", 0), #Biliya_Castle
+      ## CC
 	  #Add home centers for claimants
 	  (troop_set_slot, "trp_kingdom_1_pretender", slot_troop_home, "p_town_4"),#Lady Isolle - Suno
 	  (troop_set_slot, "trp_kingdom_2_pretender", slot_troop_home, "p_town_11"),#Prince Valdym - Curaw

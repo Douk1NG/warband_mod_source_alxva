@@ -164,7 +164,42 @@ parties = [
   ("castle_46","Weyyah_Castle",icon_castle_d|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(13.3, -84.4),[],260),
   ("castle_47","Samarra_Castle",icon_castle_d|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(116, -74),[],260),
   ("castle_48","Bardaq_Castle",icon_castle_d|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(157, -80),[],260),
- 
+
+  # CC new castles
+  # Swadia
+  ("castle_49","Deglan_Castle",icon_castle_a|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(-140.3, 12.1),[],100),
+  ("castle_50","Tredian_Castle",icon_castle_a|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(-77.3, 47.9),[],110),
+  # Rhodoks
+  ("castle_51","Saren_Castle",icon_castle_a|pf_castle, no_menu, pt_none, fac_neutral, 0, ai_bhvr_hold, 0,(-18.13, -42.65),[], 80),
+  ("castle_52","Ryis_Castle",icon_castle_a|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(-83.15, -2.86),[],95),
+  ("castle_53","Stamar_Castle",icon_castle_a|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(40.8, -10),[],115),
+  # Vaegirs
+  ("castle_54","Doru_Castle",icon_castle_snow_a|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(88.3, 84.1),[],90),
+  ("castle_55","Gastya_Castle",icon_castle_snow_a|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(119.6, 67.9),[],235),
+  # Khergit
+  ("castle_56","Sebula_Castle",icon_castle_a|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(168.8, 21.7),[],260),
+  # Nords
+  ("castle_57","Turegor_Castle",icon_castle_a|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(2.65, 88.26),[], 260),
+  ("castle_58","Rayeck_Castle",icon_castle_c|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(-119.4, 100.4),[],260),
+  # Rhodoks
+  ("castle_59","Reland_Castle",icon_castle_a|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(-134.7, -0.6),[],280),
+  ("castle_60","Falsevor_Castle",icon_castle_c|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(-35.4, -77.4),[],260),
+  ("castle_61","Reichsin_Castle",icon_castle_c|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(-78.3, -44),[],80),
+  # Sarranid
+  ("castle_62","Ghulassen_Castle",icon_castle_d|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(51.3, -98.9),[],260),
+  ("castle_63","Muhnir_Castle",icon_castle_d|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(59.4, -110),[],260),
+  ("castle_64","Biliya_Castle",icon_castle_d|pf_castle, no_menu, pt_none, fac_neutral,0,ai_bhvr_hold,0,(116.68, -103.91),[], 260),
+  # Swadia
+  ("castle_65","Tshibtin_Castle", icon_castle_a|pf_castle, no_menu, pt_none, fac_neutral, 0, ai_bhvr_hold, 0,(-22.25, -4.37),[], 30),
+  ("castle_66","Yalibe_Castle", icon_castle_a|pf_castle, no_menu, pt_none, fac_neutral, 0, ai_bhvr_hold, 0,(2.94, -27.91),[], 260),
+  # Vaegirs
+  ("castle_67","Uslum_Castle",icon_castle_snow_a|pf_castle, no_menu, pt_none, fac_neutral, 0, ai_bhvr_hold, 0,(102.16, 78.77),[], 280),
+  # Khergit
+  ("castle_68","Rduna_Castle",icon_castle_d|pf_castle, no_menu, pt_none, fac_neutral, 0, ai_bhvr_hold, 0,(84.84, 10.56),[], 260),
+  # Nords
+  ("castle_69","Aldelen_Castle",icon_castle_a|pf_castle, no_menu, pt_none, fac_neutral, 0, ai_bhvr_hold, 0,(-98.07, 75.47),[], 260),
+  # Sarranid
+  ("castle_70","Sekhtem_Castle",icon_castle_d|pf_castle, no_menu, pt_none, fac_neutral, 0, ai_bhvr_hold, 0,(83.50, -76.88),[], 260),
 
 #     Rinimad      
 #              Rietal Derchios Gerdus
