@@ -471,6 +471,16 @@ mod_options = [
         ],
 ),
 
+    ("auto_upgrade_mode", xgm_ov_combolabel, ["Off", "Balanced", "Infantry", "Archers", "Cavalry"], "Auto Upgrade:", 0,
+	  "Automatically upgrade troops in your party. Balanced: toward least-represented class. Infantry/Archers/Cavalry: toward that class.", 0,
+		[
+			(assign, reg1, "$g_auto_upgrade_mode"),
+		],
+		[
+			(assign, "$g_auto_upgrade_mode", reg1),
+		],
+	),
+
     ("horizontal_divide", xgm_ov_line, [], "", 0,"", 0,[],[],),
 
     ( "op_cheatmode", xgm_ov_checkbox ,  [],

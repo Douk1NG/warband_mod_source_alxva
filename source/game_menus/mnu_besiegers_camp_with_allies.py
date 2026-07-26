@@ -107,6 +107,7 @@ besiegers_camp_with_allies_menu = [
             (try_end),
           (else_try), #SB : increment globals, add exp
             (call_script, "script_party_give_xp_and_gold", "p_total_enemy_casualties"),
+            (call_script, "script_auto_upgrade_troops"),
             (val_add, "$g_total_victories", 1),
             (call_script, "script_party_wound_all_members", "$g_enemy_party"),
             (leave_encounter),

@@ -345,6 +345,7 @@ total_victory_menu = [
             (end_current_battle),
           (try_end),
           (call_script, "script_party_give_xp_and_gold", "p_total_enemy_casualties"), #p_encountered_party_backup changed to total_enemy_casualties
+          (call_script, "script_auto_upgrade_troops"),
           (try_begin),
             (eq, "$g_enemy_party", 0),
             (display_message,"str_error_string"),

@@ -18,6 +18,7 @@ from module_factions import dplmc_factions_begin, dplmc_factions_end, dplmc_non_
 from header_presentations import tf_left_align
 from module_items import *
 
+from scripts.auto_upgrade_troops import auto_upgrade_troops_scripts
 from scripts.abort_quest import abort_quest_scripts
 from scripts.acquire_disguise import acquire_disguise_scripts
 from scripts.activate_player_faction import activate_player_faction_scripts
@@ -788,7 +789,6 @@ from scripts.sort_food import sort_food_scripts
 from scripts.sort_player_inventory_by_item_type import sort_player_inventory_by_item_type_scripts
 from scripts.sort_tournament_participant_troops import sort_tournament_participant_troops_scripts
 from scripts.spawn_bandits import spawn_bandits_scripts
-from scripts.spawn_bandits_features_bandit_spawn_scripts import spawn_bandits_scripts
 from scripts.spawn_looters import spawn_looters_scripts
 from scripts.spawn_one_pirate_ship import spawn_one_pirate_ship_scripts
 from scripts.spawn_party_type_with_cooldown import spawn_party_type_with_cooldown_scripts
@@ -895,6 +895,7 @@ from scripts.wse_multiplayer_message_received import wse_multiplayer_message_rec
 from scripts.wse_window_opened import wse_window_opened_scripts
 
 scripts = []
+scripts.extend(auto_upgrade_troops_scripts)
 scripts.extend(abort_quest_scripts)
 scripts.extend(acquire_disguise_scripts)
 scripts.extend(activate_player_faction_scripts)
@@ -1664,7 +1665,6 @@ scripts.extend(sir_lady_scripts)
 scripts.extend(sort_food_scripts)
 scripts.extend(sort_player_inventory_by_item_type_scripts)
 scripts.extend(sort_tournament_participant_troops_scripts)
-scripts.extend(spawn_bandits_scripts)
 scripts.extend(spawn_bandits_scripts)
 scripts.extend(spawn_looters_scripts)
 scripts.extend(spawn_one_pirate_ship_scripts)
