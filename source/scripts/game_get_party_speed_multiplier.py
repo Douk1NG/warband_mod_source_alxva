@@ -77,6 +77,12 @@ game_get_party_speed_multiplier_scripts = [
         (val_add,":speed_multiplier",10),
     (try_end),
 
+    (try_begin),
+        (party_get_template_id, ":template_id", ":party_no"),
+        (eq, ":template_id", "pt_manhunters"),
+        (val_mul,":speed_multiplier",2),
+    (try_end),
+
     (val_max, ":speed_multiplier", 0),
     (set_trigger_result, ":speed_multiplier"),
    ])

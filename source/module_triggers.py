@@ -73,28 +73,6 @@ triggers = [
 #    ]),
 
 
-  (5.7, 0, 0.0,
-  [
-    #SB : manhunter count scales with active bandits to protect the economy
-  ],
-  [
-    (store_num_parties_of_template, ":num_manhunters", "pt_manhunters"),
-    (assign, ":num_bandits", 0),
-    (try_for_range, ":bt", bandit_party_templates_begin, bandit_party_templates_end),
-      (store_num_parties_of_template, ":n", ":bt"),
-      (val_add, ":num_bandits", ":n"),
-    (try_end),
-    (store_div, ":mh_cap", ":num_bandits", manhunter_bandits_per_manhunter),
-    (val_max, ":mh_cap", 4),
-    (val_min, ":mh_cap", num_max_manhunters),
-    (lt, ":num_manhunters", ":mh_cap"),
-    (set_spawn_radius, 1),
-    (store_random_in_range, ":selected_town", towns_begin, towns_end),
-    (spawn_around_party, ":selected_town", "pt_manhunters"),
-  ]),
-
-
-
   (1.0, 0.0, 0.0, [
   (check_quest_active, "qst_track_down_bandits"),
   (neg|check_quest_failed, "qst_track_down_bandits"),

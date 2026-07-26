@@ -1094,8 +1094,46 @@ game_start_scripts = [
       #  (spawn_around_party, "p_main_party", "pt_looters"),
       #(try_end),
 
-      (try_for_range, ":unused", 0, 10),
-        (call_script, "script_spawn_bandits"),
+      # Guarantee all bandit lairs exist at game start (before spawning bandits)
+      # Set up lair type and spawnpoint mappings (normally done in spawn_bandits)
+      (party_template_set_slot, "pt_steppe_bandits", slot_party_template_lair_type, "pt_steppe_bandit_lair"),
+      (party_template_set_slot, "pt_taiga_bandits", slot_party_template_lair_type, "pt_taiga_bandit_lair"),
+      (party_template_set_slot, "pt_mountain_bandits", slot_party_template_lair_type, "pt_mountain_bandit_lair"),
+      (party_template_set_slot, "pt_forest_bandits", slot_party_template_lair_type, "pt_forest_bandit_lair"),
+      (party_template_set_slot, "pt_sea_raiders", slot_party_template_lair_type, "pt_sea_raider_lair"),
+      (party_template_set_slot, "pt_desert_bandits", slot_party_template_lair_type, "pt_desert_bandit_lair"),
+
+      (party_template_set_slot, "pt_steppe_bandits", slot_party_template_lair_spawnpoint, "p_steppe_bandit_spawn_point"),
+      (party_template_set_slot, "pt_taiga_bandits", slot_party_template_lair_spawnpoint, "p_taiga_bandit_spawn_point"),
+      (party_template_set_slot, "pt_mountain_bandits", slot_party_template_lair_spawnpoint, "p_mountain_bandit_spawn_point"),
+      (party_template_set_slot, "pt_forest_bandits", slot_party_template_lair_spawnpoint, "p_forest_bandit_spawn_point"),
+      (party_template_set_slot, "pt_sea_raiders", slot_party_template_lair_spawnpoint, "p_sea_raider_spawn_point_1"),
+      (party_template_set_slot, "pt_desert_bandits", slot_party_template_lair_spawnpoint, "p_desert_bandit_spawn_point"),
+
+      # Spawn lairs that don't exist yet
+      (try_for_range, ":bandit_template", bandit_party_templates_begin, bandit_party_templates_end),
+        (party_template_get_slot, ":lair_party", ":bandit_template", slot_party_template_lair_party),
+        (le, ":lair_party", 1),
+        (party_template_get_slot, ":lair_template", ":bandit_template", slot_party_template_lair_type),
+        (party_template_get_slot, ":spawnpoint", ":bandit_template", slot_party_template_lair_spawnpoint),
+        (set_spawn_radius, 20),
+        (spawn_around_party, ":spawnpoint", ":lair_template"),
+        (assign, ":new_camp", reg0),
+        (gt, ":new_camp", 0),
+        (party_set_slot, ":new_camp", slot_party_type, spt_bandit_lair),
+        (party_template_set_slot, ":bandit_template", slot_party_template_lair_party, ":new_camp"),
+      (try_end),
+
+      # Spawn initial bandits directly around each lair
+      (try_for_range, ":bandit_template", bandit_party_templates_begin, bandit_party_templates_end),
+        (party_template_get_slot, ":lair_party", ":bandit_template", slot_party_template_lair_party),
+        (gt, ":lair_party", 1),
+        (set_spawn_radius, 0),
+        (try_for_range, ":unused", 0, num_max_bandit_parties_per_type),
+          (spawn_around_party, ":lair_party", ":bandit_template"),
+        (try_end),
+        (store_current_hours, ":cur"),
+        (party_template_set_slot, ":bandit_template", slot_party_template_respawn_cooldown, ":cur"),
       (try_end),
 
       #we are adding looter parties around each village with 1/5 probability.

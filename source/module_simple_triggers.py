@@ -22,8 +22,6 @@ from compiler import *
 # 2) Operation block: This must be a valid operation block. See header_operations.py for reference.
 ####################################################################################################################
 
-
-
 simple_triggers = [
 
 # This trigger is deprecated. Use "script_game_event_party_encounter" in module_scripts.py instead
@@ -36,54 +34,6 @@ simple_triggers = [
   (ti_simulate_battle,
    [
      ]),
-
-
-  # Re-apply enterprise economy item slots (input/output/overhead, demands, food bonuses) shortly
-  # after a game is loaded, so saved games pick up retuned values without requiring a new game.
-  # script_initialize_item_info is also called from script_game_start on a new game; this covers loaded
-  # saves, whose item slots are frozen at first start. Runs once per session via the guard flag.
-  (1.0,
-   [
-    (try_begin),
-      (neq, "$g_cstm_arrays_fixed", 1),
-      (eq, "$g_enterprise_init_done", 0),
-      (eq, "$g_tpe_save_repaired", 0),
-
-      (call_script, "script_initialize_item_info"),
-      (call_script, "script_cstm_setup_item_arrays"),
-      (call_script, "script_tpe_fix_save"),
-      (call_script, "script_initialize_item_info"),
-
-      (assign, "$g_tpe_save_repaired", 1),
-      (assign, "$g_cstm_arrays_fixed", 1),
-      (assign, "$g_tpe_save_repaired", 1),
-    (try_end),
-   ]),
-
-  # (1.0,
-  #  [
-  #    (eq, "$g_enterprise_init_done", 0),
-  #    (call_script, "script_initialize_item_info"),
-  #    (assign, "$g_enterprise_init_done", 1),
-  #  ]),
-
-  # Repair TPE tournament state on loaded saves (game_start only runs on new games, so a loaded
-  # save can boot with stale/missing TPE design state). Mirrors the script_initialize_item_info
-  # load-fix above. Runs once per loaded save via the guard flag; harmless on healthy saves.
-  (1.0,
-   [
-     (assign, ":ctdn_2", 0),
-   ]),
-
-  # (1.0,
-  #  [
-  #    (eq, "$g_tpe_save_repaired", 0),
-  #    (neq, "$g_wp_tpe_active", 0),
-  #    (call_script, "script_tpe_fix_save"),
-  #    (assign, "$g_tpe_save_repaired", 1),
-  #  ]),
-
-
 
   (1,
    [
@@ -315,6 +265,13 @@ simple_triggers = [
 
       (faction_set_slot, ":kingdom_no",  slot_faction_morale_of_player_troops, ":faction_morale"),
     (try_end),
+]),
+
+(1,
+[
+    (store_time_of_day, ":cur_hour"),
+    (eq, ":cur_hour", 0),
+    (call_script, "script_auto_upgrade_troops"),
 ]),
 
 
@@ -3849,7 +3806,7 @@ simple_triggers = [
     ]),
 
   # Spawn some bandits.
-  (36,
+  (24,
    [
        (call_script, "script_spawn_bandits"),
     ]),

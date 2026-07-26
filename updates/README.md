@@ -10,6 +10,7 @@ This folder contains sequential update summaries for the module source.
 - `update-004.md` - Native 1175 bug fixes porting.
 - `update-006.md` - Modularizing `module_scripts.py`.
 - `update-007.md` - Late game defeated king recruitment and automatic captured prisoner selection.
+- `update-012.md` - Auto upgrade troops feature (configurable modes, multi-trigger).
 
 ## Usage
 

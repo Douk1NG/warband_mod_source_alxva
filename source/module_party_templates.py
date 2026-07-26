@@ -44,17 +44,17 @@ party_templates = [
 # Ryan BEGIN
   ("looters","Looters",icon_axeman|carries_goods(8),0,fac_outlaws,bandit_personality,[(trp_looter,3,num_max_bandit_party_size)]),
 # Ryan END
-  ("manhunters","Manhunters",icon_gray_knight,0,fac_manhunters,soldier_personality,[(trp_manhunter,9,40)]),
+  ("manhunters","Manhunters",icon_gray_knight,0,fac_manhunters,soldier_personality,[(trp_manhunter,10,15),(trp_slave_driver,10,15),(trp_slave_hunter,5,10),(trp_slave_crusher,4,9),(trp_slaver_chief,1,1)]),
 ##  ("peasant","Peasant",icon_peasant,0,fac_commoners,merchant_personality,[(trp_farmer,1,6),(trp_peasant_woman,0,7)]),
 
 #SB : changes to icons
 #  ("black_khergit_raiders","Black Khergit Raiders",icon_khergit_horseman_b|carries_goods(2),0,fac_black_khergits,bandit_personality,[(trp_black_khergit_guard,1,10),(trp_black_khergit_horseman,5,5)]),
-  ("steppe_bandits","Steppe Bandits",icon_khergit_horseman_b|carries_goods(2),0,fac_outlaws,bandit_personality,[(trp_steppe_bandit,4,num_max_bandit_party_size)]),
-  ("taiga_bandits","Tundra Bandits",icon_tundra_bandit|carries_goods(2),0,fac_outlaws,bandit_personality,[(trp_taiga_bandit,4,num_max_bandit_party_size)]),
-  ("desert_bandits","Desert Bandits",icon_khergit|carries_goods(2),0,fac_outlaws,bandit_personality,[(trp_desert_bandit,4,num_max_bandit_party_size)]),
-  ("forest_bandits","Forest Bandits",icon_forest_bandit|carries_goods(2),0,fac_forest_bandits,bandit_personality,[(trp_forest_bandit,4,num_max_bandit_party_size)]),
-  ("mountain_bandits","Mountain Bandits",icon_mountain_bandit|carries_goods(2),0,fac_mountain_bandits,bandit_personality,[(trp_mountain_bandit,4,num_max_bandit_party_size)]),
-  ("sea_raiders","Sea Raiders",icon_sea_raider|carries_goods(2),0,fac_outlaws,bandit_personality,[(trp_sea_raider,5,num_max_bandit_party_size)]),
+  ("steppe_bandits","Steppe Bandits",icon_khergit_horseman_b|carries_goods(2),0,fac_outlaws,bandit_personality,[(trp_steppe_bandit,10,num_max_bandit_party_size)]),
+  ("taiga_bandits","Tundra Bandits",icon_tundra_bandit|carries_goods(2),0,fac_outlaws,bandit_personality,[(trp_taiga_bandit,10,num_max_bandit_party_size)]),
+  ("desert_bandits","Desert Bandits",icon_khergit|carries_goods(2),0,fac_outlaws,bandit_personality,[(trp_desert_bandit,10,num_max_bandit_party_size)]),
+  ("forest_bandits","Forest Bandits",icon_forest_bandit|carries_goods(2),0,fac_forest_bandits,bandit_personality,[(trp_forest_bandit,10,num_max_bandit_party_size)]),
+  ("mountain_bandits","Mountain Bandits",icon_mountain_bandit|carries_goods(2),0,fac_mountain_bandits,bandit_personality,[(trp_mountain_bandit,10,num_max_bandit_party_size)]),
+  ("sea_raiders","Sea Raiders",icon_sea_raider|carries_goods(2),0,fac_outlaws,bandit_personality,[(trp_sea_raider,10,num_max_bandit_party_size)]),
 
   ("deserters","Deserters",icon_vaegir_knight|carries_goods(3),0,fac_deserters,bandit_personality,[]),
     
@@ -180,10 +180,10 @@ party_templates = [
  # ("khergit_farmers","Village Farmers",icon_peasant,0,fac_innocents,merchant_personality,[(trp_khergit_farmer,5,10)]),
  # ("sarranid_farmers","Village Farmers",icon_peasant,0,fac_innocents,merchant_personality,[(trp_sarranid_farmer,5,10)]),
  
-  ("sea_raiders_ship","Sea Raiders",icon_longboat|carries_goods(2)|pf_is_ship,0,fac_outlaws,bandit_personality,[(trp_sea_raider,6,num_max_pirate_ship_size)]),
-  ("corsair_ship","Corsairs",icon_galley|carries_goods(2)|pf_is_ship,0,fac_outlaws,bandit_personality,[(trp_sea_raider,6,num_max_pirate_ship_size)]),
+  ("sea_raiders_ship","Sea Raiders",icon_longboat|carries_goods(2)|pf_is_ship,0,fac_outlaws,bandit_personality,[(trp_sea_raider,20,20)]),
+  ("corsair_ship","Corsairs",icon_galley|carries_goods(2)|pf_is_ship,0,fac_outlaws,bandit_personality,[(trp_sea_raider,20,20)]),
   ("merchant_ship","Merchant Vessel",icon_carrack|carries_goods(50)|pf_is_ship|pf_show_faction,0,fac_commoners,merchant_personality,[(trp_caravan_master,1,1),(trp_mercenary_swordsman,5,10),(trp_mercenary_crossbowman,10,25)]),
-  ("pirate_ship","Pirates",icon_dhow|carries_goods(2)|pf_is_ship,0,fac_outlaws,bandit_personality,[(trp_sea_raider,6,num_max_pirate_ship_size)]),
+  ("pirate_ship","Pirates",icon_dhow|carries_goods(2)|pf_is_ship,0,fac_outlaws,bandit_personality,[(trp_sea_raider,20,20)]),
  ("reinforcements","Reinforcements",icon_axeman|pf_show_faction,0,fac_commoners,soldier_personality,[]),
   
 ]

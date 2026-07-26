@@ -501,11 +501,12 @@ game_event_simulate_battle_scripts = [
                (ge, ":collective_casualties", 0),
                (party_clear, "p_temp_party"),
                (assign, "$g_move_heroes", 0), #heroes are already processed above. Skip them here.
-               (call_script, "script_party_add_party_prisoners", "p_temp_party", ":collective_casualties"),
-               (call_script, "script_party_prisoners_add_party_companions", "p_temp_party", ":collective_casualties"),
-               (distribute_party_among_party_group, "p_temp_party", ":root_winner_party"),
+                (call_script, "script_party_add_party_prisoners", "p_temp_party", ":collective_casualties"),
+                 (call_script, "script_party_prisoners_add_party_companions", "p_temp_party", ":collective_casualties"),
 
-               (call_script, "script_battle_political_consequences", ":root_defeated_party", ":root_winner_party"),
+                 (distribute_party_among_party_group, "p_temp_party", ":root_winner_party"),
+
+                (call_script, "script_battle_political_consequences", ":root_defeated_party", ":root_winner_party"),
 
                (call_script, "script_clear_party_group", ":root_defeated_party"),
              (try_end),

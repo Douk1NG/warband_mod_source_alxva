@@ -1299,3 +1299,4 @@ last_feast_location
 g_nohomo
 g_player_debt
 g_player_deposit
+g_auto_upgrade_mode

@@ -1874,17 +1874,18 @@ num_black_khergit_spawn_points = 1
 num_sea_raider_spawn_points = 2
 
 #SB : bandit / deserter population control
-num_max_bandit_parties_per_type = 18   #max active parties per bandit type (was 16)
-num_max_deserter_party_size = 20       #max troops in a deserter party (was player_level*2+11)
-num_max_bandit_party_size = 20        #max troops in a roaming bandit/looter party (mirrors deserter cap)
-bandit_lair_respawn_hours = 72         #hours a destroyed lair stays gone (3 days)
-bandit_respawn_cooldown_hours = 336    #(legacy) was the old full-wipe block; respawn is now a per-type 1/day trickle
-bandit_respawn_interval_hours = 24     #hours between individual party respawns (trickle rhythm, cap at max_parties)
-manhunter_bandits_per_manhunter = 2    #manhunter cap = total active bandits / this (2:1 bandit-to-manhunter)
-num_max_manhunters = 36                #hard cap on manhunter parties
-num_max_pirate_ships = 5               #total active pirate ships across all 3 types (treated as one bandit type)
-num_max_pirate_ship_size = 15          #max troops in a single pirate ship party
-num_max_looters = 18                   #max active looter parties
+num_max_bandit_parties_per_type = 18     #max active parties per bandit type (was 16)
+num_max_deserter_party_size = 20         #max troops in a deserter party (was player_level*2+11)
+num_max_bandit_party_size = 50           #max troops in a roaming bandit/looter party
+num_max_bandit_party_size_debuff = 20    #max troops per party when lair is destroyed
+bandit_lair_respawn_hours = 72           #hours a destroyed lair stays gone (3 days)
+bandit_respawn_cooldown_hours = 336      #(legacy) was the old full-wipe block; respawn is now a per-type 1/day trickle
+bandit_respawn_interval_hours = 24       #hours between individual party respawns (trickle rhythm, cap at max_parties)
+manhunter_bandits_per_manhunter = 2      #legacy/unused - manhunters now use fixed cap
+num_max_manhunters = 36                  #fixed cap on manhunter parties (24 base + 12 = 2 per bandit type)
+num_max_pirate_ships = 5                 #per-type cap for pirate ships (5 per type, was 5 total)
+num_max_pirate_ship_size = 20            #max troops in a single pirate ship party
+num_max_looters = 50                     #max active looter parties
 
 peak_prisoner_trains = 4
 peak_kingdom_caravans = 12
