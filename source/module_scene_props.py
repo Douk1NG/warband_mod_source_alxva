@@ -1690,7 +1690,7 @@ scene_props = [
   ("arena_tower_a",0,"arena_tower_a","bo_arena_tower_abc", []),
   ("arena_tower_b",0,"arena_tower_b","bo_arena_tower_abc", []),
   ("arena_tower_c",0,"arena_tower_c","bo_arena_tower_abc", []),
-  ("arena_spectator_a",0,"spectator_standing1","0", []),
+  ("arena_spectator_a",0,"spectator_standing","0", []),
   ("arena_spectator_b",0,"spectator_standing2","0", []),
   ("arena_spectator_c",0,"spectator_standing3","0", []),
   ("arena_spectator_sitting_a",0,"spectator_sitting1","0", []),

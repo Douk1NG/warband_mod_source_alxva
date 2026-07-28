@@ -44,7 +44,7 @@ party_templates = [
 # Ryan BEGIN
   ("looters","Looters",icon_axeman|carries_goods(8),0,fac_outlaws,bandit_personality,[(trp_looter,3,num_max_bandit_party_size)]),
 # Ryan END
-  ("manhunters","Manhunters",icon_gray_knight,0,fac_manhunters,soldier_personality,[(trp_manhunter,10,15),(trp_slave_driver,10,15),(trp_slave_hunter,5,10),(trp_slave_crusher,4,9),(trp_slaver_chief,1,1)]),
+  ("manhunters","Manhunters",icon_gray_knight,0,fac_manhunters,soldier_personality,[(trp_slaver_chief,1,1),(trp_manhunter,10,15),(trp_slave_driver,10,15),(trp_slave_hunter,5,10),(trp_slave_crusher,4,9)]),
 ##  ("peasant","Peasant",icon_peasant,0,fac_commoners,merchant_personality,[(trp_farmer,1,6),(trp_peasant_woman,0,7)]),
 
 #SB : changes to icons

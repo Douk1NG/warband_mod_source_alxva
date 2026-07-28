@@ -2677,6 +2677,29 @@ or you won't be able to hang on to a single man you catch.", "ramun_ask_about_ca
 [party_tpl|pt_manhunters|plyr,"manhunter_talk_b", [], "No, haven't seen any outlaws lately.", "manhunter_talk_b2",[]],
 [party_tpl|pt_manhunters,"manhunter_talk_b2", [], "Bah. They're holed up in this country like rats, but we'll smoke them out yet. Sooner or later.", "close_window",[(assign, "$g_leave_encounter",1)]],
 
+[party_tpl|pt_manhunters|plyr,"manhunter_talk_b", [
+    (party_get_num_prisoner_stacks, ":num_stacks", "$g_encountered_party"),
+    (gt, ":num_stacks", 0),
+    (call_script, "script_mnh_get_manhunter_prisoner_price", "$g_encountered_party"),
+    (assign, "$temp", reg0),
+    (store_troop_gold, ":gold", "trp_player"),
+    (ge, ":gold", reg0),
+  ], "I'd like to buy some of your prisoners.", "manhunter_talk_buy_prisoners",[]],
+
+[party_tpl|pt_manhunters,"manhunter_talk_buy_prisoners", [
+    (assign, reg1, "$temp"),
+    (str_store_string, s1, "@{reg1}"),
+  ], "They're worth {s1} denars. You want them?", "manhunter_talk_buy_prisoners_2",[]],
+
+[party_tpl|pt_manhunters|plyr,"manhunter_talk_buy_prisoners_2", [], "Deal.", "manhunter_talk_buy_prisoners_done",[
+    (call_script, "script_mnh_buy_manhunter_prisoners", "$g_encountered_party", "$temp"),
+    (call_script, "script_objectionable_action", tmt_humanitarian, "str_sell_slavery"),
+]],
+
+[party_tpl|pt_manhunters,"manhunter_talk_buy_prisoners_done", [], "Pleasure doing business. Good luck with those outlaws.", "close_window",[(assign, "$g_leave_encounter",1)]],
+
+[party_tpl|pt_manhunters|plyr,"manhunter_talk_buy_prisoners_2", [], "On second thought, no thanks.", "manhunter_talk_b",[]],
+
 [party_tpl|pt_looters|auto_proceed,"start", [(eq,"$talk_context",tc_party_encounter),(encountered_party_is_attacker),], "{!}Warning: This line should never be displayed.", "looters_1",[
 (str_store_string, s11, "@It's your money or your life, {mate/girlie}. No sudden moves or we'll run you through."),
 (str_store_string, s12, "@Lucky for you, you caught me in a good mood. Give us all your coin and I might just let you live."),

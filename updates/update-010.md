@@ -52,6 +52,24 @@ Bundled fixes: recruiter trigger hardened against `-1` faction errors, a player-
 
 ---
 
+## Update 010 additions — Manhunter rework + prisoner buy dialog
+
+### Manhunter changes
+- **Party template** (`source/module_party_templates.py:47`): `trp_slaver_chief` moved to front of troop list
+- **Cap reduced** (`source/module_constants.py:1884`): `num_max_manhunters` 36 → 24
+- **Spawn logic rewritten** (`source/scripts/spawn_bandits.py:171-219`): spawns near active bandit lairs (radius 10) with round-robin equal distribution; fallback to spawn points if no lairs
+- **Spawn diagnostics fixed** (`source/presentations/prsnt_spawn_diagnostics.py:169-175`): uses fixed `num_max_manhunters` cap instead of deleted ratio constant
+- **`manhunter_bandits_per_manhunter` deleted** from `module_constants.py:1884`
+
+### Manhunter prisoner buy system
+- **New scripts** (`source/scripts/mnh_give_manhunter_prisoners.py`): `mnh_give_manhunter_prisoners` (gives specific party bandit prisoners), `mnh_get_manhunter_prisoner_price` (calculates ransom broker price), `mnh_buy_manhunter_prisoners` (transfers prisoners to player for gold)
+- **Registered** in `source/module_scripts.py` (import line 647, extend line 1482)
+- **Dialog chain** (`source/module_dialogs.py:2680-2701`): 5 entries — "I'd like to buy some of your prisoners" → price display → deal/cancel → transfer
+- **Pricing formula**: `((troop_level + 10)²) / 6` per prisoner (matches existing ransom broker formula)
+- **No auto-fill on spawn**: manhunters start empty; they acquire prisoners by defeating bandits on the map
+
+---
+
 ##((deserters — scripts that contain deserter logic (for later isolation review)
 
 No script is *named* deserter; the logic is embedded. Listed by containing script, file, and line context. (Data defs — party_templates, factions, troops, meshes, strings, menus — are out of scope; only scripts here.)
