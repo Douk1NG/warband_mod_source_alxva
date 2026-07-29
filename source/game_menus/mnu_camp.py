@@ -82,27 +82,7 @@ camp_menu = [
         ]
        ),
 
-      ("camp_reveal_hideouts",
-       [],
-       "Reveal all bandit hideouts on map.",
-        [
-            # Reveal remaining lairs
-           (assign, ":revealed", 0),
-           (try_for_parties, ":camp"),
-               (gt, ":camp", "p_spawn_points_end"),
-               (party_get_template_id, ":template", ":camp"),
-               (is_between, ":template", "pt_steppe_bandit_lair", "pt_bandit_lair_templates_end"),
-               (party_set_flags, ":camp", pf_disabled, 0),
-               (party_set_flags, ":camp", pf_always_visible, 1),
-               (val_add, ":revealed", 1),
-           (try_end),
-           (assign, reg0, ":revealed"),
-           (display_message, "@{!}Revealed {reg0} bandit hideout(s) on the map."),
-           (change_screen_return),
-        ]
-       ),
-
-      ("resume_travelling",[],"Resume travelling.",
+       ("resume_travelling",[],"Resume travelling.",
        [
            (change_screen_return),
         ]

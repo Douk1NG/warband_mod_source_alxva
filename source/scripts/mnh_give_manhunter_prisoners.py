@@ -15,22 +15,6 @@ from header_map_icons import *
 from ID_animations import *
 
 mnh_give_manhunter_prisoners_scripts = [
-# script_mnh_give_manhunter_prisoners
-# Gives a manhunter party some bandit prisoners
-# Input: param1 = party_id
-("mnh_give_manhunter_prisoners",
-  [
-    (store_script_param_1, ":party_no"),
-
-    (store_random_in_range, ":num_steppe", 2, 5),
-    (party_add_prisoners, ":party_no", "trp_steppe_bandit", ":num_steppe"),
-
-    (store_random_in_range, ":num_forest", 1, 4),
-    (party_add_prisoners, ":party_no", "trp_forest_bandit", ":num_forest"),
-
-    (store_random_in_range, ":num_mountain", 1, 4),
-    (party_add_prisoners, ":party_no", "trp_mountain_bandit", ":num_mountain"),
-  ]),
 
 # script_mnh_get_manhunter_prisoner_price
 # Calculates total ransom broker price for all prisoners in a manhunter party

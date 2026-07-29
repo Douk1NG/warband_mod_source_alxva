@@ -95,14 +95,7 @@ camp_cheat_world_menu = [
        [(jump_to_menu, "mnu_cheat_change_weather"),]
        ),
 
-      ("camp_cheat_force_spawn_bandits",[],"Force trigger daily bandit spawn.",
-       [
-         (call_script, "script_spawn_bandits"),
-         (display_message, "@Bandit spawn script triggered.", 0x00FF0000),
-        ]
-       ),
-
-      ("camp_cheat_clear_bandits",[],"Clear all roaming bandits.",
+       ("camp_cheat_clear_bandits",[],"Clear all roaming bandits.",
        [
          (try_for_range, ":bandit_template", bandit_party_templates_begin, bandit_party_templates_end),
            (party_template_set_slot, ":bandit_template", slot_party_template_respawn_cooldown, 0),
@@ -127,27 +120,7 @@ camp_cheat_world_menu = [
         ]
        ),
 
-      ("camp_cheat_clear_lairs",[],"Clear all bandit lairs.",
-       [
-         # 1. Clear the slots in the templates so they can respawn
-         (try_for_range, ":bandit_template", bandit_party_templates_begin, bandit_party_templates_end),
-           (party_template_set_slot, ":bandit_template", slot_party_template_lair_party, 0),
-           (party_template_set_slot, ":bandit_template", slot_party_template_lair_next_spawn, 0),
-           (party_template_set_slot, ":bandit_template", slot_party_template_respawn_cooldown, 0),
-         (try_end),
-         # 2. Remove all lair parties on the map
-         (try_for_parties, ":cur_party"),
-           (party_is_active, ":cur_party"),
-           (party_get_template_id, ":template", ":cur_party"),
-           (this_or_next|eq, ":template", "pt_looter_lair"),
-           (is_between, ":template", "pt_steppe_bandit_lair", "pt_bandit_lair_templates_end"),
-           (remove_party, ":cur_party"),
-         (try_end),
-         (display_message, "@All bandit lairs cleared and slots reset.", 0x00FF0000),
-        ]
-       ),
-
-      ("remove_ships",[],"Remove all ships.",
+       ("remove_ships",[],"Remove all ships.",
        [
          (try_for_parties, ":cur_party"),
            (party_slot_eq, ":cur_party", slot_party_type, spt_ship),

@@ -1881,8 +1881,7 @@ num_max_bandit_party_size_debuff = 20    #max troops per party when lair is dest
 bandit_lair_respawn_hours = 72           #hours a destroyed lair stays gone (3 days)
 bandit_respawn_cooldown_hours = 336      #(legacy) was the old full-wipe block; respawn is now a per-type 1/day trickle
 bandit_respawn_interval_hours = 24       #hours between individual party respawns (trickle rhythm, cap at max_parties)
-manhunter_bandits_per_manhunter = 2      #legacy/unused - manhunters now use fixed cap
-num_max_manhunters = 36                  #fixed cap on manhunter parties (24 base + 12 = 2 per bandit type)
+num_max_manhunters = 24                  #fixed cap on manhunter parties
 num_max_pirate_ships = 5                 #per-type cap for pirate ships (5 per type, was 5 total)
 num_max_pirate_ship_size = 20            #max troops in a single pirate ship party
 num_max_looters = 50                     #max active looter parties

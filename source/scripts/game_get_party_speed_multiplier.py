@@ -80,6 +80,8 @@ game_get_party_speed_multiplier_scripts = [
     (try_begin),
         (party_get_template_id, ":template_id", ":party_no"),
         (eq, ":template_id", "pt_manhunters"),
+        (get_party_ai_behavior, ":behavior", ":party_no"),
+        (eq, ":behavior", ai_bhvr_attack_party),
         (val_mul,":speed_multiplier",2),
     (try_end),
 
