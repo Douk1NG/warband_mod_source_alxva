@@ -1122,6 +1122,7 @@ game_start_scripts = [
         (gt, ":new_camp", 0),
         (party_set_slot, ":new_camp", slot_party_type, spt_bandit_lair),
         (party_template_set_slot, ":bandit_template", slot_party_template_lair_party, ":new_camp"),
+        (party_set_flags, ":new_camp", pf_disabled, 1),
       (try_end),
 
       # Spawn initial bandits directly around each lair
@@ -1135,6 +1136,28 @@ game_start_scripts = [
         (store_current_hours, ":cur"),
         (party_template_set_slot, ":bandit_template", slot_party_template_respawn_cooldown, ":cur"),
       (try_end),
+
+      # Spawn initial pirate ships (fill to cap, set cooldown so seed block in spawn_party_type_with_cooldown doesn't refill)
+      (store_current_hours, ":cur"),
+      (set_spawn_radius, 25),
+      (try_for_range, ":unused", 0, num_max_pirate_ships),
+        (spawn_around_party, "p_reserved_1", "pt_sea_raiders_ship"),
+        (neq, reg0, -1),
+        (party_set_slot, reg0, slot_party_ship_type, 1),
+      (try_end),
+      (party_template_set_slot, "pt_sea_raiders_ship", slot_party_template_respawn_cooldown, ":cur"),
+      (try_for_range, ":unused", 0, num_max_pirate_ships),
+        (spawn_around_party, "p_reserved_3", "pt_corsair_ship"),
+        (neq, reg0, -1),
+        (party_set_slot, reg0, slot_party_ship_type, 2),
+      (try_end),
+      (party_template_set_slot, "pt_corsair_ship", slot_party_template_respawn_cooldown, ":cur"),
+      (try_for_range, ":unused", 0, num_max_pirate_ships),
+        (spawn_around_party, "p_reserved_2", "pt_pirate_ship"),
+        (neq, reg0, -1),
+        (party_set_slot, reg0, slot_party_ship_type, 4),
+      (try_end),
+      (party_template_set_slot, "pt_pirate_ship", slot_party_template_respawn_cooldown, ":cur"),
 
       #we are adding looter parties around each village with 1/5 probability.
       (set_spawn_radius, 5),

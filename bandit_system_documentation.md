@@ -29,6 +29,7 @@ Each of the 6 main factions suffers from a specific outlaw type associated with 
 - **Predefined Coordinate Arrays:** To solve critical performance issues with native Warband lair placement, **5 explicitly valid coordinate coordinates** are stored for each regional lair type in `spawn_bandits`. 
 - **The Native Placement Issue (Optimized out):** Originally, the engine used a randomized script that spawned a lair, ran validity checks (checking map terrain, sea bounds, obstacle collisions), and repeatedly deleted/respawned the camp if it was invalid. This native approach was highly inefficient and caused the intended 3-day (72 hours) respawn cycle to drag out to **10+ days** due to constant validation failures and retries.
 - **Relocation/Spawn Logic:** The system now randomly selects one of the 5 pre-verified coordinates (`store_random_in_range, ":rand_sp", 0, 5`) and immediately updates the lair position without any expensive collision loops.
+- **Coordinate Overlap Audit (2026-07-29):** All 30 lair coordinates (5 per type × 6 types) were cross-referenced against every town/castle/village position. 12 coordinates were within 6 units of a center (some as close as 2 units). These were moved to positions ≥ 8 units from any center. See the coordinate tables in `spawn_bandits.py` lines 336-409.
 
 ---
 
@@ -72,6 +73,7 @@ All state is persisted on the **roaming bandit templates** (e.g., `pt_steppe_ban
 - **Templates:** `pt_sea_raiders_ship`, `pt_corsair_ship`, `pt_pirate_ship`
 - **Behaviors:** Independent sea-based raiders. They are **not attached to any faction or lair**.
 - **Spawning:** Spawned via `spawn_bandits` near reserved ports/markers (`p_reserved_1`, `p_reserved_2`, `p_reserved_3`). They do not respect a standard daily trickle cooldown (the script passes `0` as the cooldown to attempt to fill them to their cap `num_max_pirate_ships` of 5 per ship type).
+- **Terrain-validity Fix (2026-07-29):** Ship templates have `pf_is_ship` and must spawn on water. `spawn_around_party` with radius 25 at reserved anchors could pick a land position and fail silently (reg0 = -1), deadlocking the trickle cooldown. Fixed in both seed and trickle branches of `spawn_party_type_with_cooldown.py`: before spawning at a reserved anchor, the code calls `map_get_water_position_around_position(pos1, pos0, 25)` to find a guaranteed water position and moves the anchor there with `party_set_position`, then spawns with radius 0.
 
 ### C. Looters (General Low-Tier Outlaws)
 - **Template:** `pt_looters`
@@ -92,16 +94,30 @@ All state is persisted on the **roaming bandit templates** (e.g., `pt_steppe_ban
 
 ## 6. Known Bugs & Solution Design
 
-These issues have been identified and are slated for correction in the implementation plan:
+### Fixed
 
-1. **Stale Cooldown reading in reports (`get_spawn_report_line.py`):**
+1. **Disabled lair slots cleared by stale cleanup (`spawn_bandits.py`):**
+   - *Root Cause:* `party_is_active` returns false for `pf_disabled` (hidden) lair parties. The stale cleanup at `spawn_bandits.py:46` would clear `slot_party_template_lair_party` every daily cycle, causing the lair respawn section to spawn a duplicate lair each cycle. Over N days: 6 original + 6×N duplicates on the map.
+   - *Fix:* Guard the slot-clear with `party_get_slot(..., slot_party_type) != spt_bandit_lair`. Valid disabled lairs have this slot set to 18; removed/invalid parties return 0. (2026-07-29)
+
+2. **Ship spawn fails when `spawn_around_party` rolls land (`spawn_party_type_with_cooldown.py`):**
+   - *Root Cause:* Reserved ship anchors (`p_reserved_1/2/3`) are near coastlines. `spawn_around_party` with radius 25 could pick a land position, silently fail, and never advance the trickle cooldown.
+   - *Fix:* Use `map_get_water_position_around_position` to find a guaranteed water position within radius 25, move the anchor there, and spawn with radius 0. Applied to both seed and trickle branches. (2026-07-29)
+
+3. **Lair coordinate overlaps with map centers (12 positions, `spawn_bandits.py`):**
+   - *Root Cause:* 12 of the 30 hardcoded lair coordinates were within 6 units of a town/castle/village (some as close as 2 units from Ichamur, Rivacheg, Tihr, Culmarr Castle, Dirigsene).
+   - *Fix:* Each overlapping coordinate was moved to a position ≥ 8 units from any center, verified against all 206 centers. (2026-07-29)
+
+### Unresolved (planned)
+
+4. **Stale Cooldown reading in reports (`get_spawn_report_line.py`):**
    - *Problem:* The report script checks `lair_party > 1` (lair active) before reading the lair's next spawn timer. When the lair is DOWN, this condition fails, leaving the cooldown read at `0` (which outputs "ready").
-   - *Solution:* Read the `slot_party_template_lair_next_spawn` slot regardless of lair active status.
+   - *Planned Solution:* Read the `slot_party_template_lair_next_spawn` slot regardless of lair active status.
 
-2. **Sea Raider Invalid Party ID 374 (`spawn_bandits.py` & `spawn_party_type_with_cooldown.py`):**
+5. **Sea Raider Invalid Party ID 374 (`spawn_bandits.py` & `spawn_party_type_with_cooldown.py`):**
    - *Problem:* Sea Raiders pass `num_sea_raider_spawn_points = 2` as a parameter. When spawning near the lair, the script still applies this offset to the lair's party ID, producing `lair_party_id + 1` (which is often an invalid party).
-   - *Solution:* Ensure `num_spawn_points = 1` is enforced when spawning patrol groups from an active lair. Add safety checks to skip spawning if the resolved party ID is inactive.
+   - *Planned Solution:* Ensure `num_spawn_points = 1` is enforced when spawning patrol groups from an active lair. Add safety checks to skip spawning if the resolved party ID is inactive.
 
-3. **Failed Patrol Spawns blocking future spawns (`spawn_party_type_with_cooldown.py`):**
+6. **Failed Patrol Spawns blocking future spawns (`spawn_party_type_with_cooldown.py`):**
    - *Problem:* The cooldown-setting logic is executed even if `spawn_around_party` fails due to an invalid party ID, locking out spawns for another 24 hours.
-   - *Solution:* Nest the cooldown reset within the success condition of the spawn operation.
+   - *Planned Solution:* Nest the cooldown reset within the success condition of the spawn operation.
