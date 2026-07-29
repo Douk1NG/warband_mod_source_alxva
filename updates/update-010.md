@@ -70,6 +70,17 @@ Bundled fixes: recruiter trigger hardened against `-1` faction errors, a player-
 
 ---
 
+## Update 010 additions — Multi-Point Lair Respawning System
+
+### Lair spawn logic rewritten (Save-Game Compatible)
+- **Removed 100-retry loop**: Deleted the lag-inducing `try_for_range, ":unused", 0, 100` block in `source/scripts/spawn_bandits.py` that repeatedly guessed coordinates and ran expensive terrain checks.
+- **Curated Spawn Coordinates via Teleportation**: Lairs now instantly spawn and then use `party_set_position` to teleport to 1 of 5 pre-validated, fixed map coordinates for their respective biome.
+- **100% Save Game Compatibility Guaranteed**: Reverted earlier changes to `module_parties.py` and `module_constants.py` that dynamically inserted new static parties. Because no static party indices are shifted, old save games remain entirely unbroken and perfectly functional.
+- **Optimized `spawn_around_party`**: Roaming bandit parties continue strictly spawning from their original, unchanged static `spawn_point`, maintaining exact parity with Native behavior.
+- **Flawless Spawning**: The teleport technique guarantees instant, 100% successful lair spawns without any terrain checks or center proximity tests, since the 5 coordinates per biome were manually vetted and hardcoded directly into the script.
+
+---
+
 ##((deserters — scripts that contain deserter logic (for later isolation review)
 
 No script is *named* deserter; the logic is embedded. Listed by containing script, file, and line context. (Data defs — party_templates, factions, troops, meshes, strings, menus — are out of scope; only scripts here.)

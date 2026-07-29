@@ -212,21 +212,10 @@ bandit_lair_menu = [
           (call_script, "script_succeed_quest", "qst_destroy_bandit_lair"),
         (try_end),
 
-        (assign, "$g_leave_encounter", 0),
-        (change_screen_return),
-
+        # Show loot screen before leaving
         (try_begin),
           (eq, "$loot_screen_shown", 0),
           (assign, "$loot_screen_shown", 1),
-#          (try_begin),
-#            (gt, "$g_ally_party", 0),
-#            (call_script, "script_party_add_party", "$g_ally_party", "p_temp_party"), #Add remaining prisoners to ally TODO: FIX it.
-#          (else_try),
-#            (party_get_num_attached_parties, ":num_quick_attachments", "p_main_party"),
-#            (gt, ":num_quick_attachments", 0),
-#            (party_get_attached_party_with_rank, ":helper_party", "p_main_party", 0),
-#            (call_script, "script_party_add_party", ":helper_party", "p_temp_party"), #Add remaining prisoners to our reinforcements
-#          (try_end),
           (troop_clear_inventory, "trp_temp_troop"),
 
           (party_get_num_companion_stacks, ":num_stacks", "p_temp_casualties"),
@@ -247,10 +236,6 @@ bandit_lair_menu = [
           (gt, reg0, 0),
           (troop_sort_inventory, "trp_temp_troop"),
           ##diplomacy start+
-          ##OLD:
-          #(change_screen_loot, "trp_temp_troop"),
-          ##NEW:
-          ##jump to rubik's CC autoloot
           (try_begin),
             (call_script, "script_party_calculate_loot", "p_total_enemy_casualties"),
             (assign, "$dplmc_return_menu", "mnu_bandit_lair"),
@@ -265,13 +250,15 @@ bandit_lair_menu = [
           ##diplomacy end+
         (try_end),
 
+        # Remove the lair party (all types including non-looter)
         (try_begin),
           (ge, "$g_encountered_party", 0),
           (party_is_active, "$g_encountered_party"),
-          (party_get_template_id, ":template", "$g_encountered_party"),
-          (eq, ":template", "pt_looter_lair"),
           (remove_party, "$g_encountered_party"),
         (try_end),
+
+        (assign, "$g_leave_encounter", 0),
+        (change_screen_return),
       ]),
 
       ("leave_defeat",
@@ -280,12 +267,12 @@ bandit_lair_menu = [
       ],
       "Continue...",
       [
-        (try_for_range, ":bandit_template", bandit_party_templates_begin, bandit_party_templates_end), #SB : template range
+        # Player lost — bandits pack up and move (lair is destroyed, spawns elsewhere in 24h)
+        (try_for_range, ":bandit_template", bandit_party_templates_begin, bandit_party_templates_end),
           (party_template_slot_eq, ":bandit_template", slot_party_template_lair_party, "$g_encountered_party"),
           (party_template_set_slot, ":bandit_template", slot_party_template_lair_party, 0),
-          #dckplmc : keep this bandit type suppressed for the configured delay
           (store_current_hours, ":cur_hours"),
-          (val_add, ":cur_hours", bandit_lair_respawn_hours),
+          (val_add, ":cur_hours", 24),
           (party_template_set_slot, ":bandit_template", slot_party_template_lair_next_spawn, ":cur_hours"),
         (try_end),
 
