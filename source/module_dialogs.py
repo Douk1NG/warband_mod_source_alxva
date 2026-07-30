@@ -37570,11 +37570,13 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
       (try_end),
 
     ], "I will reward you and provide protection if you {reg10?enlist in my:rejoin the {s10}} army.", "deserter_recruit",[]],
-  #SB : free recruit when the player outnumbers/outmatches the deserters (no penalty)
+  #SB : free recruit — requires renown and strength advantage
   [anyone|plyr,"deserter_talk",
     [
-      (ge, "$g_strength_ratio", 100), #player party is stronger than the deserters
       (party_can_join),
+      (troop_get_slot, ":player_renown", "trp_player", slot_troop_renown),
+      (ge, ":player_renown", dplmc_deserter_recruit_renown),
+      (gt, "$g_strength_ratio", 100),
     ], "You're outmatched here. Lay down your arms and join my banner -- no coin, no questions.", "deserter_recruit_free",[]],
   [anyone,"deserter_recruit_free", [], "A winning cause beats starving in the hills. We're with you.", "close_window",
     [

@@ -1854,7 +1854,7 @@ num_max_zendar_manhunters = 10
 
 num_max_dp_bandits = 10
 num_max_refugees = 10
-num_max_deserters = 10
+
 
 num_max_militia_bands = 15
 num_max_armed_bands = 12
@@ -1875,7 +1875,7 @@ num_sea_raider_spawn_points = 2
 
 #SB : bandit / deserter population control
 num_max_bandit_parties_per_type = 18     #max active parties per bandit type (was 16)
-num_max_deserter_party_size = 20         #max troops in a deserter party (was player_level*2+11)
+num_max_deserter_party_size = 50         #max troops in a deserter party (was 20)
 num_max_bandit_party_size = 50           #max troops in a roaming bandit/looter party
 num_max_bandit_party_size_debuff = 20    #max troops per party when lair is destroyed
 bandit_lair_respawn_hours = 72           #hours a destroyed lair stays gone (3 days)
