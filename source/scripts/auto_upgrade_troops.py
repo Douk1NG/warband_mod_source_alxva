@@ -40,7 +40,6 @@ auto_upgrade_troops_scripts = [
           (party_stack_get_size, ":sz", "p_main_party", ":i_stack"),
           (party_stack_get_num_wounded, ":wn", "p_main_party", ":i_stack"),
           (store_sub, ":avail", ":sz", ":wn"),
-          (val_min, ":num_ready", ":avail"),
           (gt, ":num_ready", 0),
 
           (troop_get_upgrade_troop, ":upg1", ":troop_id", 1),
@@ -103,7 +102,16 @@ auto_upgrade_troops_scripts = [
           (try_begin),
             (le, ":total_after", ":player_gold"),
 
-            # REMOVED: how many stay as original type
+            # Compute how many wounded will be removed (party_remove_members removes healthy first)
+            (try_begin),
+              (le, ":to_upgrade", ":avail"),
+              (assign, ":wounded_removed", 0),
+            (else_try),
+              (store_sub, ":wounded_removed", ":to_upgrade", ":avail"),
+              (val_min, ":wounded_removed", ":wn"),
+            (try_end),
+
+            (store_sub, ":wounded_kept", ":wn", ":wounded_removed"),
             (store_sub, ":keep", ":sz", ":to_upgrade"),
 
             # Remove ALL troops from this stack (clears the XP pool)
@@ -115,10 +123,10 @@ auto_upgrade_troops_scripts = [
               (party_add_members, "p_main_party", ":troop_id", ":keep"),
             (try_end),
 
-            # Re-wound the ones that were wounded before removal
+            # Re-wound the ones that WEREN'T upgraded
             (try_begin),
-              (gt, ":wn", 0),
-              (party_wound_members, "p_main_party", ":troop_id", ":wn"),
+              (gt, ":wounded_kept", 0),
+              (party_wound_members, "p_main_party", ":troop_id", ":wounded_kept"),
             (try_end),
 
             # Add upgraded path 0
@@ -131,6 +139,24 @@ auto_upgrade_troops_scripts = [
             (try_begin),
               (gt, ":cnt1", 0),
               (party_add_members, "p_main_party", ":upg1", ":cnt1"),
+            (try_end),
+
+            # Re-wound the upgraded troops that came from wounded
+            (try_begin),
+              (gt, ":wounded_removed", 0),
+              (assign, ":wnd_rem", ":wounded_removed"),
+              (try_begin),
+                (gt, ":cnt0", 0),
+                (val_min, ":wnd_rem", ":cnt0"),
+                (party_wound_members, "p_main_party", ":upg0", ":wnd_rem"),
+                (val_sub, ":wounded_removed", ":wnd_rem"),
+              (try_end),
+              (try_begin),
+                (gt, ":cnt1", 0),
+                (gt, ":wounded_removed", 0),
+                (val_min, ":wounded_removed", ":cnt1"),
+                (party_wound_members, "p_main_party", ":upg1", ":wounded_removed"),
+              (try_end),
             (try_end),
 
             (val_add, ":gold_spent", ":cost"),
