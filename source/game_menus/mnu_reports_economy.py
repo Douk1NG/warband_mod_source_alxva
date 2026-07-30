@@ -27,11 +27,6 @@ reports_economy_menu = [
          (jump_to_menu, "mnu_dplmc_economic_report"),
          ]
         ),
-      ("view_spawn_diagnostics",[],"View bandit/pirate population & respawn diagnostics.",
-        [
-          (start_presentation, "prsnt_spawn_diagnostics"),
-        ]
-        ),
       ("rtr_reports_economy",[],"Return.",
        [(jump_to_menu, "mnu_reports"),
         ]

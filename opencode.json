@@ -4,20 +4,5 @@
     "paths": [
       ".agents/skills"
     ]
-  },
-  "provider": {
-    "omniroute": {
-      "npm": "@ai-sdk/openai-compatible",
-      "name": "OmniRoute",
-      "options": {
-        "baseURL": "http://localhost:20128/v1",
-        "apiKey": "sk-ca7d5f1f70aec1d3-054792-fbb91875"
-      },
-      "models": {
-        "auto": {
-          "name": "Auto-Combo"
-        }
-      }
-    }
   }
 }

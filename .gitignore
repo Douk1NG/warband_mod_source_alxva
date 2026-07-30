@@ -1,6 +1,6 @@
 .vscode/*
 .codegraph/
 .agents/
-new_plan/
 opencode.json
 tools/
+skills-lock.json

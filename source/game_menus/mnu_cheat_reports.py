@@ -34,6 +34,11 @@ cheat_reports_menu = [
         ]
        ),
 
+      ("cheat_spawn_diagnostics",[],"{!}Bandit/pirate population & respawn diagnostics.",
+       [(start_presentation, "prsnt_spawn_diagnostics"),
+        ]
+       ),
+
       ("rtr_cheat_reports",[],"Return.",
        [(jump_to_menu, "mnu_reports"),
         ]
