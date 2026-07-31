@@ -1094,13 +1094,6 @@ def modmerge(var_set):
 
 		## === TOP BAR: Category selector + Page selector ===
 
-		# Category combo_button @ (150, 670)  <-- ADJUST POSITION
-		(create_combo_button_overlay, "$all_items_type_selector"),
-		(position_set_x, pos1, 160),
-		(position_set_y, pos1, 670),
-		(overlay_set_position, "$all_items_type_selector", pos1),
-		# Items added in modmerge loop below
-
 		# Page selector combo_label @ (500, 670)  <-- ADJUST POSITION
 		(create_combo_label_overlay, "$all_items_page_selector"),
 		(position_set_x, pos1, 500),
@@ -1193,6 +1186,13 @@ def modmerge(var_set):
 		(try_end),
 
 		(set_container_overlay, -1),
+
+		# Category combo_button @ (150, 670)  <-- ADJUST POSITION
+		(create_combo_button_overlay, "$all_items_type_selector"),
+		(position_set_x, pos1, 160),
+		(position_set_y, pos1, 670),
+		(overlay_set_position, "$all_items_type_selector", pos1),
+		# Items added in modmerge loop below
 
 		## === RIGHT SIDE: Preview + Controls ===
 

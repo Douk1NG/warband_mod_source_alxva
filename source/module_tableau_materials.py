@@ -986,7 +986,7 @@ tableaus = [
   ("custom_banner_square_no_mesh", 0, "objects", 512, 512, 0, 0, 300, 300,
    [
      (store_script_param, ":troop_no", 1),
-     #(val_max, ":troop_no", 0),
+      (val_max, ":troop_no", 0),
      (set_fixed_point_multiplier, 100),
      (call_script, "script_draw_banner_to_region", ":troop_no", 0, 0, 10000, 10000, 9800, 9800, 10000, 10000, 0),
      (cur_tableau_set_camera_parameters, 0, 100, 100, 0, 100000),
@@ -995,7 +995,7 @@ tableaus = [
   ("custom_banner_default", 0, "objects", 512, 256, 0, 0, 0, 0,
    [
      (store_script_param, ":troop_no", 1),
-     #(val_max, ":troop_no", 0),
+      (val_max, ":troop_no", 0),
      (set_fixed_point_multiplier, 100),
      (call_script, "script_draw_banner_to_region", ":troop_no", -9, -2, 7450, 19400, 7200, 18000, 9000, 10000, 0),
      (init_position, pos1),
@@ -1007,7 +1007,7 @@ tableaus = [
   ("custom_banner_tall", 0, "objects", 512, 256, 0, 0, 0, 0,
    [
      (store_script_param, ":troop_no", 1),
-     #(val_max, ":troop_no", 0),
+      (val_max, ":troop_no", 0),
      (set_fixed_point_multiplier, 100),
      (call_script, "script_draw_banner_to_region", ":troop_no", -9, 12, 8250, 18000, 8000, 21000, 10000, 10000, 0),
      (init_position, pos1),
@@ -1019,7 +1019,7 @@ tableaus = [
   ("custom_banner_square", 0, "objects", 256, 256, 0, 0, 0, 0,
    [
      (store_script_param, ":troop_no", 1),
-     #(val_max, ":troop_no", 0),
+      (val_max, ":troop_no", 0),
      (set_fixed_point_multiplier, 100),
      (call_script, "script_draw_banner_to_region", ":troop_no", -11, 10, 7700, 7700, 7500, 7500, 8300, 10000, 0),
      (init_position, pos1),
@@ -1031,7 +1031,7 @@ tableaus = [
   ("custom_banner_short", 0, "objects", 256, 512, 0, 0, 0, 0,
    [
      (store_script_param, ":troop_no", 1),
-     #(val_max, ":troop_no", 0),
+      (val_max, ":troop_no", 0),
      (set_fixed_point_multiplier, 100),
      (call_script, "script_draw_banner_to_region", ":troop_no", -10, 0, 8050, 5000, 4200, 4800, 6600, 10000, 0),
      (init_position, pos1),

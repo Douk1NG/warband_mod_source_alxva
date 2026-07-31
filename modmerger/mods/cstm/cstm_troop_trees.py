@@ -9,14 +9,6 @@ import collections
 tf_guarantee_all = tf_guarantee_boots|tf_guarantee_armor|tf_guarantee_gloves|tf_guarantee_helmet|tf_guarantee_horse|tf_guarantee_shield|tf_guarantee_ranged
 tf_guarantee_all_wo_ranged = tf_guarantee_boots|tf_guarantee_armor|tf_guarantee_gloves|tf_guarantee_helmet|tf_guarantee_horse|tf_guarantee_shield
 
-MAX_AGE = 0xfc
-
-def age_code(age):
-	return min(age, 0xff) << 220
-
-def face_code_with_age(face_code, age):
-	return (face_code & (face_code ^ (0xff << 220))) | age_code(age)
-
 def average_face(face_1, face_2):
 	age_and_skin_mask = 0xfffffffffffffffff00000000000000000000000000000000000000000000000
 	average_features  = 0x000000000000000006db6db6db6db6db00000000000db6db0000000000000000
@@ -38,20 +30,16 @@ class CustomTroopTree:
 		return "cstm_custom_troop_%s_%d_%d_%d_dummy" % (self.id, skin.id, branch, tier)
 	
 	def get_custom_troop(self, skin, branch, tier):
-		global MAX_AGE
 		troop_label = chr(ord('A') + branch) + str(tier + 1)
-		fc1 = face_code_with_age(skin.face_code_1, MAX_AGE * tier / self.num_tiers)
-		fc2 = face_code_with_age(skin.face_code_2, MAX_AGE * (tier + 1) / self.num_tiers)
+		fc1 = skin.face_code_1
+		fc2 = skin.face_code_2
 		troop_level = int(self.levels_start + tier * self.levels_per_upgrade)
 		
 		return [self.get_custom_troop_id(skin, branch, tier), "%s Troop" % (troop_label), "%s Troops" % (troop_label), tf_guarantee_all|skin.id, 0, 0, fac_player_supporters_faction, [], level(troop_level)|def_attrib, 0, 0, fc1, fc2]
 	
 	def get_custom_troop_dummy(self, skin, branch, tier):
-		global MAX_AGE
 		troop_label = chr(ord('A') + branch) + str(tier + 1)
-		fc1 = face_code_with_age(skin.face_code_1, MAX_AGE * tier / self.num_tiers)
-		fc2 = face_code_with_age(skin.face_code_2, MAX_AGE * (tier + 1) / self.num_tiers)
-		facecode = average_face(fc1, fc2)
+		facecode = average_face(skin.face_code_1, skin.face_code_2)
 		troop_level = int(self.levels_start + tier * self.levels_per_upgrade)
 		 
 		return [self.get_custom_troop_dummy_id(skin, branch, tier), "%s Troop" % (troop_label), "%s Troops" % (troop_label), tf_guarantee_all|tf_hero|skin.id, 0, 0, fac_player_supporters_faction, [], level(troop_level)|def_attrib, 0, 0, facecode]
