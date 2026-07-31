@@ -38,8 +38,8 @@ repo root/
 │   ├── module_scenes.py            # Scene definitions
 │   ├── module_strings.py           # String definitions
 │   ├── module_constants.py         # Constants and tunable values
-│   ├── module_simple_triggers.py   # Simple triggers
-│   ├── module_triggers.py          # Regular triggers
+│   ├── module_simple_triggers.py   # Manifest — imports + extends all simple triggers
+│   ├── module_triggers.py          # Manifest — imports + extends all triggers
 │   ├── module_info_pages.py        # Game concept info pages
 │   ├── module_factions.py          # Faction definitions
 │   ├── module_mission_templates.py # Mission templates
@@ -61,7 +61,9 @@ repo root/
 │   ├── variables.txt               # Global variable registry (auto-maintained)
 │   ├── scripts/                    # ~877 files — one script per file
 │   ├── game_menus/                 # ~294 files — one menu per file
-│   └── presentations/              # ~80 files — one presentation per file
+│   ├── presentations/              # ~80 files — one presentation per file
+│   ├── simple_triggers/            # ~126 files — one simple trigger (or dummy group) per file
+│   └── triggers/                   # ~32 files — one trigger per file
 ├── docs/                           # Documentation
 │   ├── guide/                      # In-game player guide drafts
 │   └── updates/                    # Changelog by category (features/, fixes/, cheats/, project_structure/)
@@ -87,10 +89,12 @@ All logic is isolated into single files, stored flatly in their respective compo
 - `source/scripts/`: Contains all ~890 atomic script files.
 - `source/game_menus/`: Contains all ~290 atomic game menu files.
 - `source/presentations/`: Contains all ~74 atomic presentation files.
+- `source/simple_triggers/`: Contains all ~126 atomic simple trigger files (each exports `<name>_simple_triggers`).
+- `source/triggers/`: Contains all ~32 atomic trigger files (each exports `<name>_triggers`).
 
 ### The Manifest Files
 
-The original `module_*.py` files (e.g., `module_scripts.py`, `module_game_menus.py`) now sit at the root of `source/`. They act purely as **manifests** or **assemblers**. They contain no inline logic; instead, they import the atomic files from the directories above and `extend()` them into the master arrays required by the compiler.
+The original `module_*.py` files (e.g., `module_scripts.py`, `module_game_menus.py`, `module_simple_triggers.py`, `module_triggers.py`) now sit at the root of `source/`. They act purely as **manifests** or **assemblers**. They contain no inline logic; instead, they import the atomic files from the directories above and `extend()` them into the master arrays required by the compiler. The modmerger hook (`# modmerger_start` block) stays at the bottom of each manifest verbatim so submods still merge their trigger blocks in.
 
 ## Generated vs Hand-Authored Classification
 
@@ -176,7 +180,7 @@ compile.bat
 **The order of imports in manifest files is critical.** It dictates the generated Warband ID numbers (e.g., `ID_scripts.py`). Modifying the order in the manifests will shift the IDs and break save-game compatibility.
 
 - Always **append** new imports and `.extend()` calls to the **bottom** of the list — never insert mid-list.
-- Never reorder existing imports in `module_scripts.py`, `module_game_menus.py`, or `module_presentations.py`.
+- Never reorder existing imports in `module_scripts.py`, `module_game_menus.py`, `module_presentations.py`, `module_simple_triggers.py`, or `module_triggers.py`.
 - `ID_*.py` files are regenerated automatically on every successful compile. The source of truth for IDs is list position in the corresponding `module_*.py`, not the ID file.
 
 ## What Was Removed / Changed
@@ -295,12 +299,13 @@ variables.txt ──► $g_* / $q_* global names used in operation blocks
 
 ## How to Work in This Architecture
 
-- **To edit existing logic:** Find the specific file in `source/scripts/`, `source/game_menus/`, or `source/presentations/` and modify it. You do not need to touch the manifest files.
+- **To edit existing logic:** Find the specific file in `source/scripts/`, `source/game_menus/`, `source/presentations/`, `source/simple_triggers/`, or `source/triggers/` and modify it. You do not need to touch the manifest files.
 - **To add new logic:**
   1. Create a new atomic file in the appropriate directory (e.g., `source/scripts/my_new_script.py`).
   2. Open the corresponding manifest file (e.g., `source/module_scripts.py`).
   3. Add the import statement and `extend()` call at the bottom of the list.
   4. Run `compile.bat` to regenerate the `ids/` and build the `.txt` files.
+- **To add a new trigger:** create `source/triggers/my_trigger.py` exporting `my_trigger_triggers = [...]`, then append `from triggers.my_trigger import my_trigger_triggers` and `triggers.extend(my_trigger_triggers)` at the bottom of `source/module_triggers.py`.
 - **Do not manually edit `ID_*.py` files:** These are strictly generated output.
 
 ### Encoding

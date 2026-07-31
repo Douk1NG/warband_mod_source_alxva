@@ -23,6 +23,22 @@ Naming: `mnu_<menu_name>.py` → exports `<menu_name>_menu`
 
 Naming: `prsnt_<name>.py` → exports `<name>`
 
+## source/simple_triggers/ — One File Per Simple Trigger
+
+**~126 files.** Every simple trigger block from the old `module_simple_triggers.py` lives in its own file. Same pattern — import + extend in `module_simple_triggers.py`.
+
+Naming: `<name>.py` → exports `<name>_simple_triggers`
+- Each entry exports a list of `(interval, operation_block)` tuples.
+- Dummy/disabled triggers are grouped into one `dummy_empty_triggers.py` (multiple bodies in one list).
+
+## source/triggers/ — One File Per Trigger
+
+**~32 files.** Every trigger block from the old `module_triggers.py` lives in its own file. Same pattern — import + extend in `module_triggers.py`.
+
+Naming: `<name>.py` → exports `<name>_triggers`
+- Each entry exports a list of `(interval, delay, rearm, conditions, consequences)` tuples.
+- The two legacy constants (`merchant_inventory_space = 30`, `num_merchandise_goods = 36`) remain in the manifest `module_triggers.py` as dead code; other files resolve the canonical values from `module_constants.py`.
+
 ## Manifest Files (source/module_*.py)
 
 These are the **build entry points**. They contain zero inline logic — only imports and `.extend()` calls.
@@ -45,6 +61,8 @@ Manifests that have been atomized:
 - `module_scripts.py` — fully atomized (~877 files)
 - `module_game_menus.py` — fully atomized (~294 files)
 - `module_presentations.py` — fully atomized (~80 files)
+- `module_simple_triggers.py` — fully atomized (~126 files)
+- `module_triggers.py` — fully atomized (~32 files)
 
 Not yet atomized:
 - `module_dialogs.py` — still monolithic (engine-locked dialog structure)

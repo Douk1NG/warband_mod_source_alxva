@@ -11510,7 +11510,7 @@ What kind of recruits do you want?", "dplmc_constable_recruit_select",
 
 [anyone|plyr,"spouse_talk",
 [
-    (troop_slot_eq, "$g_talk_troop", slot_troop_occupation, slto_kingdom_lady),
+  # (troop_slot_eq, "$g_talk_troop", slot_troop_occupation, slto_kingdom_lady),
 ],
     "I have some new clothing for you to wear.", "spouse_pretalk",
     [
@@ -31663,7 +31663,6 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
 #Spouse
   [anyone,"start",
    [
-    (troop_slot_eq, "$g_talk_troop", slot_troop_occupation, slto_kingdom_lady),
 #    (troop_slot_eq, "$g_talk_troop", slot_troop_spouse, "trp_player"),
     ##diplomacy start+
     (this_or_next|troop_slot_eq, "trp_player", slot_troop_spouse, "$g_talk_troop"),
@@ -31830,8 +31829,8 @@ I suppose there are plenty of bounty hunters around to get the job done . . .", 
 ####fucking####
   [anyone|plyr, "spouse_talk",
    [(gt, "$g_sexual_content", 0),
-     (call_script, "script_troop_get_player_relation", "$g_talk_troop"),
-     (gt, reg0, 0),
+    #  (call_script, "script_troop_get_player_relation", "$g_talk_troop"),
+    #  (gt, reg0, 0),
    ],
    "I am overcome with desire, my love. Let us retire to our chambers.", "fuck_decision",[
    (try_begin),
