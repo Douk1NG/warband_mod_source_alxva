@@ -25,18 +25,18 @@ options={
 
 mods_active = [
 # insert the active mod names here
-	"cstm",
-	"cstmmerge",
-	"colour",
+	"custom_troops",
+	"faction_colour_picker",
 	"freelancer",
-        "gpu",
-        "array",
-        "tournament",
-        "trees",
-        "sort",
-        "xgm_mod_options",
-        "c3",
-	"recruit"
+	"kmt_presentation_utils",
+	"slot_arrays",
+	"tournament",
+	"troop_tree_viewer",
+	"garrison_sorting",
+	"xgm_mod_options",
+	"commanders_battle",
+	"volunteer_recruit_ui",
+	"all_items"
 ]
 
 

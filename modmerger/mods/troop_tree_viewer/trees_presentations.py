@@ -7,8 +7,6 @@ from ID_meshes import *
 from header_operations import *
 from header_triggers import *
 from module_constants import *
-# from header_items import *   # Added for Show all Items presentation.
-# from module_items import *   # Added for Show all Items presentation.
 from header_skills import *
 
 import string

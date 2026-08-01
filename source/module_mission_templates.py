@@ -2536,7 +2536,7 @@ player_undress = (
     (agent_is_human, ":agent"),
     (agent_get_horse, ":horse", ":agent"),
     (le, ":horse", 0),
-	(troop_get_type, ":type", trp_player),
+	(troop_get_type, ":type", "trp_player"),
 	(try_begin),
 		(agent_equip_item, ":agent", "itm_red_tourney_armor"), #Remove clothes/hat
 		(agent_unequip_item, ":agent", "itm_red_tourney_armor"),
@@ -5113,7 +5113,7 @@ mission_templates = [
       (eq, "$g_feast_dancers", 1),
 			(eq, "$talk_context", tc_court_talk),
 			(agent_get_troop_id, ":troop_id", ":agent_no"),
-			(neg|eq, trp_player, ":troop_id"),
+			(neg|eq, "trp_player", ":troop_id"),
 			(assign, ":tribute_entertainer", 0),
 			(call_script, "script_cf_dplmc_troop_is_female", ":troop_id"),
 			(try_begin),

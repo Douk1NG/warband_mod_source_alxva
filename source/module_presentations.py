@@ -24,7 +24,6 @@ from presentations.prsnt_banner_flag_map_type_selection import banner_flag_map_t
 from presentations.prsnt_banner_flag_type_selection import banner_flag_type_selection
 from presentations.prsnt_banner_selection import banner_selection
 from presentations.prsnt_battle import battle
-from presentations.prsnt_battle_old import battle_excluded
 from presentations.prsnt_blackjack import blackjack
 from presentations.prsnt_budget_report import budget_report
 # from presentations.prsnt_change_color import change_color # unused - replaced by cc_color_editor
@@ -106,7 +105,6 @@ presentations.append(banner_flag_map_type_selection)
 presentations.append(banner_flag_type_selection)
 presentations.append(banner_selection)
 presentations.append(battle)
-presentations.append(battle_excluded)
 presentations.append(blackjack)
 presentations.append(budget_report)
 # presentations.append(change_color) # unused - replaced by cc_color_editor

@@ -1,6 +1,10 @@
 import math
 from cstm_troop_trees import *
 
+# Import cstm_item_type_strings from shared helpers (modmerger adds shared/ to sys.path)
+_item_types = __import__("shared.cstm_item_helpers.item_types", fromlist=["cstm_item_type_strings"])
+cstm_item_type_strings = _item_types.cstm_item_type_strings
+
 def equipment_funds_available(level):
 	return round(480 * math.exp(level * 0.13) - 225, -1)
 
@@ -47,27 +51,6 @@ CSTM_WP_POINTS_PER_LEVEL = 20	# Bonus Proficiency points available to spend per 
 CSTM_WP_POINTS_PER_AGI = 10		# Bonus Proficiency points available to spend per point in AGI
 
 CSTM_IMOD_COST_DIVISOR = 2		# The cost addition to items from modifiers is divided by this number (see script_cstm_item_type_get_cost_modifier in cstmmerge_scripts for the cost modifiers)
-
-# Item types available for equipping custom troops
-cstm_item_type_strings = {
-	itp_type_horse: "Horses",
-	itp_type_one_handed_wpn: "One Handed Weapons",
-	itp_type_two_handed_wpn: "Two Handed Weapons",
-	itp_type_polearm: "Polearms",
-	itp_type_arrows: "Arrows",
-	itp_type_bolts: "Bolts",
-	itp_type_shield: "Shields",
-	itp_type_bow: "Bows",
-	itp_type_crossbow: "Crossbows",
-	itp_type_thrown: "Throwing Weapons",
-	itp_type_head_armor: "Caps and Helmets",
-	itp_type_body_armor: "Body Armour",
-	itp_type_foot_armor: "Boots and Greaves",
-	itp_type_hand_armor: "Gloves and Gauntlets",
-	itp_type_pistol: "Pistols",
-	#itp_type_musket: "Muskets",
-	itp_type_bullets: "Bullets"
-}
 
 # Ranges of attriutes, skills and proficiencies that can be modified (skills also need to be active in module_skills)
 attributes_begin = ca_strength
