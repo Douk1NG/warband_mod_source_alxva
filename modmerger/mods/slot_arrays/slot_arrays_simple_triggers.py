@@ -1,4 +1,4 @@
-from array_scripts import *
+from slot_arrays_scripts import *
 
 simple_triggers=[
   # array Garbage Collection.  Will delete all arrays marked for deletion (-ve value for owner), or if their owner (party) is no longer active

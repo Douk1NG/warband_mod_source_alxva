@@ -35,6 +35,9 @@ def setup_paths(source_root=None):
 	_ensure_path(os.path.join(REPO_ROOT, "compiler"))
 	mods_root = os.path.join(REPO_ROOT, "modmerger", "mods")
 	if os.path.isdir(mods_root):
+		# mods_root itself must be on sys.path so packages like `shared`
+		# (used by custom_troops and all_items) can be imported.
+		_ensure_path(mods_root)
 		for mod_name in os.listdir(mods_root):
 			mod_path = os.path.join(mods_root, mod_name)
 			if os.path.isdir(mod_path):

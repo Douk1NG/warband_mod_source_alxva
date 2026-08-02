@@ -1,5 +1,5 @@
 from header_operations import *
-from cstm_constants import *
+from custom_troops_constants import *
 
 class Script:
 	def __init__(self, id, operations):

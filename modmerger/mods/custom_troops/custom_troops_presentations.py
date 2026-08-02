@@ -12,7 +12,7 @@ from header_items import *
 from module_constants import *
 import string
 
-from cstm_header_presentations import *
+from custom_troops_header_presentations import *
 
 ####################################################################################################################
 #	Each presentation record contains the following fields:

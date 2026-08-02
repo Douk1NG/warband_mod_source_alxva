@@ -1,7 +1,12 @@
 # -*- coding: cp1254 -*-
-# All Items — standalone presentation using vanilla item iteration
-# Depends on: shared.cstm_item_helpers.item_types (for cstm_item_type_strings)
-# Does NOT depend on custom_troops
+# All Items — store presentation for all items.
+# Reads the per-category item arrays that custom_troops builds at game start
+# (script_cstm_setup_item_arrays); trp_temp_array_a/b/c/d are used for overlay
+# tracking only.
+# Depends on: shared.cstm_item_helpers.item_types (for cstm_item_type_strings),
+# custom_troops_header_presentations (for the Presentation wrapper), and the
+# custom_troops item-array machinery (cstm_items_arrays_begin, cstm_slot_array_*,
+# script_cstm_get_item_from_array).
 
 import collections
 
@@ -9,59 +14,19 @@ from header_common import *
 from header_operations import *
 from header_items import *
 from module_constants import *
+from custom_troops_header_presentations import *
 
 # Import cstm_item_type_strings from shared helpers (modmerger adds shared/ to sys.path)
 _item_types = __import__("shared.cstm_item_helpers.item_types", fromlist=["cstm_item_type_strings"])
 cstm_item_type_strings = _item_types.cstm_item_type_strings
 
 #######################################################################
-# init script: build per-category item lists on game start
-#######################################################################
-
-new_start_operations = [
-    (try_for_range, ":item", all_items_begin, all_items_end),
-        (item_get_type, ":type", ":item"),
-        (neg|item_slot_eq, ":item", slot_item_is_checked, 1),
-        (item_set_slot, ":item", slot_item_is_checked, 1),
-        (item_get_value, ":value", ":item"),
-        # Horses
-        (try_begin),
-            (eq, ":type", itp_type_horse),
-            (val_mul, ":value", 1),
-            (item_set_slot, ":item", slot_item_difficulty, ":value"),
-        (else_try),
-            (item_get_difficulty, ":diff", ":item"),
-            (val_max, ":value", ":diff"),
-            (item_set_slot, ":item", slot_item_difficulty, ":value"),
-        (try_end),
-    (try_end),
-]
-
-# Build item lists by type at start
-for item_type in cstm_item_type_strings.keys():
-    new_start_operations.append((troop_set_slot, "trp_temp_array_a", item_type, 0))
-    new_start_operations.append((troop_set_slot, "trp_temp_array_a", item_type + 128, 0))
-
-new_start_operations.extend([
-    (try_for_range, ":item", all_items_begin, "itm_end"),
-        (neg|is_between, ":item", trade_goods_begin, trade_goods_end),
-        (item_get_type, ":type", ":item"),
-    (try_for_range, ":cat_type", itp_type_horse, itp_type_bullets + 1),
-        (eq, ":type", ":cat_type"),
-        (troop_get_slot, ":count", "trp_temp_array_a", ":cat_type"),
-        (store_add, ":slot", ":cat_type", ":count"),
-        (troop_set_slot, "trp_temp_array_a", ":slot", ":item"),
-        (val_add, ":count", 1),
-        (troop_set_slot, "trp_temp_array_a", ":cat_type", ":count"),
-    (try_end),
-])
-
-#######################################################################
 # Presentation
 #######################################################################
 
 orig_presentations = []
-exec(open("source/presentations/prsnt_all_items.py", "r").read().replace("all_items =", "orig_presentations.append(").replace("])", "])).pop()", 1))
+exec(open("source/presentations/prsnt_all_items.py", "r").read())
+orig_presentations.append(all_items)
 
 presentations = collections.OrderedDict()
 for presentation_tuple in orig_presentations:
@@ -74,8 +39,10 @@ presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
 
     # Globals (first load only)
     (try_begin),
-        (eq, "$all_items_page_no", 0),
-        (assign, "$all_items_selected_type", 0),
+        (eq, "$all_items_items_array", 0),
+        (assign, "$all_items_items_array", cstm_items_arrays_begin),
+        (assign, "$all_items_item_modifier_selected", 0),
+        (assign, "$all_items_page_no", 0),
     (try_end),
     (assign, "$all_items_item_details_overlay", -1),
     (assign, "$all_items_quality_selector", -1),
@@ -113,8 +80,7 @@ presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
     (position_set_y, pos1, 670),
     (overlay_set_position, "$all_items_page_selector", pos1),
     # Count items in current category
-    (store_add, ":slot", "$all_items_selected_type", 128),
-    (troop_get_slot, ":num_items", "trp_temp_array_a", ":slot"),
+    (troop_get_slot, ":num_items", "$all_items_items_array", cstm_slot_array_num_items),
     (store_add, ":num_pages", ":num_items", 55),
     (val_div, ":num_pages", 56),
     (try_for_range, ":page_no", 0, ":num_pages"),
@@ -139,22 +105,13 @@ presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
 
     # Count items on this page for grid height
     (assign, ":grid_count", 0),
-    (store_add, ":slot", "$all_items_selected_type", 128),
-    (troop_get_slot, ":num_items", "trp_temp_array_a", ":slot"),
     (try_for_range, ":i", 0, 56),
         (store_mul, ":offset", "$all_items_page_no", 56),
         (store_add, ":item_index", ":i", ":offset"),
-        (ge, ":item_index", ":num_items"),
-        (assign, ":continue", 0),
-    (else_try),
-        (store_add, ":item_slot", "$all_items_selected_type", ":item_index"),
-        (val_add, ":item_slot", 128),
-        (troop_get_slot, ":item", "trp_temp_array_a", ":item_slot"),
+        (call_script, "script_cstm_get_item_from_array", "$all_items_items_array", ":item_index"),
+        (assign, ":item", reg0),
         (gt, ":item", 0),
         (val_add, ":grid_count", 1),
-        (assign, ":continue", 1),
-    (try_end),
-    (eq, ":continue", 1),
     (try_end),
 
     (store_div, ":num_rows", ":grid_count", 8),
@@ -172,13 +129,9 @@ presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
     (try_for_range, ":i", 0, 56),
         (store_mul, ":offset", "$all_items_page_no", 56),
         (store_add, ":item_index", ":i", ":offset"),
-        (store_add, ":item_slot", "$all_items_selected_type", ":item_index"),
-        (val_add, ":item_slot", 128),
-        (troop_get_slot, ":item", "trp_temp_array_a", ":item_slot"),
+        (call_script, "script_cstm_get_item_from_array", "$all_items_items_array", ":item_index"),
+        (assign, ":item", reg0),
         (try_begin),
-            (le, ":item", 0),
-            (assign, ":item", 0),
-        (else_try),
             (eq, ":first_item", 0),
             (assign, ":first_item", ":item"),
         (try_end),
@@ -278,7 +231,7 @@ presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
         (gt, ":combo_item", 0),
         (call_script, "script_item_has_modifier", ":combo_item", ":imod"),
         (eq, reg0, 1),
-        (store_add, ":modifier_string", "str_cstm_imod_string_plain", ":imod"),
+        (store_add, ":modifier_string", modifier_strings_begin, ":imod"),
         (overlay_add_item, "$all_items_quality_selector", ":modifier_string"),
         (troop_set_slot, "trp_temp_array_d", ":m_idx", ":imod"),
         (val_add, ":m_idx", 1),
@@ -325,7 +278,8 @@ presentations["all_items"].triggers[ti_on_presentation_event_state_change][0].ex
     (try_begin),
         ## TYPE SELECTOR CHANGED
         (eq, ":object", "$all_items_type_selector"),
-        (assign, "$all_items_selected_type", ":value"),
+        (store_add, "$all_items_items_array", cstm_items_arrays_begin, ":value"),
+        (assign, "$all_items_item_modifier_selected", 0),
         (assign, "$all_items_page_no", 0),
         (start_presentation, "prsnt_all_items"),
     (else_try),
@@ -431,7 +385,8 @@ for item_type, string in cstm_item_type_strings.iteritems():
         (overlay_add_item, "$all_items_type_selector", s0),
     ])
 presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
-    (overlay_set_val, "$all_items_type_selector", "$all_items_selected_type"),
+    (store_sub, reg0, "$all_items_items_array", cstm_items_arrays_begin),
+    (overlay_set_val, "$all_items_type_selector", reg0),
 ])
 
 del orig_presentations[:]
@@ -442,14 +397,6 @@ def modmerge(var_set):
     try:
         var_name_1 = "presentations"
         orig_presentations_var = var_set[var_name_1]
-
-        # Merge init operations into new_game_start
-        if "new_start_operations" in dir():
-            var_name_2 = "scripts"
-            orig_scripts = var_set[var_name_2]
-            for i, (script_name, script_body) in enumerate(orig_scripts):
-                if script_name == "script_game_start":
-                    orig_scripts[i] = (script_name, [new_start_operations] + list(script_body))
 
         index = -1
         for i, p in enumerate(orig_presentations_var):

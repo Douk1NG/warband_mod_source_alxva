@@ -722,57 +722,73 @@ scripts = [
 	),
 
 	# script_gpu_create_text_overlay
-	# Stub: creates a text overlay directly. Referenced by recruit_volunteers presentation.
-	# Input: title, pos_x, pos_y, width, height, font_size, text_flag
+	# Full implementation: creates a text overlay with size, area size and text.
+	# Input: string, pos_x, pos_y, text_size, size_x, size_y, flags
 	# Output: reg1 = overlay id
 	("gpu_create_text_overlay",
 		[
-			(store_script_param, ":title", 1),
+			(store_script_param, ":string", 1),
 			(store_script_param, ":pos_x", 2),
 			(store_script_param, ":pos_y", 3),
-			(store_script_param, ":font_size", 6),
-			(store_script_param, ":text_flag", 7),
+			(store_script_param, ":text_size", 4),
+			(store_script_param, ":size_x", 5),
+			(store_script_param, ":size_y", 6),
+			(store_script_param, ":flags", 7),
 
-			(create_text_overlay, reg1, ":title", ":text_flag"),
+			(set_fixed_point_multiplier, 1000),
+			(create_text_overlay, reg1, ":string", ":flags"),
 			(position_set_x, pos1, ":pos_x"),
 			(position_set_y, pos1, ":pos_y"),
 			(overlay_set_position, reg1, pos1),
+			(position_set_x, pos1, ":text_size"),
+			(position_set_y, pos1, ":text_size"),
+			(overlay_set_size, reg1, pos1),
+			(position_set_x, pos1, ":size_x"),
+			(position_set_y, pos1, ":size_y"),
+			(overlay_set_area_size, reg1, pos1),
+			(overlay_set_text, reg1, ":string"),
 		]
 	),
 
 	# script_gpu_create_troop_image
-	# Stub: creates a troop portrait overlay. Referenced by recruit_volunteers presentation.
+	# Full implementation: creates a troop portrait overlay.
 	# Input: troop_id, pos_x, pos_y, size
 	# Output: reg1 = overlay id
 	("gpu_create_troop_image",
 		[
-			(store_script_param, ":troop", 1),
+			(store_script_param, ":troop_no", 1),
 			(store_script_param, ":pos_x", 2),
 			(store_script_param, ":pos_y", 3),
 			(store_script_param, ":size", 4),
 
-			(create_image_button_overlay_with_tableau_material, reg1, "mesh_21_troop_portrait", "tableau_troop_character_alpha_mask", ":troop"),
-			(overlay_set_size, reg1, ":size"),
-			(position_set_x, pos1, ":pos_x"),
-			(position_set_y, pos1, ":pos_y"),
-			(overlay_set_position, reg1, pos1),
+			(set_fixed_point_multiplier, 1000),
+			(store_mul, ":cur_troop", ":troop_no", 2),
+			(create_image_button_overlay_with_tableau_material, reg1, -1, "tableau_game_party_window", ":cur_troop"),
+			(position_set_x, pos2, ":pos_x"),
+			(position_set_y, pos2, ":pos_y"),
+			(overlay_set_position, reg1, pos2),
+			(position_set_x, pos3, ":size"),
+			(position_set_y, pos3, ":size"),
+			(overlay_set_size, reg1, pos3),
 		]
 	),
 
 	# script_gpu_create_game_button_overlay
-	# Stub: creates a game button overlay. Referenced by recruit_volunteers presentation.
+	# Full implementation: creates a game button overlay with text.
 	# Input: title, pos_x, pos_y
 	# Output: reg1 = overlay id
 	("gpu_create_game_button_overlay",
 		[
-			(store_script_param, ":title", 1),
+			(store_script_param, ":string", 1),
 			(store_script_param, ":pos_x", 2),
 			(store_script_param, ":pos_y", 3),
 
-			(create_game_button_overlay, reg1, ":title"),
+			(set_fixed_point_multiplier, 1000),
+			(create_game_button_overlay, reg1, ":string"),
 			(position_set_x, pos1, ":pos_x"),
 			(position_set_y, pos1, ":pos_y"),
 			(overlay_set_position, reg1, pos1),
+			(overlay_set_text, reg1, ":string"),
 		]
 	),
 
