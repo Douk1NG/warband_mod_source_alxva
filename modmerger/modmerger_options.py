@@ -26,6 +26,7 @@ options={
 mods_active = [
 # insert the active mod names here
 	"custom_troops",
+	"kingdom_custom_troop_tree_creator",
 	"faction_colour_picker",
 	"freelancer",
 	"kmt_presentation_utils",

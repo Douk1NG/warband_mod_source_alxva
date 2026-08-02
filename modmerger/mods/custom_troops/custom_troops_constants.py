@@ -55,7 +55,7 @@ CSTM_WP_LEVELS_PER_WM = 15		# Bonus proficiency levels per point in Weapon Maste
 CSTM_WP_POINTS_PER_LEVEL = 20	# Bonus Proficiency points available to spend per level
 CSTM_WP_POINTS_PER_AGI = 10		# Bonus Proficiency points available to spend per point in AGI
 
-CSTM_IMOD_COST_DIVISOR = 2		# The cost addition to items from modifiers is divided by this number (see script_cstm_item_type_get_cost_modifier in cstmmerge_scripts for the cost modifiers)
+CSTM_IMOD_COST_DIVISOR = 2		# The cost addition to items from modifiers is divided by this number (see script_cstm_item_type_get_cost_modifier in custom_troops_scripts for the cost modifiers)
 
 # Ranges of attriutes, skills and proficiencies that can be modified (skills also need to be active in module_skills)
 attributes_begin = ca_strength
