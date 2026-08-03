@@ -43,6 +43,11 @@ PRESET_4_UNITS = [
 def preset_4_troop_id(skin_id, node_index):
 	return "cstm_custom_troop_4_%d_%d_0" % (skin_id, node_index)
 
+def average_face(face_1, face_2):
+	age_and_skin_mask = 0xfffffffffffffffff00000000000000000000000000000000000000000000000
+	average_features  = 0x000000000000000006db6db6db6db6db00000000000db6db0000000000000000
+	return (((face_1 + face_2) / 2) & age_and_skin_mask) + average_features
+
 def build_preset_4_skin(skin_id, face_code_1, face_code_2):
 	troop_list = []
 	for node_index, (label, troop_level, _) in enumerate(PRESET_4_UNITS):
@@ -52,6 +57,19 @@ def build_preset_4_skin(skin_id, face_code_1, face_code_2):
 			"Unit %s" % (label),
 			tf_guarantee_all|skin_id, 0, 0, fac_player_supporters_faction, [],
 			level(troop_level)|def_attrib, 0, 0, face_code_1, face_code_2
+		])
+	return troop_list
+
+def build_preset_4_dummy_skin(skin_id, face_code_1, face_code_2):
+	facecode = average_face(face_code_1, face_code_2)
+	troop_list = []
+	for node_index, (label, troop_level, _) in enumerate(PRESET_4_UNITS):
+		troop_list.append([
+			preset_4_troop_id(skin_id, node_index) + "_dummy",
+			"Unit %s" % (label),
+			"Unit %s" % (label),
+			tf_guarantee_all|tf_hero|skin_id, 0, 0, fac_player_supporters_faction, [],
+			level(troop_level)|def_attrib, 0, 0, facecode
 		])
 	return troop_list
 
@@ -74,6 +92,19 @@ def modmerge(var_set):
 		for troop in build_preset_4_skin(skin_id, face_code_1, face_code_2):
 			orig_troops.insert(insert_index, troop)
 			insert_index += 1
+
+	# Sentinel right after the real preset 4 troops so the (tree, skin 1) range
+	# has an end marker (mirrors cstm_custom_troops_end for the base trees).
+	orig_troops.insert(insert_index, [
+		"cstm_custom_troop_4_end", "cstm_custom_troop_4_end", "cstm_custom_troop_4_end",
+		tf_hero, 0, 0, fac_player_supporters_faction, [], level(1)|def_attrib, 0, 0, 0, 0
+	])
+
+	# Dummy troops (used by the presentation for name/equipment display) go at the
+	# very end of the troop list, like the base mod's dummies.
+	for skin_id, face_code_1, face_code_2 in skins:
+		for troop in build_preset_4_dummy_skin(skin_id, face_code_1, face_code_2):
+			orig_troops.append(troop)
 	
 	# Link upgrades by unit label
 	for skin_id, _, _ in skins:
