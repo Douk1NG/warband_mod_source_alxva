@@ -481,6 +481,19 @@ mod_options = [
 		],
 	),
 
+    ( "kct_funds_tier", xgm_ov_combolabel,
+        ["Balanced", "Boost", "Cheater"],
+        "Custom Troop Funds:", 0,
+        "Equipment budget for the Kingdom custom troop store. Balanced = standard funds, Boost = double funds, Cheater = effectively unlimited.",
+        0,
+        [  # initialization block (set value in reg1)
+            (assign, reg1, "$g_kct_funds_tier"),
+        ],
+        [  # update block (value is in reg1)
+            (assign, "$g_kct_funds_tier", reg1),
+        ],
+    ),
+
     ("horizontal_divide", xgm_ov_line, [], "", 0,"", 0,[],[],),
 
     ( "op_cheatmode", xgm_ov_checkbox ,  [],

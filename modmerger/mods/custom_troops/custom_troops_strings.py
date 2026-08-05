@@ -104,6 +104,25 @@ new_strings = [
 	("cstm_imod_string_smelling", "Smelling"),
 	("cstm_imod_string_rotten", "Rotten"),
 	("cstm_imod_string_large_bag", "Large Bag"),
+
+	# KCT attribute tooltips (must stay FIRST among kct_tip_* and in this order:
+	# strength=0, agility=1, intelligence=2, so kct_attribute_tooltips_begin +
+	# attribute_id resolves them).
+	("kct_tip_strength", "Increases health and melee damage."),
+	("kct_tip_agility", "Increases movement speed and weapon proficiency."),
+	("kct_tip_intelligence", "Increases how quickly skills are learned."),
+
+	# KCT skill tooltips (one per active fighting skill shown in the store).
+	("kct_tip_power_draw", "Increases damage with bows."),
+	("kct_tip_power_throw", "Increases damage with throwing weapons."),
+	("kct_tip_power_strike", "Increases damage with one/two handed weapons and polearms."),
+	("kct_tip_ironflesh", "Increases your hit points."),
+	("kct_tip_horse_archery", "Allows shooting a bow while riding a horse."),
+	("kct_tip_riding", "Allows riding faster and better horses."),
+	("kct_tip_athletics", "Increases your movement speed on foot."),
+	("kct_tip_shield", "Improves shield use and blocking."),
+	("kct_tip_weapon_master", "Increases weapon proficiency and the proficiency point limit."),
+	("kct_tip_looting", "Increases the amount of loot obtained."),
 ]
 
 def modmerge(var_set):
