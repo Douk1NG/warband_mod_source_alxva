@@ -57,6 +57,22 @@ cstm_slot_troop_custom_troop = 501
 # allocator ends at 519, so 520 is free.
 cstm_slot_troop_configured = 520
 
+# Proficiency inheritance (bottom-up A -> B -> ... -> F):
+# 531 = design lock: set on a troop when its first child is saved; while set,
+#       only the equipment and name of that troop may be edited (stat boxes
+#       are frozen). Persisted on the real troop.
+# 532 = proficiency bonus: the parent's unspent proficiency points inherited
+#       by this troop (rollover); added to the pool in kct_get_proficiency_points.
+#       Persisted on the real troop (and mirrored on the dummy at store open).
+cstm_slot_troop_design_lock = 531
+cstm_slot_troop_proficiency_bonus = 532
+
+# 528 = first-open marker for the proficiency inheritance snapshot: set on a
+#      child the first time its store opens (parent configured, itself not yet
+#      configured). Guarantees the inherited baseline is baked exactly once, so
+#      Save/Reset only reflect real user edits and the snapshot never wipes them.
+cstm_slot_troop_inherited = 528
+
 # The troop whose name is used to store the custom troop tree prefix string
 # (mirrors cstm_troop_tree_prefix in custom_troops_constants).
 cstm_troop_tree_prefix = "trp_cstm_custom_troops_end"

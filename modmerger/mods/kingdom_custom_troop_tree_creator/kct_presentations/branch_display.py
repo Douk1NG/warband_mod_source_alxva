@@ -277,6 +277,9 @@ def _build_create_event_ops():
 				# Fresh store state on entry
 				(assign, "$cstm_item_modifier_selected", 0),
 				(assign, "$cstm_item_page_no", 0),
+				# Mark this as a fresh entry so the store's load trigger re-derives
+				# the baseline for unconfigured children (consumed there).
+				(assign, "$g_kct_recalc_baseline", 1),
 				(start_presentation, "prsnt_kct_customise_troop"),
 			(try_end,),
 		(else_try,),

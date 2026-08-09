@@ -120,7 +120,12 @@ TROOP_EDITOR_SCRIPTS = [
 		(assign, ":points", reg0),
 		(call_script, "script_kct_get_attribute_points_spent", ":troop"),
 		(val_sub, ":points", reg0),
-		
+
+		# Never negative: a base unit whose pool is smaller than its baseline
+		# (or a heavy tree-minimum auto-distribution) simply floors at 0 instead
+		# of collapsing the box maxima.
+		(val_max, ":points", 0),
+
 		(assign, reg0, ":points"),
 	]),
 
@@ -308,9 +313,16 @@ TROOP_EDITOR_SCRIPTS = [
 		(store_script_param, ":troop", 1),
 		(store_script_param, ":attribute", 2),
 		
-		(call_script, "script_kct_troop_get_attribute_max_from_points", ":troop", ":attribute"),
+		(troop_get_slot, ":budget_troop", ":troop", cstm_slot_troop_dummy),
+		(try_begin),
+			(eq, ":budget_troop", 0),
+			
+			(assign, ":budget_troop", ":troop"),
+		(try_end),
+		
+		(call_script, "script_kct_troop_get_attribute_max_from_points", ":budget_troop", ":attribute"),
 		(assign, ":max_level", reg0),
-		(store_attribute_level, ":curr_level", ":troop", ":attribute"),
+		(store_attribute_level, ":curr_level", ":budget_troop", ":attribute"),
 		(val_max, ":max_level", ":curr_level"),
 		
 		(try_begin),
@@ -443,7 +455,10 @@ TROOP_EDITOR_SCRIPTS = [
 		(assign, ":points", reg0),
 		(call_script, "script_kct_get_skill_points_spent", ":troop"),
 		(val_sub, ":points", reg0),
-		
+
+		# Never negative: see kct_get_attribute_points_available.
+		(val_max, ":points", 0),
+
 		(assign, reg0, ":points"),
 	]),
 
@@ -767,6 +782,11 @@ TROOP_EDITOR_SCRIPTS = [
 		(store_mul, ":agility_bonus", ":agility", CSTM_WP_POINTS_PER_AGI),
 		(val_add, ":points_available", ":agility_bonus"),
 
+		# Inherited rollover: the parent's unspent proficiency points were stored
+		# in cstm_slot_troop_proficiency_bonus when this troop was first opened.
+		(troop_get_slot, ":inherited_bonus", ":troop", cstm_slot_troop_proficiency_bonus),
+		(val_add, ":points_available", ":inherited_bonus"),
+
 		(assign, reg0, ":points_available"),
 	]),
 
@@ -794,6 +814,10 @@ TROOP_EDITOR_SCRIPTS = [
 		(assign, ":points", reg0),
 		(call_script, "script_kct_get_proficiency_points_spent", ":troop"),
 		(val_sub, ":points", reg0),
+
+		# Never negative: see kct_get_attribute_points_available. Protects
+		# against the box "+1" overspend and any residual over-budget state.
+		(val_max, ":points", 0),
 
 		(assign, reg0, ":points"),
 	]),
@@ -823,6 +847,29 @@ TROOP_EDITOR_SCRIPTS = [
 	("kct_troop_get_proficiency_min_from_points",
 	[
 		(assign, reg0, CSTM_WP_LEVELS_START),
+	]),
+
+	# script_kct_troop_get_proficiency_min_from_tree
+	# The inherited floor: a child can never drop below its parent's current
+	# proficiency level (snapshot inheritance, spec §7), otherwise it would
+	# waste the parent's investment. Root troops keep the base starting level.
+	("kct_troop_get_proficiency_min_from_tree",
+	[
+		(store_script_param, ":troop", 1),
+		(store_script_param, ":proficiency", 2),
+
+		(call_script, "script_kct_troop_get_proficiency_min_from_points"),
+		(assign, ":min_level", reg0),
+
+		(troop_get_slot, ":parent_troop", ":troop", cstm_slot_troop_base_troop),
+		(try_begin),
+			(gt, ":parent_troop", 0),
+
+			(store_proficiency_level, ":parent_level", ":parent_troop", ":proficiency"),
+			(val_max, ":min_level", ":parent_level"),
+		(try_end),
+
+		(assign, reg0, ":min_level"),
 	]),
 
 	# script_kct_troop_get_proficiency_max_from_points

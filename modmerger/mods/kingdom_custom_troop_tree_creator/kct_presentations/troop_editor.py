@@ -42,6 +42,59 @@ kct_customise_core = (
 			
 			(troop_get_slot, ":dummy", "$cstm_troop_being_customised", cstm_slot_troop_dummy),
 			
+			# Design lock: a troop is frozen (stat boxes read-only) once its first
+			# child has been saved; only equipment and name remain editable.
+			(troop_get_slot, "$cstm_troop_design_locked", "$cstm_troop_being_customised", cstm_slot_troop_design_lock),
+			
+			# Baseline re-derivation (spec §7, snapshot model): every FRESH entry
+			# into an unconfigured child (its parent configured, itself not yet
+			# configured) rebuilds its starting stats from the base unit data plus
+			# the parent's CURRENT attribute/skill/proficiency levels, and rolls
+			# the parent's unspent proficiency points into its own pool. Keyed off
+			# $g_kct_recalc_baseline (set by the tree viewer on node click), NOT
+			# the inherited marker, so a parent re-customised after the child's
+			# first open never leaves a stale distribution behind. Internal store
+			# reloads (box edits, Reset) leave the flag clear and skip this.
+			(troop_get_slot, ":parent", "$cstm_troop_being_customised", cstm_slot_troop_base_troop),
+			(troop_get_slot, ":configured", "$cstm_troop_being_customised", cstm_slot_troop_configured),
+			(try_begin,),
+				(gt, ":parent", 0),
+				(eq, ":configured", 0),
+				(eq, "$g_kct_recalc_baseline", 1),
+				
+				# Base unit data first...
+				(call_script, "script_kct_troop_set_stats_to_default", ":dummy"),
+				# ...then raise attrs/skills up to the parent's current levels.
+				(call_script, "script_kct_troop_copy_stats_if_higher", ":dummy", ":parent"),
+				
+				(try_for_range, ":proficiency", proficiencies_begin, proficiencies_end),
+					(store_proficiency_level, ":parent_level", ":parent", ":proficiency"),
+					(call_script, "script_kct_dummy_set_proficiency", ":dummy", ":proficiency", ":parent_level"),
+				(try_end,),
+				
+				# The child inherits the parent's CURRENT build for free (spec §7):
+				# its starting stats are the base unit data plus the parent's
+				# levels, and it keeps its own pool minus what the inherited stats
+				# cost - so a fully-spent level-26 parent hands its level-34 child
+				# exactly the level-gap points (34-26 = 8). No refund: the child
+				# only gains what its higher level grants. The kct_get_*_points_
+				# available floors at 0 are the backstop against negatives from any
+				# other path (stale saves, auto-distribution).
+				
+				# Proficiency rollover (deliberately generous - full cost refund):
+				# the parent's unspent points (clamped at 0 so a stale over-budget
+				# parent can't hand down a debt) PLUS the entire cost of the
+				# inherited levels, so the child always has enough to cover its
+				# inherited proficiencies and then some.
+				(call_script, "script_kct_get_proficiency_points_available", ":parent"),
+				(assign, ":inherited_bonus", reg0),
+				(val_max, ":inherited_bonus", 0),
+				(call_script, "script_kct_get_proficiency_points_spent", ":dummy"),
+				(val_add, ":inherited_bonus", reg0),
+				(troop_set_slot, "$cstm_troop_being_customised", cstm_slot_troop_proficiency_bonus, ":inherited_bonus"),
+				(troop_set_slot, ":dummy", cstm_slot_troop_proficiency_bonus, ":inherited_bonus"),
+			(try_end,),
+			
 			# Auto-distribute attributes to meet the tree minimums (spec §7
 			# non-decreasing invariant): a node inherited from a configured parent
 			# must never open below the floor - raise it from the dummy's points.
@@ -54,6 +107,24 @@ kct_customise_core = (
 					(troop_raise_attribute, ":dummy", ":attribute", ":difference"),
 				(try_end,),
 			(try_end,),
+			
+			# Baseline bake (snapshot model): on the same fresh entries above, fold
+			# the re-derived stats into the REAL troop so the store's "anything
+			# changed?" check starts at zero; Save/Reset then appear only for
+			# genuine user edits. This OVERWRITES the previous baked baseline each
+			# fresh entry while the child stays unconfigured.
+			(try_begin,),
+				(gt, ":parent", 0),
+				(eq, ":configured", 0),
+				(eq, "$g_kct_recalc_baseline", 1),
+				(call_script, "script_kct_troop_copy_stats", "$cstm_troop_being_customised", ":dummy"),
+				(troop_set_slot, "$cstm_troop_being_customised", cstm_slot_troop_inherited, 1),
+				(troop_set_slot, ":dummy", cstm_slot_troop_inherited, 1),
+			(try_end,),
+			
+			# Consume the fresh-entry flag on every store load (configured units
+			# included) so internal reloads never re-derive mid-edit.
+			(assign, "$g_kct_recalc_baseline", 0),
 			
 			(store_character_level, ":troop_level", "$cstm_troop_being_customised"),
 			
@@ -301,6 +372,8 @@ kct_customise_core = (
 				
 				(call_script, "script_kct_troop_get_proficiency_min_from_points", "$cstm_troop_being_customised", ":proficiency"),
 				(assign, ":min", reg0),
+				(call_script, "script_kct_troop_get_proficiency_min_from_tree", "$cstm_troop_being_customised", ":proficiency"),
+				(val_max, ":min", reg0),
 				
 				(try_begin),
 					(lt, ":curr_val", ":min"),
@@ -572,6 +645,7 @@ kct_customise_core = (
 				(start_presentation, "prsnt_kct_customise_troop"),
 			(else_try),
 				(troop_slot_eq, "trp_cstm_overlay_is_attribute_box", ":object", 1),
+				(eq, "$cstm_troop_design_locked", 0),
 				
 				(troop_get_slot, ":attribute", "trp_cstm_overlay_attribute", ":object"),
 				(call_script, "script_kct_dummy_set_attribute", ":dummy", ":attribute", ":value"),
@@ -579,12 +653,14 @@ kct_customise_core = (
 			(else_try),
 				# PROFICIENCY CHANGED
 				(troop_slot_eq, "trp_cstm_overlay_is_proficiency_box", ":object", 1),
+				(eq, "$cstm_troop_design_locked", 0),
 				
 				(troop_get_slot, ":proficiency", "trp_cstm_overlay_proficiency", ":object"),
 				(call_script, "script_kct_dummy_set_proficiency", ":dummy", ":proficiency", ":value"),
 				(start_presentation, "prsnt_kct_customise_troop"),
 			(else_try),
 				(troop_slot_eq, "trp_cstm_overlay_is_skill_box", ":object", 1),
+				(eq, "$cstm_troop_design_locked", 0),
 				
 				(troop_get_slot, ":skill", "trp_cstm_overlay_skill", ":object"),
 				(call_script, "script_kct_dummy_set_skill", ":dummy", ":skill", ":value"),
@@ -594,6 +670,16 @@ kct_customise_core = (
 				
 				# Mark this node as configured so its children unlock (spec §7).
 				(troop_set_slot, "$cstm_troop_being_customised", cstm_slot_troop_configured, 1),
+				
+				# Saving a child locks the parent: its stat boxes freeze so the
+				# inherited baseline can never be lowered (spec §7). Equipment and
+				# name stay editable.
+				(troop_get_slot, ":parent", "$cstm_troop_being_customised", cstm_slot_troop_base_troop),
+				(try_begin),
+					(gt, ":parent", 0),
+					
+					(troop_set_slot, ":parent", cstm_slot_troop_design_lock, 1),
+				(try_end),
 				
 				(try_begin),
 					(call_script, "script_kct_cf_troop_equipments_are_different", "$cstm_troop_being_customised", ":dummy"),
