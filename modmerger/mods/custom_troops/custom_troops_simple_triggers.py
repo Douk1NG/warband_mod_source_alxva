@@ -22,18 +22,20 @@ from custom_troops_constants import *
 # Build comprehensive save-game fix operations (runs once on first load after mod update)
 fix_operations = [
 	(try_begin),
-		(neq, "$g_cstm_save_fix_applied", 1),
+		(neq, "$g_cstm_save_fix_applied_2", 1),
 		
 		# Rebuild item arrays from scratch (fixes invalid item IDs like 1938 in old saves)
 		(call_script, "script_cstm_setup_item_arrays"),
 ]
 
-# Recalculate equipment funds for all troop levels (fixes negative funds on old saves)
-# 1.5x multiplier to compensate for the corrected price calculation
-for i in xrange(64):
-	inventory_value = equipment_funds_available(i)
-	inventory_value = int(round(inventory_value * 1.5))
-	fix_operations.append((troop_set_slot, "trp_cstm_inventory_values", i, inventory_value))
+# Recalculate equipment funds for all troop levels (fixes negative funds on old saves).
+# Writes the three tier tables (Balanced / Boosted / Cheater) contiguously so the store
+# can read level + tier * EQUIPMENT_FUNDS_TABLE_SIZE (see CSTM_TROOP_TREES_SPEC.md section 5).
+for i in xrange(EQUIPMENT_FUNDS_TABLE_SIZE):
+	balanced, boosted, cheater = equipment_funds_available(i)
+	fix_operations.append((troop_set_slot, "trp_cstm_inventory_values", i, balanced))
+	fix_operations.append((troop_set_slot, "trp_cstm_inventory_values", i + EQUIPMENT_FUNDS_TABLE_SIZE, boosted))
+	fix_operations.append((troop_set_slot, "trp_cstm_inventory_values", i + 2 * EQUIPMENT_FUNDS_TABLE_SIZE, cheater))
 
 # Recalculate proficiency requirements (in case they changed between versions)
 previous_requirement = 0
@@ -48,7 +50,7 @@ for i in xrange(max(cstm_proficiency_requirements.keys()) + 1):
 for item_type in cstm_item_type_strings.keys():
 	fix_operations.append((troop_set_slot, "trp_" + cstm_items_array_id(item_type), cstm_slot_array_item_type, item_type))
 
-fix_operations.append((assign, "$g_cstm_save_fix_applied", 1))
+fix_operations.append((assign, "$g_cstm_save_fix_applied_2", 1))
 fix_operations.append((try_end,))
 
 new_simple_triggers = [

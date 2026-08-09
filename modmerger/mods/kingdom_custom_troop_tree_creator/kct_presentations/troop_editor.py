@@ -56,21 +56,14 @@ kct_customise_core = (
 			(try_end,),
 			
 			(store_character_level, ":troop_level", "$cstm_troop_being_customised"),
-			(troop_get_slot, "$cstm_total_funds", "trp_cstm_inventory_values", ":troop_level"),
 			
 			# Custom troop funds tier (mod options > Custom Troop Funds):
-			# Balanced (0) keeps the table value; Boost (1) adds 50%; Cheater (2)
-			# sets a huge budget so the "Remaining funds" gate never binds.
-			(try_begin),
-				(eq, "$g_kct_funds_tier", 1),
-				
-				(store_mul, "$cstm_total_funds", "$cstm_total_funds", 3),
-				(val_div, "$cstm_total_funds", 2),
-			(else_try),
-				(eq, "$g_kct_funds_tier", 2),
-				
-				(assign, "$cstm_total_funds", 50000000),
-			(try_end),
+			# Balanced (0) / Boosted (1) / Cheater (2) are three tables stored
+			# contiguously in trp_cstm_inventory_values (EQUIPMENT_FUNDS_TABLE_SIZE
+			# entries each); read the selected tier's table at the troop's level.
+			(store_mul, ":funds_slot", "$g_kct_funds_tier", EQUIPMENT_FUNDS_TABLE_SIZE),
+			(val_add, ":funds_slot", ":troop_level"),
+			(troop_get_slot, "$cstm_total_funds", "trp_cstm_inventory_values", ":funds_slot"),
 			
 			(call_script, "script_kct_troop_copy_inventory", "$cstm_presentation_troop", ":dummy"),
 			(troop_sort_inventory, "$cstm_presentation_troop"),
@@ -288,7 +281,7 @@ kct_customise_core = (
 			# boxes are bounded by the points budget (original custom_troops
 			# behaviour): min can't go below the starting level, max is the
 			# highest level affordable with the available points, capped at
-			# 40*WM+60.
+			# CSTM_WP_CAP_LEVELS_PER_WM*WM + CSTM_WP_CAP_ADDITIONAL.
 			(call_script, "script_kct_get_proficiency_points_available", ":dummy"),
 			(str_store_string, s0, "@Proficiency points: {reg0}"),
 			(call_script, "script_kct_create_text_overlay", "str_s0", 0, KCT_STATS_PROF_SECTION_HEIGHT - KCT_STATS_PROF_POINTS_ROW_HEIGHT, KCT_STATS_POINTS_TEXT_SIZE, KCT_STATS_POINTS_COL_WIDTH * 2, KCT_STATS_PROF_POINTS_ROW_HEIGHT, tf_left_align),
@@ -324,8 +317,8 @@ kct_customise_core = (
 				
 				# Apply cap from weapon master
 				(store_skill_level, ":weapon_master", skl_weapon_master, ":dummy"),
-				(store_mul, ":cap", 40, ":weapon_master"),
-				(val_add, ":cap", 60),
+				(store_mul, ":cap", CSTM_WP_CAP_LEVELS_PER_WM, ":weapon_master"),
+				(val_add, ":cap", CSTM_WP_CAP_ADDITIONAL),
 				(val_min, ":max", ":cap"),
 				(val_add, ":max", 1),
 				

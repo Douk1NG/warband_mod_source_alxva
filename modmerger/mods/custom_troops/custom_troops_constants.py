@@ -1,4 +1,3 @@
-import math
 from header_items import *
 from header_troops import *
 from ID_troops import *
@@ -10,8 +9,36 @@ from custom_troops_proficiency_requirements import cstm_proficiency_requirements
 _item_types = __import__("shared.cstm_item_helpers.item_types", fromlist=["cstm_item_type_strings"])
 cstm_item_type_strings = _item_types.cstm_item_type_strings
 
+# Equipment budget bands by troop level, per tier (Balanced, Boosted, Cheater).
+# Boosted = Balanced x 1.5; Cheater = Balanced x 3 (capped at 60000 for 35-40).
+# The store reads trp_cstm_inventory_values at offset level + tier * EQUIPMENT_FUNDS_TABLE_SIZE
+# (the three tables are written contiguously at game start and by the save-fix trigger).
+EQUIPMENT_FUNDS_TABLE_SIZE = 64
+EQUIPMENT_FUNDS_BANDS = [
+	(1, 3, 110, 165, 330),
+	(4, 6, 472, 708, 1416),
+	(7, 9, 970, 1455, 2910),
+	(10, 12, 1807, 2710, 5421),
+	(13, 15, 2116, 3174, 6348),
+	(16, 18, 3010, 4515, 9030),
+	(19, 21, 3942, 5913, 11826),
+	(22, 24, 7613, 11420, 22839),
+	(25, 27, 9668, 14502, 29004),
+	(28, 30, 11702, 17553, 35106),
+	(31, 34, 17887, 26830, 53661),
+	(35, 40, 20000, 30000, 60000),
+]
+
+# Levels outside the table clamp to the nearest band (0 and 41-63 -> first / last).
 def equipment_funds_available(level):
-	return round(480 * math.exp(level * 0.13) - 225, -1)
+	for band in EQUIPMENT_FUNDS_BANDS:
+		if band[0] <= level <= band[1]:
+			return band[2], band[3], band[4]
+	if level < EQUIPMENT_FUNDS_BANDS[0][0]:
+		band = EQUIPMENT_FUNDS_BANDS[0]
+	else:
+		band = EQUIPMENT_FUNDS_BANDS[-1]
+	return band[2], band[3], band[4]
 
 class Skin:
 	def __init__(self, id, text, face_code_1, face_code_2):
@@ -54,6 +81,9 @@ CSTM_WP_LEVELS_PER_WM = 15		# Bonus proficiency levels per point in Weapon Maste
 
 CSTM_WP_POINTS_PER_LEVEL = 20	# Bonus Proficiency points available to spend per level
 CSTM_WP_POINTS_PER_AGI = 10		# Bonus Proficiency points available to spend per point in AGI
+
+CSTM_WP_CAP_LEVELS_PER_WM = 40	# Proficiency cap per point in Weapon Master: cap = this * WM + CSTM_WP_CAP_ADDITIONAL
+CSTM_WP_CAP_ADDITIONAL = 200	# Base proficiency cap (WM 0) - raise to increase the base limit
 
 CSTM_IMOD_COST_DIVISOR = 2		# The cost addition to items from modifiers is divided by this number (see script_cstm_item_type_get_cost_modifier in custom_troops_scripts for the cost modifiers)
 

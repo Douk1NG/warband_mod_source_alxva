@@ -70,13 +70,14 @@ for i in xrange(max(cstm_proficiency_requirements.keys()) + 1):
 		previous_requirement = requirement
 	new_start_operations.append((troop_set_slot, "trp_cstm_proficiency_requirements", i, requirement))
 
-# Set the allocated equipment funds for each troop level (unified at 1.5x to match
-# the custom_troops save-fix trigger, so boot-time and load-restore agree; see
-# CSTM_TROOP_TREES_SPEC.md §5).
-for i in xrange(64):
-	inventory_value = equipment_funds_available(i)
-	inventory_value = int(round(inventory_value * 1.5))
-	new_start_operations.append((troop_set_slot, "trp_cstm_inventory_values", i, inventory_value))
+# Set the allocated equipment funds for each troop level (Balanced, Boosted, Cheater
+# tables, matching the custom_troops save-fix trigger so boot-time and load-restore
+# agree; see CSTM_TROOP_TREES_SPEC.md §5).
+for i in xrange(EQUIPMENT_FUNDS_TABLE_SIZE):
+	balanced, boosted, cheater = equipment_funds_available(i)
+	new_start_operations.append((troop_set_slot, "trp_cstm_inventory_values", i, balanced))
+	new_start_operations.append((troop_set_slot, "trp_cstm_inventory_values", i + EQUIPMENT_FUNDS_TABLE_SIZE, boosted))
+	new_start_operations.append((troop_set_slot, "trp_cstm_inventory_values", i + 2 * EQUIPMENT_FUNDS_TABLE_SIZE, cheater))
 
 # Set item types of arrays
 for item_type in cstm_item_type_strings.keys():

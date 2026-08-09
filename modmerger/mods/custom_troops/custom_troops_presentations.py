@@ -520,8 +520,8 @@ new_presentations = [
 
 				# Apply cap from weapon master
 				(store_skill_level, ":weapon_master", skl_weapon_master, ":dummy"),
-				(store_mul, ":cap", 40, ":weapon_master"),
-				(val_add, ":cap", 60),
+				(store_mul, ":cap", CSTM_WP_CAP_LEVELS_PER_WM, ":weapon_master"),
+				(val_add, ":cap", CSTM_WP_CAP_ADDITIONAL),
 				(val_min, ":max", ":cap"),
 				(val_add, ":max", 1),
 				

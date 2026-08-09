@@ -82,12 +82,17 @@ Uniform role-based ladder for preset 4 (no power tradeoff between presets):
 
 ## 5. Gold
 
-- `equipment_funds_available(level) = round(480 * e^(0.13 * level) - 225, -1)`
-  (kept), table stored 0–63 via `trp_cstm_inventory_values`.
-- Unified at **1.5×** everywhere — boot-time table AND load-restore must agree
-  (fixes the current mismatch where boot uses 1× and the save-fix overwrites with 1.5×).
-- Budgets: level 2 ≈ 0.4k · 10 ≈ 1.5k · 18 ≈ 5.0k · 26 ≈ 13.9k ·
-  34 ≈ 39.7k · 40 ≈ 130k (1.5×).
+- Three explicit budget tables (**Balanced / Boosted / Cheater**), stored contiguously
+  in `trp_cstm_inventory_values` (64 entries each — slot = `level + tier * 64`).
+  Written at game start and re-written by the save-fix trigger so boot and load agree.
+- Band table `EQUIPMENT_FUNDS_BANDS`: levels 1–3, 4–6, 7–9, 10–12, 13–15, 16–18,
+  19–21, 22–24, 25–27, 28–30, 31–34, 35–40. Levels 0 and 41–63 clamp to the
+  first / last band.
+- Boosted = Balanced × 1.5; Cheater = Balanced × 3, **capped at 60000** for 35–40.
+- Key budgets (Balanced): L3 = 110 · L6 = 472 · L9 = 970 · L12 = 1807 ·
+  L15 = 2116 · L18 = 3010 · L21 = 3942 · L24 = 7613 · L27 = 9668 ·
+  L30 = 11702 · L34 = 17887 · L40 = 20000 (Boosted ×1.5, Cheater ×3, cap 60k).
+- Tier is selected by the `kct_funds_tier` mod option; **Balanced is the default**.
 - Item cost = item value + (modifier cost ÷ `CSTM_IMOD_COST_DIVISOR`).
 - **Known balance issue (2nd iteration):** low tiers end up starved of gold while
   high tiers have gold to throw. Rebalance is deferred, not dropped.
@@ -138,7 +143,7 @@ Uniform role-based ladder for preset 4 (no power tradeoff between presets):
 - **Deterministic rebuild on load** (simple trigger, interval 0): re-apply the
   slot data to the troop after every load. No marker item, no "did inventories
   reset?" detection, no hero-dummy copy/restore.
-- Remove the current `fix_operations` / `$g_cstm_save_fix_applied` one-shot hacks
+- Remove the current `fix_operations` / `$g_cstm_save_fix_applied_2` one-shot hacks
   (`custom_troops_simple_triggers.py`) and `trp_cstm_load_check`.
 - Exact slot layout and name handling are confirmed one-by-one during implementation.
 
@@ -174,5 +179,5 @@ Uniform role-based ladder for preset 4 (no power tradeoff between presets):
 5. Preset export → txt file → import round-trips the whole tree (branch type,
    progression, per-troop name/stats/skills/proficiencies/equipment with modifiers).
 6. Customisation persists across save → load without marker item or dummy restore.
-7. Gold budgets unified at 1.5× (boot-time and load-restore agree).
+7. Gold budgets use the 3-tier table (Balanced/Boosted/Cheater, cap 60k) and boot-time + load-restore agree.
 8. No save-game regressions from changed entity ordering.
