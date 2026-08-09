@@ -148,7 +148,7 @@ new_presentations = [
 			(assign, "$cstm_finalise_button", -1),
 			
 			(try_for_range, ":custom_troop", cstm_troops_begin, cstm_troops_end),
-				(call_script, "script_cstm_troop_refresh_name", ":custom_troop"),
+				(call_script, "script_cstm_replace_custom_troop_with_dummy", ":custom_troop"),
 			(try_end),
 			
 			## TITLE

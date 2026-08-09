@@ -20,24 +20,17 @@ para que un agente builder pueda empezar.
    (las imágenes se dibujan proceduralmente con `script_cstm_create_troop_tree_images`;
    no se usan assets externos).
 3. Debajo, un botón de **elegir**.
-4. Una vez hecho esto, **no hay vuelta atrás**.
+4. Acá existirá la **optión de importar** una plantilla de árbol (archivo `.json` o `.wsearray`) que  será cargada en la presentación de asignación de valores. Esto permite que el jugador pueda rápidamente cargar un árbol que ya haya definido previamente, sin tener que volver a definirlo desde cero.
 
 ## Presentación del árbol
 
-- La presentación tiene el **árbol de ramas** y **botones arriba a la derecha: importar / exportar**.
-- El jugador puede **importar plantillas** definidas en la carpeta donde está guardada
-  la partida. Al cargar, la rama debe actualizarse con lo cargado.
-- **Se guarda automáticamente al salir de la presentación.** Puede que sea necesario
-  guardar para arreglar el bug existente de cargar partida (cuando cargas la partida,
-  las tropas no están inicializadas).
-
+- La presentación tiene el **árbol de ramas** con sus dummies y labels, un input en el que se establece el pre fijo de tropas, y debajo un botón de **exportar** que sirvará para guardar el árbol externamente, además de un botón en la parte superior derecha para salir de la presentación.
+- **Se guarda automáticamente al salir de la presentación.**
 ## Asignación de valores
 
 - Una vez definido el árbol, si no cargaste una plantilla, se va **tropa por tropa
-  asignando valores** (la presentación de asignación de valores ya está construida).
-- Solo tiene un cambio: **pericia de arma** — en vez de libertad, unos selectores
-  que permiten hacerlo automáticamente.
-- Pendiente a revisar: la regla de dominio de armas (weapon master) y cómo afecta esto.
+  asignando valores**
+- Limites : no se puede tener  una tropa padre con un valor menor que la suma de sus tropas hijas. Esto se valida en tiempo real y se muestra un mensaje de error si se intenta asignar un valor que viole esta regla.
 
 ---
 
