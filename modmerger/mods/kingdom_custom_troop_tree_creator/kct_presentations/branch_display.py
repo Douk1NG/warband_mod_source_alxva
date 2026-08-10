@@ -184,12 +184,7 @@ def _build_create_load_ops():
 	ops.append((call_script, "script_kct_replace_custom_troop_with_dummy", ":custom_troop"))
 	ops.append((try_end,))
 
-	## TITLE
-	ops.append((str_store_faction_name, s0, "fac_player_supporters_faction"))
-	ops.append((str_store_string, s0, "@{s0} Troop Tree"))
-	ops.append((call_script, "script_kct_create_text_overlay", "str_s0", CSTM_TREE_TITLE_POS_X, CSTM_TREE_TITLE_POS_Y, CSTM_TREE_TITLE_SIZE, 900, 50, tf_left_align))
-
-	## PREFIX
+	## PREFIX (also the tree name - Export saves the tree as <prefix>.json)
 	ops.append((str_store_string, s0, "@Prefix: "))
 	ops.append((call_script, "script_kct_create_text_overlay", "str_s0", CSTM_PREFIX_LABEL_POS_X, CSTM_PREFIX_POS_Y, 1000, CSTM_PREFIX_LABEL_WIDTH, 50, tf_left_align))
 	ops.append((str_store_troop_name, s0, cstm_troop_tree_prefix))
@@ -208,6 +203,12 @@ def _build_create_load_ops():
 	ops.append((store_div, ":offset_x", 1000 - (CSTM_TREE_POS_X + CSTM_TREE_X_RIGHT_PADDING), ":num_splits"))
 	ops.append((call_script, "script_kct_create_troop_tree_images", "$cstm_troops_begin", CSTM_TREE_POS_X, CSTM_TREE_POS_Y, ":offset_x", CSTM_TREE_Y_OFFSET, 0))
 	ops.append((try_end,))
+
+	## EXPORT BUTTON (saves the tree directly with auto-slot assignment:
+	## overwrites a slot with the same name, else the first empty slot)
+	ops.append((str_store_string, s0, "@Export"))
+	ops.append((call_script, "script_kct_create_game_button_overlay", "str_s0", CSTM_EXPORT_BUTTON_POS[0], CSTM_EXPORT_BUTTON_POS[1]))
+	ops.append((assign, "$kct_export_tree_button", reg1))
 
 	## EXIT BUTTON
 	ops.append((str_store_string, s0, "@Exit"))
@@ -286,6 +287,12 @@ def _build_create_event_ops():
 			## PREFIX CHANGED
 			(eq, ":object", "$cstm_set_prefix"),
 			(troop_set_name, cstm_troop_tree_prefix, s0),
+			(start_presentation, "prsnt_cstm_create_troop_tree"),
+		(else_try,),
+			## EXPORT BUTTON PRESSED - save the tree directly (auto slot: match
+			## name, else first empty) and stay in the creator
+			(eq, ":object", "$kct_export_tree_button"),
+			(call_script, "script_kct_save_tree_to_slot"),
 			(start_presentation, "prsnt_cstm_create_troop_tree"),
 	]
 	# TEMP P4 drag tools: SNAPSHOT - log every label's current (dx, dy), ready to

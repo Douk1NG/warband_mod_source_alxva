@@ -74,7 +74,7 @@ GENDER_COMBO_POS = (810, 660)
 # custom_troops_presentations (prsnt_cstm_view_custom_troop_tree).
 CSTM_TREE_TITLE_SIZE = 2000
 CSTM_TREE_TITLE_POS_X = 50
-CSTM_TREE_TITLE_POS_Y = 650
+CSTM_TREE_TITLE_POS_Y = 690
 
 CSTM_TREE_POS_X = 100
 CSTM_TREE_POS_Y = 75
@@ -84,7 +84,11 @@ CSTM_TREE_Y_OFFSET = 145
 
 CSTM_PREFIX_LABEL_POS_X = CSTM_TREE_TITLE_POS_X
 CSTM_PREFIX_LABEL_WIDTH = 75
-CSTM_PREFIX_POS_Y = 590
+CSTM_PREFIX_POS_Y = 660
+
+# Export button: swapped with the prefix input (Export sits at the prefix's old
+# height, the prefix input now sits at the export's old height, both x=125).
+CSTM_EXPORT_BUTTON_POS = (CSTM_PREFIX_LABEL_POS_X + CSTM_PREFIX_LABEL_WIDTH, 590)
 
 CSTM_BUTTONS_POS_X = 800
 CSTM_BUTTONS_POS_Y = 685
@@ -312,9 +316,9 @@ P4_LABEL_MANUAL = {
 	16: (281, 97),
 	17: (283, 197),
 	18: (285, 316),
-	19: (423, -204),
-	20: (426, 4),
-	21: (427, 316),
+	19: (423, -224),
+	20: (426, -16),
+	21: (427, 296),
 }
 
 # TEMP P4 drag tools: two tuning tools (dummy portraits + name labels) share the

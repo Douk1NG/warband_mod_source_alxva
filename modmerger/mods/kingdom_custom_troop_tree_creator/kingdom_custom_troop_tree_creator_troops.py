@@ -75,3 +75,4 @@ def modmerge(var_set):
 				upgrade(orig_troops, base, ids[(skin_id, children[0])])
 			else:
 				upgrade2(orig_troops, base, ids[(skin_id, children[0])], ids[(skin_id, children[1])])
+

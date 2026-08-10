@@ -76,3 +76,10 @@ cstm_slot_troop_inherited = 528
 # The troop whose name is used to store the custom troop tree prefix string
 # (mirrors cstm_troop_tree_prefix in custom_troops_constants).
 cstm_troop_tree_prefix = "trp_cstm_custom_troops_end"
+
+# Save-slot registry shared by the creator's Export (auto-slot assignment) and
+# the manage screen (prsnt_kct_manage_tree_files): kct_tree_slot_count numbered
+# slots, each holding a saved tree's name (empty string = free). The name->file
+# mapping lives in kct_tree_registry_file ("kct_trees.json").
+kct_tree_slot_count = 8
+kct_tree_registry_file = "@kct_trees"

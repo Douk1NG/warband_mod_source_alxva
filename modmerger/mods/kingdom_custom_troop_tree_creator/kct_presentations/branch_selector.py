@@ -47,6 +47,17 @@ def _build_load_ops():
 		pos = _preset_4_positions() if i == 3 else None
 		ops.extend(_draw_tree_ops(tiers, edges, label_fn, pos))
 	ops.append((try_end,))
+	# Tree name (= the kingdom troop prefix) defaults to "Custom" until the
+	# player names/imports a tree via the Save/Load screen (Import button).
+	ops.append((str_store_troop_name, s0, cstm_troop_tree_prefix))
+	ops.append((try_begin,))
+	ops.append((str_is_empty, s0))
+	ops.append((str_store_string, s0, "@Custom"))
+	ops.append((troop_set_name, cstm_troop_tree_prefix, s0))
+	ops.append((try_end,))
+	ops.append((str_store_string, s0, "@Import"))
+	ops.append((call_script, "script_kct_create_game_button_overlay", "str_s0", 880, 110))
+	ops.append((assign, "$kct_import_tree_button", reg1))
 	# Choose + Exit buttons
 	ops.append((str_store_string, s0, "@Choose"))
 	ops.append((call_script, "script_kct_create_game_button_overlay", "str_s0", 880, 50))
@@ -79,9 +90,12 @@ def _build_event_ops():
 		(else_try,),
 			(eq, ":object", "$cstm_choose_tree_button"),
 			(assign, "$cstm_selected_tree", "$cstm_tree_preview_index"),
-			# Set the kingdom troop tree prefix (like the working mod does on entry)
-			(troop_set_name, cstm_troop_tree_prefix, "@Custom"),
+			# Tree name = the prefix (set on the Save/Load screen)
 			(start_presentation, "prsnt_cstm_create_troop_tree"),
+		(else_try,),
+			(eq, ":object", "$kct_import_tree_button"),
+			(assign, "$kct_manage_from_picker", 1),
+			(start_presentation, "prsnt_kct_manage_tree_files"),
 		(else_try,),
 			(eq, ":object", "$cstm_choose_tree_exit"),
 			(change_screen_return),

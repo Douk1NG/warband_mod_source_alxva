@@ -7,6 +7,7 @@
 from kingdom_custom_troop_tree_creator.kct_presentations.branch_selector import new_presentation
 from kingdom_custom_troop_tree_creator.kct_presentations.branch_display import new_create_presentation
 from kingdom_custom_troop_tree_creator.kct_presentations.troop_editor import new_customise_presentation
+from kingdom_custom_troop_tree_creator.kct_presentations.tree_files import new_manage_presentation
 
 
 def modmerge(var_set):
@@ -18,3 +19,4 @@ def modmerge(var_set):
 	orig_presentations.append(new_presentation)
 	orig_presentations.append(new_create_presentation)
 	orig_presentations.append(new_customise_presentation)
+	orig_presentations.append(new_manage_presentation)
