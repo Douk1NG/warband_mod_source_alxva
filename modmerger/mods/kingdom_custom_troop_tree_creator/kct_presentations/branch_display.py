@@ -55,6 +55,10 @@ def _build_create_setup_ops():
 			ops.append((assign, "$cstm_troops_begin", begin))
 			ops.append((assign, "$cstm_troops_end", end))
 			ops.append((assign, "$cstm_presentation_troop", "trp_cstm_presentation_troop_%d" % s))
+			# Reinforcement party templates for AI lord/garrison recruitment (3
+			# consecutive templates _a/_b/_c per tree+skin, end is exclusive).
+			ops.append((assign, "$cstm_reinforcement_templates_begin", "pt_cstm_kingdom_player_%s_%d_reinforcements_a" % (tree_id, s)))
+			ops.append((store_add, "$cstm_reinforcement_templates_end", "$cstm_reinforcement_templates_begin", 3))
 		ops.append((try_end,))
 	# Preset 4 (6 tiers)
 	ops.append((else_try,))
@@ -68,8 +72,34 @@ def _build_create_setup_ops():
 		ops.append((assign, "$cstm_troops_begin", begin))
 		ops.append((assign, "$cstm_troops_end", end))
 		ops.append((assign, "$cstm_presentation_troop", "trp_cstm_presentation_troop_%d" % s))
+		# Reinforcement party templates for AI lord/garrison recruitment (3
+		# consecutive templates _a/_b/_c per skin, end is exclusive).
+		ops.append((assign, "$cstm_reinforcement_templates_begin", "pt_cstm_kingdom_player_4_%d_reinforcements_a" % s))
+		ops.append((store_add, "$cstm_reinforcement_templates_end", "$cstm_reinforcement_templates_begin", 3))
 	ops.append((try_end,))
 	ops.append((try_end,))
+	# The side-effect wiring (recruit troop as the culture's tier-1 + refresh
+	# every player-faction centre's culture/volunteers) lives in its own helper
+	# so the presentation can re-apply it from a Save button too.
+	ops.extend(_build_apply_kingdom_setup_ops())
+	return ops
+
+def _build_apply_kingdom_setup_ops():
+	# Make the recruit troop the culture's tier-1 troop so native village
+	# recruitment (script_update_volunteer_troops_in_village) can produce the
+	# custom troops, then re-run script_cstm_center_set_culture for every
+	# player-faction walled centre (it recurses into the bound villages and
+	# refreshes volunteers). This is needed because fiefs captured before the
+	# tree was chosen kept their original culture - the base mod only switches
+	# to fac_culture_player when $cstm_troops_begin is already set.
+	ops = [
+		(faction_set_slot, "fac_culture_player", slot_faction_tier_1_troop, "$cstm_troops_begin"),
+		(try_for_range, ":center", walled_centers_begin, walled_centers_end),
+		(store_faction_of_party, ":fac", ":center"),
+		(eq, ":fac", "fac_player_supporters_faction"),
+		(call_script, "script_cstm_center_set_culture", ":center", "fac_culture_player"),
+		(try_end,),
+	]
 	return ops
 
 def _build_preset4_viewer_ops():
@@ -210,13 +240,11 @@ def _build_create_load_ops():
 	ops.append((call_script, "script_kct_create_game_button_overlay", "str_s0", CSTM_EXPORT_BUTTON_POS[0], CSTM_EXPORT_BUTTON_POS[1]))
 	ops.append((assign, "$kct_export_tree_button", reg1))
 
-	## EXIT BUTTON
-	ops.append((str_store_string, s0, "@Exit"))
-	ops.append((call_script, "script_kct_create_game_button_overlay", "str_s0", CSTM_BUTTONS_POS_X + CSTM_BUTTONS_SIZE_X + CSTM_BUTTONS_GAP - 50, CSTM_BUTTONS_POS_Y - 10))
-	ops.append((assign, "$cstm_customise_troop_exit", reg1))
-	ops.append((position_set_x, pos1, 100))
-	ops.append((position_set_y, pos1, 50))
-	ops.append((overlay_set_size, "$cstm_customise_troop_exit", pos1))
+	## SAVE BUTTON (persists the tree and applies the kingdom wiring: recruit
+	## troop as the culture's tier-1 + refresh village cultures/volunteers)
+	ops.append((str_store_string, s0, "@Save"))
+	ops.append((call_script, "script_kct_create_game_button_overlay", "str_s0", CSTM_BUTTONS_POS_X - 50, CSTM_BUTTONS_POS_Y - 10))
+	ops.append((assign, "$kct_apply_tree_button", reg1))
 
 	## TEMP P4 drag tools: SNAPSHOT buttons + live readouts (remove with the
 	## tools). Both tools are disabled (ENABLE_DUMMY_TOOL / ENABLE_LABEL_TOOL) -
@@ -294,6 +322,21 @@ def _build_create_event_ops():
 			(eq, ":object", "$kct_export_tree_button"),
 			(call_script, "script_kct_save_tree_to_slot"),
 			(start_presentation, "prsnt_cstm_create_troop_tree"),
+		(else_try,),
+			## SAVE BUTTON PRESSED - apply the kingdom wiring (recruit troop as
+			## the culture's tier-1, re-set village cultures and refresh
+			## volunteers for every player-faction centre). This does NOT write
+			## the export template file - that is the Export button's job.
+			(eq, ":object", "$kct_apply_tree_button"),
+			(faction_set_slot, "fac_culture_player", slot_faction_tier_1_troop, "$cstm_troops_begin"),
+			(try_for_range, ":center", walled_centers_begin, walled_centers_end),
+				(store_faction_of_party, ":fac", ":center"),
+				(eq, ":fac", "fac_player_supporters_faction"),
+				(call_script, "script_cstm_center_set_culture", ":center", "fac_culture_player"),
+			(try_end,),
+			(display_message, "@Kingdom recruitment updated."),
+			(change_screen_return),
+			(presentation_set_duration, 0),
 	]
 	# TEMP P4 drag tools: SNAPSHOT - log every label's current (dx, dy), ready to
 	# paste into P4_LABEL_MANUAL. Each block MUST open its own else_try branch (a
@@ -307,9 +350,6 @@ def _build_create_event_ops():
 	if ENABLE_LABEL_TOOL:
 		ops.append((else_try,))
 		ops.extend(p4_label_tool.snapshot_event_ops("P4 LABEL SNAPSHOT - paste into P4_LABEL_MANUAL:"))
-	ops.append((else_try,))
-	ops.append((eq, ":object", "$cstm_customise_troop_exit"))
-	ops.append((start_presentation, "prsnt_cstm_choose_troop_tree"))
 	ops.append((try_end,))
 	return ops
 

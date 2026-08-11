@@ -1013,6 +1013,44 @@ TROOP_EDITOR_SCRIPTS = [
 		(eq, ":has_bow_or_crossbow", 1),
 	]),
 
+# script_kct_apply_troop_class
+	("kct_apply_troop_class",
+	[
+		(store_script_param, ":troop", 1),
+		(store_script_param, ":dummy", 2),
+		(store_script_param, ":override", 3),
+		
+		(try_begin),
+			(eq, ":override", 1),
+			
+			(troop_set_class, ":troop", grc_infantry),
+			(troop_set_class, ":dummy", grc_infantry),
+		(else_try),
+			(eq, ":override", 2),
+			
+			(troop_set_class, ":troop", grc_cavalry),
+			(troop_set_class, ":dummy", grc_cavalry),
+		(else_try),
+			(eq, ":override", 3),
+			
+			(troop_set_class, ":troop", grc_archers),
+			(troop_set_class, ":dummy", grc_archers),
+		(else_try),
+			(call_script, "script_kct_cf_troop_has_horse", ":dummy"),
+			
+			(troop_set_class, ":troop", grc_cavalry),
+			(troop_set_class, ":dummy", grc_cavalry),
+		(else_try),
+			(call_script, "script_kct_cf_troop_has_bow_or_crossbow", ":dummy"),
+			
+			(troop_set_class, ":troop", grc_archers),
+			(troop_set_class, ":dummy", grc_archers),
+		(else_try),
+			(troop_set_class, ":troop", grc_infantry),
+			(troop_set_class, ":dummy", grc_infantry),
+		(try_end),
+	]),
+
 # script_kct_troop_copy_stats
 	("kct_troop_copy_stats",
 	[

@@ -159,6 +159,11 @@ TREE_IO_SCRIPTS = [
 			(troop_get_slot, ":val", ":troop", cstm_slot_troop_configured),
 			(dict_set_int, "$kct_export_dict", s1, ":val"),
 
+			(assign, reg0, ":index"),
+			(str_store_string, s1, "@t{reg0}_cls"),
+			(troop_get_slot, ":val", ":troop", cstm_slot_troop_class_override),
+			(dict_set_int, "$kct_export_dict", s1, ":val"),
+
 			(val_add, ":index", 1),
 		(try_end,),
 
@@ -336,6 +341,11 @@ TREE_IO_SCRIPTS = [
 					(str_store_string, s1, "@t{reg0}_conf"),
 					(dict_get_int, ":conf", "$kct_import_dict", s1, 0),
 					(troop_set_slot, ":troop", cstm_slot_troop_configured, ":conf"),
+
+					(assign, reg0, ":index"),
+					(str_store_string, s1, "@t{reg0}_cls"),
+					(dict_get_int, ":cls", "$kct_import_dict", s1, 0),
+					(troop_set_slot, ":troop", cstm_slot_troop_class_override, ":cls"),
 
 					(call_script, "script_kct_copy_custom_troop_to_dummy", ":troop"),
 					(call_script, "script_kct_replace_custom_troop_with_dummy", ":troop"),

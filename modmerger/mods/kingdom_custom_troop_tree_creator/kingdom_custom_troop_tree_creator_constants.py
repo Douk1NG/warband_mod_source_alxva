@@ -73,6 +73,13 @@ cstm_slot_troop_proficiency_bonus = 532
 #      Save/Reset only reflect real user edits and the snapshot never wipes them.
 cstm_slot_troop_inherited = 528
 
+# 533 = troop class override chosen in the store's Class selector
+#      (0 = Auto / game-derived, 1 = grc_infantry, 2 = grc_cavalry, 3 = grc_archers).
+#      Persisted on the real troop so the class survives game loads (re-applied
+#      by the KCT start ops) and template export/import. Slot 533 is free: the
+#      base mod's allocator ends at 519 and the KCT slots above use 520/528/531/532.
+cstm_slot_troop_class_override = 533
+
 # The troop whose name is used to store the custom troop tree prefix string
 # (mirrors cstm_troop_tree_prefix in custom_troops_constants).
 cstm_troop_tree_prefix = "trp_cstm_custom_troops_end"

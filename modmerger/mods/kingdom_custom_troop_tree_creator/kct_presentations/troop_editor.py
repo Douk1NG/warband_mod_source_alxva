@@ -28,6 +28,7 @@ kct_customise_core = (
 			(assign, "$cstm_customise_troop_save", -1),
 			(assign, "$cstm_customise_troop_reset", -1),
 			(assign, "$cstm_customise_troop_exit", -1),
+			(assign, "$cstm_class_selector", -1),
 			(troop_get_slot, "$cstm_item_type_selected", "$cstm_items_array", cstm_slot_array_item_type),
 			(try_for_range, ":overlay_id", 0, 9999),
 				(troop_set_slot, "trp_cstm_overlay_items", ":overlay_id", -1),
@@ -122,6 +123,16 @@ kct_customise_core = (
 				(troop_set_slot, ":dummy", cstm_slot_troop_inherited, 1),
 			(try_end,),
 			
+			# Capture the persisted class override once per FRESH entry (the
+			# $g_kct_recalc_baseline flag is still 1 here) so Reset can revert the
+			# Class selector to what was saved. Internal reloads (box edits, Reset)
+			# leave the flag clear and never overwrite it.
+			(try_begin),
+				(eq, "$g_kct_recalc_baseline", 1),
+				(troop_get_slot, "$cstm_class_override_original", "$cstm_troop_being_customised", cstm_slot_troop_class_override),
+				(assign, "$cstm_class_changed", 0),
+			(try_end),
+
 			# Consume the fresh-entry flag on every store load (configured units
 			# included) so internal reloads never re-derive mid-edit.
 			(assign, "$g_kct_recalc_baseline", 0),
@@ -288,12 +299,12 @@ kct_customise_core = (
 			(store_character_level, reg0, "$cstm_troop_being_customised"),
 			(store_troop_health, reg1, "$cstm_troop_being_customised", 1),
 			(str_store_string, s0, "@Level {reg0}    HP {reg1}"),
-      (call_script, "script_kct_create_text_overlay", "str_s0", 0, KCT_STATS_GAP_Y * 3 + KCT_STATS_ATTR_SECTION_HEIGHT + KCT_STATS_SKL_SECTION_HEIGHT + KCT_STATS_PROF_SECTION_HEIGHT, KCT_STATS_SKL_TEXT_SIZE, KCT_STATS_SIZE_X, 50, tf_left_align),
+      (call_script, "script_kct_create_text_overlay", "str_s0", 0, KCT_STATS_GAP_Y * 3 + KCT_STATS_ATTR_SECTION_HEIGHT + KCT_STATS_SKL_SECTION_HEIGHT + KCT_STATS_PROF_SECTION_HEIGHT + KCT_CLASS_SECTION_HEIGHT, KCT_STATS_SKL_TEXT_SIZE, KCT_STATS_SIZE_X, 50, tf_left_align),
 			
 			(try_for_range, ":attribute", attributes_begin, ca_intelligence + 1),
 			(call_script, "script_kct_get_grid_position", ":attribute", 3, KCT_STATS_ATTR_CONT_WIDTH, KCT_STATS_ATTR_COL_WIDTH, KCT_STATS_ATTR_ROW_HEIGHT),
 			(assign, ":pos_x", reg0),
-			(store_add, ":pos_y", reg1, KCT_STATS_PROF_SECTION_HEIGHT + KCT_STATS_SKL_SECTION_HEIGHT + KCT_STATS_GAP_Y * 2),
+			(store_add, ":pos_y", reg1, KCT_STATS_PROF_SECTION_HEIGHT + KCT_STATS_SKL_SECTION_HEIGHT + KCT_STATS_GAP_Y * 2 + KCT_CLASS_SECTION_HEIGHT),
 				
 				(store_add, ":attribute_string", cstm_attribute_strings_begin, ":attribute"),
 				(str_store_string, s0, ":attribute_string"),
@@ -345,7 +356,7 @@ kct_customise_core = (
 			# Attribute points (glued to the attributes section above)
 			(call_script, "script_kct_get_attribute_points_available", ":dummy"),
 			(str_store_string, s0, "@Attribute points: {reg0}"),
-			(call_script, "script_kct_create_text_overlay", "str_s0", 0, KCT_STATS_PROF_SECTION_HEIGHT + KCT_STATS_SKL_SECTION_HEIGHT + KCT_STATS_GAP_Y * 2 + KCT_STATS_ATTR_ROW_HEIGHT, KCT_STATS_POINTS_TEXT_SIZE, KCT_STATS_POINTS_COL_WIDTH, KCT_STATS_POINTS_ROW_HEIGHT, tf_left_align),
+			(call_script, "script_kct_create_text_overlay", "str_s0", 0, KCT_STATS_PROF_SECTION_HEIGHT + KCT_STATS_SKL_SECTION_HEIGHT + KCT_STATS_GAP_Y * 2 + KCT_STATS_ATTR_ROW_HEIGHT + KCT_CLASS_SECTION_HEIGHT, KCT_STATS_POINTS_TEXT_SIZE, KCT_STATS_POINTS_COL_WIDTH, KCT_STATS_POINTS_ROW_HEIGHT, tf_left_align),
 			
 			# Proficiency section: "Proficiency points: {reg0}" label on top,
 			# then one number box per weapon type in a 2-column grid below. The
@@ -355,12 +366,12 @@ kct_customise_core = (
 			# CSTM_WP_CAP_LEVELS_PER_WM*WM + CSTM_WP_CAP_ADDITIONAL.
 			(call_script, "script_kct_get_proficiency_points_available", ":dummy"),
 			(str_store_string, s0, "@Proficiency points: {reg0}"),
-			(call_script, "script_kct_create_text_overlay", "str_s0", 0, KCT_STATS_PROF_SECTION_HEIGHT - KCT_STATS_PROF_POINTS_ROW_HEIGHT, KCT_STATS_POINTS_TEXT_SIZE, KCT_STATS_POINTS_COL_WIDTH * 2, KCT_STATS_PROF_POINTS_ROW_HEIGHT, tf_left_align),
+			(call_script, "script_kct_create_text_overlay", "str_s0", 0, KCT_STATS_PROF_SECTION_HEIGHT - KCT_STATS_PROF_POINTS_ROW_HEIGHT + KCT_CLASS_SECTION_HEIGHT, KCT_STATS_POINTS_TEXT_SIZE, KCT_STATS_POINTS_COL_WIDTH * 2, KCT_STATS_PROF_POINTS_ROW_HEIGHT, tf_left_align),
 			
 			(try_for_range, ":proficiency", proficiencies_begin, proficiencies_end),
 				(call_script, "script_kct_get_grid_position", ":proficiency", proficiencies_end, KCT_STATS_PROF_CONT_WIDTH, KCT_STATS_PROF_COL_WIDTH, KCT_STATS_PROF_ROW_HEIGHT),
 				(assign, ":pos_x", reg0),
-				(assign, ":pos_y", reg1),
+				(store_add, ":pos_y", reg1, KCT_CLASS_SECTION_HEIGHT),
 				
 				(store_add, ":proficiency_string", cstm_proficiency_strings_begin, ":proficiency"),
 				(str_store_string, s0, ":proficiency_string"),
@@ -427,7 +438,29 @@ kct_customise_core = (
       (call_script, "script_kct_create_text_box_overlay", "str_s0", KCT_NAME_POS_X + KCT_NAME_LABEL_WIDTH + KCT_NAME_GAP, KCT_NAME_POS_Y),
       (assign, "$cstm_set_name_plural", reg1),
 			
+			## CLASS SELECTOR (troop class override, bottom-right below the stats panel)
+			# "Auto" keeps the game-derived class computed on Save (cavalry when the
+			# troop has a horse, archers for bow/crossbow, else infantry). The other
+			# options pin the class explicitly. Persisted in the real troop's
+			# cstm_slot_troop_class_override slot so it survives loads/export. A
+			# combo LABEL is used instead of a combo button because the row sits at
+			# the very bottom of the screen (y = 52) - a dropdown would only open
+			# downward, off-screen. Left/right clicks cycle the 4 options.
+			(call_script, "script_kct_create_combo_label_overlay", KCT_CLASS_POS_X, KCT_CLASS_POS_Y),
+			(assign, "$cstm_class_selector", reg1),
+			(str_store_string, s0, "@Auto"),
+			(overlay_add_item, "$cstm_class_selector", s0),
+			(str_store_string, s0, "@Infantry"),
+			(overlay_add_item, "$cstm_class_selector", s0),
+			(str_store_string, s0, "@Cavalry"),
+			(overlay_add_item, "$cstm_class_selector", s0),
+			(str_store_string, s0, "@Archers"),
+			(overlay_add_item, "$cstm_class_selector", s0),
+			(troop_get_slot, ":class_override", "$cstm_troop_being_customised", cstm_slot_troop_class_override),
+			(overlay_set_val, "$cstm_class_selector", ":class_override"),
+			
 			(assign, ":changes_made", "$cstm_name_changed"),
+			(val_add, ":changes_made", "$cstm_class_changed"),
 			(try_begin),
 				(call_script, "script_kct_cf_troop_stats_are_different", "$cstm_troop_being_customised", ":dummy"),
 				
@@ -587,6 +620,14 @@ kct_customise_core = (
 			(try_begin),
 				(key_clicked, key_escape),
 				
+				(try_begin),
+					(eq, "$cstm_class_changed", 1),
+					
+					(troop_set_slot, "$cstm_troop_being_customised", cstm_slot_troop_class_override, "$cstm_class_override_original"),
+					(troop_get_slot, ":dummy", "$cstm_troop_being_customised", cstm_slot_troop_dummy),
+					(call_script, "script_kct_apply_troop_class", "$cstm_troop_being_customised", ":dummy", "$cstm_class_override_original"),
+				(try_end),
+				
 				(presentation_set_duration, 0),
 			(try_end),
 		]),
@@ -644,6 +685,17 @@ kct_customise_core = (
 				(assign, "$cstm_item_page_no", ":value"),
 				(start_presentation, "prsnt_kct_customise_troop"),
 			(else_try),
+				## CLASS SELECTOR CHANGED - persist the override on the real troop
+				## and immediately apply the class to the dummy so the portrait
+				## and Save logic both see it. 0 = Auto (derived on Save).
+				(eq, ":object", "$cstm_class_selector"),
+				
+				(troop_set_slot, "$cstm_troop_being_customised", cstm_slot_troop_class_override, ":value"),
+				(call_script, "script_kct_apply_troop_class", "$cstm_troop_being_customised", ":dummy", ":value"),
+				(assign, "$cstm_class_changed", 1),
+				
+				(start_presentation, "prsnt_kct_customise_troop"),
+			(else_try),
 				(troop_slot_eq, "trp_cstm_overlay_is_attribute_box", ":object", 1),
 				(eq, "$cstm_troop_design_locked", 0),
 				
@@ -687,20 +739,13 @@ kct_customise_core = (
 					(troop_set_slot, "$cstm_troop_being_customised", cstm_slot_troop_equipment_modified, 1),
 				(try_end),
 				
-				(try_begin),
-					(call_script, "script_kct_cf_troop_has_horse", ":dummy"),
-					
-					(troop_set_class, "$cstm_troop_being_customised", grc_cavalry),
-					(troop_set_class, ":dummy", grc_cavalry),
-				(else_try),
-					(call_script, "script_kct_cf_troop_has_bow_or_crossbow", ":dummy"),
-					
-					(troop_set_class, "$cstm_troop_being_customised", grc_archers),
-					(troop_set_class, ":dummy", grc_archers),
-				(else_try),
-					(troop_set_class, "$cstm_troop_being_customised", grc_infantry),
-					(troop_set_class, ":dummy", grc_infantry),
-				(try_end),
+				## CLASS: honour the store's Class selector override when set
+				## (1 = infantry, 2 = cavalry, 3 = archers); otherwise derive from
+				## equipment as before (horse -> cavalry, bow/crossbow -> archers,
+				## else infantry).
+				(troop_get_slot, ":class_override", "$cstm_troop_being_customised", cstm_slot_troop_class_override),
+				(call_script, "script_kct_apply_troop_class", "$cstm_troop_being_customised", ":dummy", ":class_override"),
+				(assign, "$cstm_class_changed", 0),
 				
 				(troop_sort_inventory, "$cstm_troop_being_customised"),
 				(troop_equip_items, "$cstm_troop_being_customised"),				
@@ -738,7 +783,11 @@ kct_customise_core = (
 				
 				(display_message, "@Changes discarded"),
 				(assign, "$cstm_name_changed", 0),
+				(assign, "$cstm_class_changed", 0),
+				(troop_set_slot, "$cstm_troop_being_customised", cstm_slot_troop_class_override, "$cstm_class_override_original"),
 				(call_script, "script_kct_copy_custom_troop_to_dummy", "$cstm_troop_being_customised"),
+				(troop_get_slot, ":dummy", "$cstm_troop_being_customised", cstm_slot_troop_dummy),
+				(call_script, "script_kct_apply_troop_class", "$cstm_troop_being_customised", ":dummy", "$cstm_class_override_original"),
 				
 				(str_store_troop_name, s0, "$cstm_presentation_troop"),
 				(troop_set_name, ":dummy", s0),
@@ -748,6 +797,14 @@ kct_customise_core = (
 				(start_presentation, "prsnt_kct_customise_troop"),
 			(else_try),
 				(eq, ":object", "$cstm_customise_troop_exit"),
+				
+				(try_begin),
+					(eq, "$cstm_class_changed", 1),
+					
+					(troop_set_slot, "$cstm_troop_being_customised", cstm_slot_troop_class_override, "$cstm_class_override_original"),
+					(troop_get_slot, ":dummy", "$cstm_troop_being_customised", cstm_slot_troop_dummy),
+					(call_script, "script_kct_apply_troop_class", "$cstm_troop_being_customised", ":dummy", "$cstm_class_override_original"),
+				(try_end),
 				
 				(assign, "$cstm_item_modifier_selected", 0),
 				(assign, "$cstm_item_page_no", 0),
@@ -792,7 +849,7 @@ for skill in ACTIVE_FIGHTING_SKILLS[::-1]:
 	_kct_customise_load.extend([
 		(call_script, "script_kct_get_grid_position", skill_index, len(ACTIVE_FIGHTING_SKILLS), KCT_STATS_SKL_CONT_WIDTH, KCT_STATS_SKL_COL_WIDTH, KCT_STATS_SKL_ROW_HEIGHT),
 		(assign, ":pos_x", reg0),
-		(store_add, ":pos_y", reg1, KCT_STATS_GAP_Y + KCT_STATS_PROF_SECTION_HEIGHT),
+		(store_add, ":pos_y", reg1, KCT_STATS_GAP_Y + KCT_STATS_PROF_SECTION_HEIGHT + KCT_CLASS_SECTION_HEIGHT),
 		
 		(call_script, "script_kct_print_skill_to_s0", skill_ref),
 		(call_script, "script_kct_create_text_overlay", "str_s0", ":pos_x", ":pos_y", KCT_STATS_SKL_TEXT_SIZE, KCT_STATS_SKL_COL_WIDTH, KCT_STATS_SKL_ROW_HEIGHT, tf_left_align),
@@ -857,7 +914,7 @@ for skill in ACTIVE_FIGHTING_SKILLS[::-1]:
 _kct_customise_load.extend([
 	(call_script, "script_kct_get_skill_points_available", ":dummy"),
 	(str_store_string, s0, "@Skill points: {reg0}"),
-	(call_script, "script_kct_create_text_overlay", "str_s0", 0, KCT_STATS_GAP_Y + KCT_STATS_PROF_SECTION_HEIGHT + KCT_STATS_SKL_GRID_HEIGHT, KCT_STATS_POINTS_TEXT_SIZE, KCT_STATS_POINTS_COL_WIDTH, KCT_STATS_POINTS_ROW_HEIGHT, tf_left_align),
+	(call_script, "script_kct_create_text_overlay", "str_s0", 0, KCT_STATS_GAP_Y + KCT_STATS_PROF_SECTION_HEIGHT + KCT_STATS_SKL_GRID_HEIGHT + KCT_CLASS_SECTION_HEIGHT, KCT_STATS_POINTS_TEXT_SIZE, KCT_STATS_POINTS_COL_WIDTH, KCT_STATS_POINTS_ROW_HEIGHT, tf_left_align),
 	
 	(set_container_overlay, -1),
 ])

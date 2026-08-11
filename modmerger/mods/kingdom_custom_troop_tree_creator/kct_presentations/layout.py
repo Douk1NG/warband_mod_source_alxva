@@ -86,15 +86,13 @@ CSTM_PREFIX_LABEL_POS_X = CSTM_TREE_TITLE_POS_X
 CSTM_PREFIX_LABEL_WIDTH = 75
 CSTM_PREFIX_POS_Y = 660
 
-# Export button: swapped with the prefix input (Export sits at the prefix's old
-# height, the prefix input now sits at the export's old height, both x=125).
-CSTM_EXPORT_BUTTON_POS = (CSTM_PREFIX_LABEL_POS_X + CSTM_PREFIX_LABEL_WIDTH, 590)
-
 CSTM_BUTTONS_POS_X = 800
 CSTM_BUTTONS_POS_Y = 685
 CSTM_BUTTONS_SIZE_X = 100
 CSTM_BUTTONS_SIZE_Y = 30
 CSTM_BUTTONS_GAP = 20
+
+CSTM_EXPORT_BUTTON_POS = (CSTM_BUTTONS_POS_X - 60, CSTM_BUTTONS_POS_Y - 10)
 
 # Preset-4 node portrait size (sits inline with the branch skeleton).
 P4_PORTRAIT_W = 330
@@ -162,6 +160,19 @@ KCT_NAME_POS_X = 40
 KCT_NAME_POS_Y = 685
 KCT_NAME_LABEL_WIDTH = 125
 KCT_NAME_GAP = 340
+
+# Troop class selector: bottom-right of the store, as the LAST row of the stats
+# panel directly below the proficiency section. The stats content (proficiency,
+# skills, attributes, level) is lifted by KCT_CLASS_SECTION_HEIGHT to free this
+# bottom row, which holds just the class combo label and no "Class: " text
+# (0 = Auto / game-derived, 1 = Infantry, 2 = Cavalry, 3 = Archers). A combo
+# LABEL is used (not a combo button) so it cycles on click instead of opening a
+# dropdown - the row sits at the very bottom of the screen (y = 52) where a
+# dropdown would only open downward, off-screen. X = 750 was the original
+# anchor; the combo now sits 20 units to its right (770).
+KCT_CLASS_SECTION_HEIGHT = 60
+KCT_CLASS_POS_X = 770
+KCT_CLASS_POS_Y = KCT_STATS_POS_Y + 52
 
 KCT_BUTTONS_POS_X = 800
 KCT_BUTTONS_POS_Y = KCT_NAME_POS_Y
