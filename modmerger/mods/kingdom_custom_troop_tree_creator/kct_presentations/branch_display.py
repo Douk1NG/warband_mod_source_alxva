@@ -243,7 +243,7 @@ def _build_create_load_ops():
 	## SAVE BUTTON (persists the tree and applies the kingdom wiring: recruit
 	## troop as the culture's tier-1 + refresh village cultures/volunteers)
 	ops.append((str_store_string, s0, "@Save"))
-	ops.append((call_script, "script_kct_create_game_button_overlay", "str_s0", CSTM_BUTTONS_POS_X - 50, CSTM_BUTTONS_POS_Y - 10))
+	ops.append((call_script, "script_kct_create_game_button_overlay", "str_s0", CSTM_BUTTONS_POS_X + 100, CSTM_BUTTONS_POS_Y - 10))
 	ops.append((assign, "$kct_apply_tree_button", reg1))
 
 	## TEMP P4 drag tools: SNAPSHOT buttons + live readouts (remove with the
@@ -325,8 +325,11 @@ def _build_create_event_ops():
 		(else_try,),
 			## SAVE BUTTON PRESSED - apply the kingdom wiring (recruit troop as
 			## the culture's tier-1, re-set village cultures and refresh
-			## volunteers for every player-faction centre). This does NOT write
-			## the export template file - that is the Export button's job.
+			## volunteers for every player-faction centre, and point every guard
+			## site at the custom tree). This does NOT write the export template
+			## file - that is the Export button's job. The guard-slot write is
+			## deliberately bound to this Save event (never automatic), so no
+			## tree saved = native guards untouched.
 			(eq, ":object", "$kct_apply_tree_button"),
 			(faction_set_slot, "fac_culture_player", slot_faction_tier_1_troop, "$cstm_troops_begin"),
 			(try_for_range, ":center", walled_centers_begin, walled_centers_end),
@@ -334,6 +337,7 @@ def _build_create_event_ops():
 				(eq, ":fac", "fac_player_supporters_faction"),
 				(call_script, "script_cstm_center_set_culture", ":center", "fac_culture_player"),
 			(try_end,),
+			(call_script, "script_kct_apply_guard_replacements"),
 			(display_message, "@Kingdom recruitment updated."),
 			(change_screen_return),
 			(presentation_set_duration, 0),

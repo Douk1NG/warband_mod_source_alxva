@@ -42,3 +42,9 @@ por defecto `array_save_file` / `array_load_file` guardan en
 `.wsedict` y `.json`. **No** es la carpeta de la partida
 (`Documents\Mount&Blade Warband Savegames\<módulo>\`). La carpeta real se puede fijar
 vía `storage_path` en `wse_settings.ini`. Decisión de diseño pendiente del usuario.
+
+
+
+bugs to review
+guards in city/town
+script to update kingdom troops

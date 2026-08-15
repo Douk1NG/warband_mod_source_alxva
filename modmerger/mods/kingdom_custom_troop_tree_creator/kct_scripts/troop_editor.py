@@ -1810,6 +1810,13 @@ TROOP_EDITOR_SCRIPTS = [
 		(troop_sort_inventory, ":custom_troop"),
 		(troop_equip_items, ":custom_troop"),
 		
+		## CLASS: the class is a runtime value the engine resets to infantry on
+		## every load, so re-apply the persisted class override (slot 533) after
+		## the dummy->real restore. 0 = Auto re-derives from the dummy's equipment
+		## (horse -> cavalry, bow/crossbow -> archers, else infantry).
+		(troop_get_slot, ":class_override", ":custom_troop", cstm_slot_troop_class_override),
+		(call_script, "script_kct_apply_troop_class", ":custom_troop", ":dummy", ":class_override"),
+		
 	]),
 
 # script_kct_get_grid_position

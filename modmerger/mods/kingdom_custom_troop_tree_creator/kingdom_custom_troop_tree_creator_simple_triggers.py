@@ -56,19 +56,30 @@ for skin_id in (0, 1):
 	for node_index in xrange(len(PRESET_4_UNITS)):
 		real_id = "trp_" + preset_4_troop_id(skin_id, node_index)
 		new_load_operations.extend([
-			(try_begin),
+			(try_begin,),
 				(troop_get_slot, ":dummy", real_id, cstm_slot_troop_dummy),
 				(gt, ":dummy", 0),
 				(call_script, "script_kct_replace_custom_troop_with_dummy", real_id),
-			(try_end),
+			(try_end,),
 		])
+
+# Heal the native kingdoms' guard-site faction slots (guard, castle guard,
+# prison) on every load. Earlier dev builds polluted some native kingdoms'
+# slots with the tree's weakest troop, and the old gated block never healed
+# them (its ge gate compared a RAW global against the ENCODED cstm_troops_begin
+# constant, which is always false). script_kct_restore_native_guards is
+# idempotent - on a clean save the slots already hold native values, so this is
+# a no-op. The apply script is deliberately NOT called here: $cstm_selected_tree
+# / $cstm_selected_gender reset to 0 on load, so it would clobber the saved
+# fac_player_supporters_faction / fac_culture_player slots with the preset-1
+# male tree. Those slots persist correctly in the savegame.
+new_load_operations.append((call_script, "script_kct_restore_native_guards"))
 
 new_simple_triggers = [
 	(0, new_load_operations),
 ]
 
 def modmerge(var_set):
-	print "KCT_DEBUG: modmerge called for simple_triggers, pre len = %d" % len(var_set["simple_triggers"])
 	try:
 		var_name_1 = "simple_triggers"
 		orig_simple_triggers = var_set[var_name_1]
@@ -82,4 +93,3 @@ def modmerge(var_set):
 
 	del orig_simple_triggers[:]
 	orig_simple_triggers.extend([simple_trigger.convert_to_tuple() for simple_trigger in simple_triggers])
-	print "KCT_DEBUG: post len = %d" % len(orig_simple_triggers)

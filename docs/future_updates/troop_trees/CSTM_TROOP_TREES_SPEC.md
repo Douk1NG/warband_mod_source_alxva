@@ -32,10 +32,12 @@ These cannot be worked around and shape the whole design:
 
 - Player picks **one** preset at kingdom creation (`mnu_cstm_choose_troop_tree`),
   once per campaign.
-- **Four presets** this release. Presets 1–3 are the existing trees and stay
-  **exactly as they are** (`custom_troops_constants.py:30-34`); they are not reworked
-  now. We only build **preset 4** (the new one designed here); presets 1–3 get
-  reworked in a 2nd release.
+- **Four presets** this release. All four presets (1–4) are **functionally identical**
+  in every gameplay aspect: gold budgets (§5), equipment filtering, modifier systems,
+  proficiency restrictions, persistence design, and guard/recruitment behavior.
+  The only difference is the **tree structure** (shape of branches and tiers), as
+  detailed below. Presets 1–3 retain their original shapes; preset 4 introduces a
+  new binary-fork structure with quality tiers and superunits.
 - Dynamic branch builder = future option, beyond the four presets.
 
 | Preset | Status | Shape (as shipped) |
@@ -49,17 +51,6 @@ These cannot be worked around and shape the whole design:
 (e.g. "Shieldbreaker", "Line", "Heavy Cavalry"). Sub-branches are simply
 **Unit A / Unit B**; strength is measured by the quality tier `*`.
 
-**Preset 4 structure** (levels in §4):
-
-```
-Recruit (2)
- ├─ Infantry (10) ── Unit A * → ** → *** → **** (superunit)
- │                  └─ Unit B * → ** → ***
- └─ Skirmisher (6) ── Cavalry (10) ── Unit A * → ** → *** → **** (superunit)
-                  │                 └─ Unit B * → ** → ***
-                  └─ Archer (10) ── Unit A * → ** → *** → **** (superunit)
-                                 └─ Unit B * → ** → ***
-```
 
 **Superunits** (`****`):
 - Only in preset 4: one per **Unit A** sub-branch (Infantry A, Cavalry A, Archer A).
@@ -85,7 +76,10 @@ Uniform role-based ladder for preset 4 (no power tradeoff between presets):
 - Three explicit budget tables (**Balanced / Boosted / Cheater**), stored contiguously
   in `trp_cstm_inventory_values` (64 entries each — slot = `level + tier * 64`).
   Written at game start and re-written by the save-fix trigger so boot and load agree.
-- Band table `EQUIPMENT_FUNDS_BANDS`: levels 1–3, 4–6, 7–9, 10–12, 13–15, 16–18,
+  **All four presets (1–4) share the same gold tables** — the tier selection via
+  `kct_funds_tier` mod option and the Balanced/Boosted/Cheater scaling apply
+  identically regardless of which preset is active.
+- Band table `EQQUIPMENT_FUNDS_BANDS`: levels 1–3, 4–6, 7–9, 10–12, 13–15, 16–18,
   19–21, 22–24, 25–27, 28–30, 31–34, 35–40. Levels 0 and 41–63 clamp to the
   first / last band.
 - Boosted = Balanced × 1.5; Cheater = Balanced × 3, **capped at 60000** for 35–40.

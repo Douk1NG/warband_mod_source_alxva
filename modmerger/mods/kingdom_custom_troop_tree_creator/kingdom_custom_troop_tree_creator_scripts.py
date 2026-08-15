@@ -22,8 +22,9 @@ from kingdom_custom_troop_tree_creator.kct_scripts.ui_helpers import UI_HELPER_S
 from kingdom_custom_troop_tree_creator.kct_scripts.branch_display import BRANCH_DISPLAY_SCRIPTS
 from kingdom_custom_troop_tree_creator.kct_scripts.troop_editor import TROOP_EDITOR_SCRIPTS
 from kingdom_custom_troop_tree_creator.kct_scripts.tree_io import TREE_IO_SCRIPTS
+from kingdom_custom_troop_tree_creator.kct_scripts.guard_replacements import GUARD_REPLACEMENTS_SCRIPTS
 
-new_scripts = UI_HELPER_SCRIPTS + BRANCH_DISPLAY_SCRIPTS + TROOP_EDITOR_SCRIPTS + TREE_IO_SCRIPTS
+new_scripts = UI_HELPER_SCRIPTS + BRANCH_DISPLAY_SCRIPTS + TROOP_EDITOR_SCRIPTS + TREE_IO_SCRIPTS + GUARD_REPLACEMENTS_SCRIPTS
 
 # Set the dummy/custom-troop slot links for preset 4 at game start and seed the
 # real troop with the default stats (and copy them to its dummy), mirroring
@@ -107,6 +108,41 @@ def modmerge(var_set):
 
 	scripts["game_start"].operations.extend(new_start_operations)
 
+	enter_court_ops = scripts["enter_court"].operations
+	_guard_line = None
+	for _i, _op in enumerate(enter_court_ops):
+		if (isinstance(_op, tuple) and len(_op) >= 3
+				and _op[0] == faction_get_slot and _op[2] == "$g_player_culture"):
+			_guard_line = _i
+			break
+	if _guard_line is not None:
+		enter_court_ops[_guard_line:_guard_line + 1] = [
+			(try_begin,),
+				(faction_slot_ge, ":center_faction", slot_faction_guard_troop, cstm_troops_begin),
+				(faction_get_slot, ":guard_troop", ":center_faction", slot_faction_guard_troop),
+			(else_try,),
+				(faction_get_slot, ":guard_troop", "$g_player_culture", slot_faction_guard_troop),
+			(try_end,),
+		]
+	_b2_line = None
+	for _i, _op in enumerate(enter_court_ops):
+		if (isinstance(_op, tuple) and len(_op) >= 3 and _op[0] == party_get_slot
+				and _op[1] == ":town_lord" and _op[2] == ":center_no"):
+			_next = enter_court_ops[_i + 1] if _i + 1 < len(enter_court_ops) else None
+			_nnext = enter_court_ops[_i + 2] if _i + 2 < len(enter_court_ops) else None
+			if (isinstance(_next, tuple) and len(_next) >= 3 and _next[0] == gt
+					and _next[1] == ":town_lord"
+					and isinstance(_nnext, tuple) and len(_nnext) >= 3
+					and _nnext[0] == troop_get_slot
+					and _nnext[1] == ":lord_original_faction"):
+				_b2_line = _i
+				break
+	if _b2_line is not None and enter_court_ops[_b2_line - 1] == else_try:
+		enter_court_ops[_b2_line - 1:_b2_line - 1] = [
+			(else_try,),
+				(faction_slot_ge, ":center_faction", slot_faction_guard_troop, cstm_troops_begin),
+				(faction_get_slot, ":guard_troop", ":center_faction", slot_faction_guard_troop),
+		]
 	del orig_scripts[:]
 	for script_id in scripts:
 		orig_scripts.append(scripts[script_id].convert_to_tuple())
