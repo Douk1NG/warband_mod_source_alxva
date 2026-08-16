@@ -80,6 +80,14 @@ cstm_slot_troop_inherited = 528
 #      base mod's allocator ends at 519 and the KCT slots above use 520/528/531/532.
 cstm_slot_troop_class_override = 533
 
+# 521-524 = per-tree equipment budget for the Kingdom custom troop store. The
+# four slots live on the SHARED prefix troop (cstm_troop_tree_prefix), one per
+# tree index 0-3. Values: 0 Balanced / 1 Boosted / 2 Cheater / 3 Auto. Auto is
+# the import default (templates without @kct_budget adapt to the gear cost);
+# manually-built trees default to Balanced (slot 0). Slots 521-524 are free: the
+# base mod's allocator ends at 519 and the KCT slots use 520/528/531/532/533.
+cstm_slot_tree_budget_begin = 521
+
 # The troop whose name is used to store the custom troop tree prefix string
 # (mirrors cstm_troop_tree_prefix in custom_troops_constants).
 cstm_troop_tree_prefix = "trp_cstm_custom_troops_end"

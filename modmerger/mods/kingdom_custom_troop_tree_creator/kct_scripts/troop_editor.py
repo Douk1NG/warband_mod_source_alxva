@@ -674,50 +674,6 @@ TROOP_EDITOR_SCRIPTS = [
 		(assign, reg0, ":max_level"),
 	]),
 
-# script_kct_troop_tree_raise_skill_to
-	("kct_troop_tree_raise_skill_to",
-	[
-		(store_script_param, ":troop", 1),
-		(store_script_param, ":skill", 2),
-		(store_script_param, ":amount", 3),
-		
-		(store_skill_level, ":current", ":skill", ":troop"),
-		(try_begin),
-			(lt, ":current", ":amount"),
-			
-			(store_sub, ":difference", ":amount", ":current"),
-			(troop_raise_skill, ":troop", ":skill", ":difference"),
-		(try_end),
-		
-		(troop_get_slot, ":dummy", ":troop", cstm_slot_troop_dummy),
-		(try_begin),
-			(gt, ":dummy", 0),
-			(neq, ":dummy", ":troop"),
-			
-			(store_skill_level, ":current", ":skill", ":dummy"),
-		(try_end),
-		(try_begin),
-			(gt, ":dummy", 0),
-			(neq, ":dummy", ":troop"),
-			(lt, ":current", ":amount"),
-			
-			(store_sub, ":difference", ":amount", ":current"),
-			(troop_raise_skill, ":dummy", ":skill", ":difference"),
-		(try_end),
-		
-		(troop_get_upgrade_troop, ":upgrade_1", ":troop", 0),
-		(troop_get_upgrade_troop, ":upgrade_2", ":troop", 1),
-		(try_begin),
-			(gt, ":upgrade_1", 0),
-			
-			(call_script, "script_kct_troop_tree_raise_skill_to", ":upgrade_1", ":skill", ":amount"),
-			
-			(gt, ":upgrade_2", 0),
-			
-			(call_script, "script_kct_troop_tree_raise_skill_to", ":upgrade_2", ":skill", ":amount"),
-		(try_end),
-	]),
-
 # script_kct_dummy_set_skill
 	("kct_dummy_set_skill",
 	[
@@ -728,24 +684,6 @@ TROOP_EDITOR_SCRIPTS = [
 		(store_skill_level, ":points", ":skill", ":troop"),
 		(store_sub, ":difference", ":amount", ":points"),
 		(troop_raise_skill, ":troop", ":skill", ":difference"),
-		
-		(try_begin),
-			(gt, ":difference", 0),
-			
-			(troop_get_slot, ":actual_troop", ":troop", cstm_slot_troop_custom_troop),
-			
-			(troop_get_upgrade_troop, ":upgrade_1", ":actual_troop", 0),
-			(troop_get_upgrade_troop, ":upgrade_2", ":actual_troop", 1),
-			(try_begin),
-				(gt, ":upgrade_1", 0),
-				
-				(call_script, "script_kct_troop_tree_raise_skill_to", ":upgrade_1", ":skill", ":amount"),
-				
-				(gt, ":upgrade_2", 0),
-				
-				(call_script, "script_kct_troop_tree_raise_skill_to", ":upgrade_2", ":skill", ":amount"),
-			(try_end),
-		(try_end),
 	]),
 
 # script_kct_dummy_set_proficiency
@@ -1106,81 +1044,6 @@ TROOP_EDITOR_SCRIPTS = [
 		#(str_store_troop_name, s0, ":source_troop"),
 		#(str_store_troop_name, s1, ":destination_troop"),
 		#(display_log_message, "@Copying {s0} to {s1}"),
-	]),
-
-# script_kct_troop_tree_copy_stats_if_higher
-	("kct_troop_tree_copy_stats_if_higher",
-	[
-		(store_script_param, ":destination_base_troop", 1),
-		(store_script_param, ":source_troop", 2),
-		
-		(call_script, "script_kct_troop_copy_stats_if_higher", ":destination_base_troop", ":source_troop"),
-		#(str_store_troop_name, s0, ":destination_base_troop"),
-		#(display_message, "@Copying stats to {s0}"),
-		
-		# In the case of troops that have a corresponding dummy troop, copy stats to the dummy troop too
-		(troop_get_slot, ":destination_base_troop_dummy", ":destination_base_troop", cstm_slot_troop_dummy),
-		(try_begin),
-			(gt, ":destination_base_troop_dummy", 0),
-			(neq, ":destination_base_troop_dummy", ":source_troop"),
-			
-			(call_script, "script_kct_troop_copy_stats_if_higher", ":destination_base_troop_dummy", ":source_troop"),
-		(try_end),
-		
-		(troop_get_upgrade_troop, ":upgrade_1", ":destination_base_troop", 0),
-		(troop_get_upgrade_troop, ":upgrade_2", ":destination_base_troop", 1),
-		
-		(try_begin),
-			(gt, ":upgrade_1", 0),
-			
-			(call_script, "script_kct_troop_tree_copy_stats_if_higher", ":upgrade_1", ":source_troop"),
-		(try_end),
-		(try_begin),
-			(gt, ":upgrade_2", 0),
-			
-			(call_script, "script_kct_troop_tree_copy_stats_if_higher", ":upgrade_2", ":source_troop"),
-		(try_end),
-	]),
-
-# script_kct_troop_tree_update_stat_minimums
-	("kct_troop_tree_update_stat_minimums",
-	[
-		(store_script_param, ":troop", 1),
-		
-		(assign, ":updated", 0),
-		
-		(try_for_range, ":attribute", 0, attributes_end),
-			(store_attribute_level, ":level", ":troop", ":attribute"),
-			(call_script, "script_kct_troop_get_attribute_min_from_tree", ":troop", ":troop", ":attribute"),
-			(gt, reg0, ":level"),
-			
-			(store_sub, ":difference", reg0, ":level"),
-			(troop_raise_attribute, ":troop", ":attribute", ":difference"),
-			(assign, ":updated", 1),
-		(try_end),
-		
-		(try_for_range, ":skill", 0, skills_end),
-			(store_skill_level, ":level", ":skill", ":troop"),
-			(call_script, "script_kct_troop_get_skill_min_from_tree", ":troop", ":troop", ":skill"),
-			(gt, reg0, ":level"),
-			
-			(store_sub, ":difference", reg0, ":level"),
-			(troop_raise_skill, ":troop", ":skill", ":difference"),
-			(assign, ":updated", 1),
-		(try_end),
-		
-		(try_begin),
-			(eq, ":updated", 1),
-			
-			(call_script, "script_kct_troop_tree_copy_stats_if_higher", ":troop", ":troop"),
-		(try_end),
-		
-		(troop_get_slot, ":base_troop", ":troop", cstm_slot_troop_base_troop),
-		(try_begin),
-			(gt, ":base_troop", 0),
-			
-			(call_script, "script_kct_troop_tree_update_stat_minimums", ":base_troop"),
-		(try_end),
 	]),
 
 # script_kct_setup_item_arrays

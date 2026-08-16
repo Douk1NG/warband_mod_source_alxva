@@ -73,20 +73,44 @@ Uniform role-based ladder for preset 4 (no power tradeoff between presets):
 
 ## 5. Gold
 
-- Three explicit budget tables (**Balanced / Boosted / Cheater**), stored contiguously
-  in `trp_cstm_inventory_values` (64 entries each — slot = `level + tier * 64`).
-  Written at game start and re-written by the save-fix trigger so boot and load agree.
-  **All four presets (1–4) share the same gold tables** — the tier selection via
-  `kct_funds_tier` mod option and the Balanced/Boosted/Cheater scaling apply
-  identically regardless of which preset is active.
-- Band table `EQQUIPMENT_FUNDS_BANDS`: levels 1–3, 4–6, 7–9, 10–12, 13–15, 16–18,
+- **Per-tree equipment budget** (replaces the old global `kct_funds_tier` mod option,
+  which was removed). Each of the four trees carries its own budget in one of four
+  slots `cstm_slot_tree_budget_begin + tree` (521–524) on the **shared prefix troop**
+  (`cstm_troop_tree_prefix` = `trp_cstm_custom_troops_end`), so switching trees keeps
+  each one's budget. Values:
+  - **0 Balanced / 1 Boosted / 2 Cheater** — the three explicit level tables, stored
+    contiguously in `trp_cstm_inventory_values` (64 entries each — slot =
+    `level + tier * 64`). Written at game start and re-written by the save-fix trigger
+    so boot and load agree. **All four presets (1–4) share the same tables** — only
+    the per-tree selection differs.
+  - **3 Auto** — the funds equal the troop's **current gear cost** at the moment the
+    store opens. This is the **import default** (templates without `@kct_budget`,
+    i.e. exported before this feature, adapt to whatever budget model they were
+    authored under): the store opens editable with remaining exactly 0 and no free
+    denars.
+- Band table `EQUIPMENT_FUNDS_BANDS`: levels 1–3, 4–6, 7–9, 10–12, 13–15, 16–18,
   19–21, 22–24, 25–27, 28–30, 31–34, 35–40. Levels 0 and 41–63 clamp to the
   first / last band.
 - Boosted = Balanced × 1.5; Cheater = Balanced × 3, **capped at 60000** for 35–40.
 - Key budgets (Balanced): L3 = 110 · L6 = 472 · L9 = 970 · L12 = 1807 ·
   L15 = 2116 · L18 = 3010 · L21 = 3942 · L24 = 7613 · L27 = 9668 ·
   L30 = 11702 · L34 = 17887 · L40 = 20000 (Boosted ×1.5, Cheater ×3, cap 60k).
-- Tier is selected by the `kct_funds_tier` mod option; **Balanced is the default**.
+- The budget is chosen with the **"Budget:" dropdown in the creator**
+  (`prsnt_cstm_create_troop_tree`, below the prefix input; the "Budget:" prefix is
+  baked into every option, so there is no separate label). **Balanced is the default**
+  for trees that were never configured (slot 0); **Auto** is the default for
+  imported trees (re-import once to apply it to already-imported templates).
+- The store computes `$cstm_total_funds` **only on the session's fresh entry**
+  (captured from `$g_kct_recalc_baseline` before it is consumed). Internal reloads
+  (add/remove item, class, stat boxes, Reset) never re-derive the budget from the
+  evolving gear, so removing equipment frees funds (remaining goes positive and is
+  spendable) and adding beyond the budget shows negative (red) until balanced — the
+  Save button requires `remaining >= 0`.
+- **Snapshot floor**: for the explicit tiers, funds = `max(table[level], gear_cost)`
+  — a tree authored on a higher budget (or after the budget is lowered below the
+  gear) costs more than the tier allows and would otherwise open negative; the floor
+  covers the gap exactly so remaining = 0 and a raised budget never hands out free
+  denars.
 - Item cost = item value + (modifier cost ÷ `CSTM_IMOD_COST_DIVISOR`).
 - **Known balance issue (2nd iteration):** low tiers end up starved of gold while
   high tiers have gold to throw. Rebalance is deferred, not dropped.
@@ -147,6 +171,10 @@ Uniform role-based ladder for preset 4 (no power tradeoff between presets):
   progression tree, per-troop name/attributes/skills/proficiencies/equipment-with-
   modifiers) into an array or dict and `array_save_file` / `dict_save` it as a
   txt file in the WSE managed directory.
+- The file also carries the tree's equipment budget as `@kct_budget` (0–3). Import
+  defaults to **Auto (3)** when the key is absent, so templates exported before this
+  feature adapt to their gear cost instead of a fixed level table. The key is
+  additive — `kct_version` stays 1.
 - Import: `array_load_file` / `dict_load_file` → rebuild the tree.
 - This is the only mechanism that round-trips equipment, and it is a real file,
   not a copy-pasted code string.
@@ -173,5 +201,8 @@ Uniform role-based ladder for preset 4 (no power tradeoff between presets):
 5. Preset export → txt file → import round-trips the whole tree (branch type,
    progression, per-troop name/stats/skills/proficiencies/equipment with modifiers).
 6. Customisation persists across save → load without marker item or dummy restore.
-7. Gold budgets use the 3-tier table (Balanced/Boosted/Cheater, cap 60k) and boot-time + load-restore agree.
+7. Gold budgets are **per-tree** (Balanced/Boosted/Cheater tables, cap 60k, plus
+   Auto = gear cost) chosen via the creator's Budget dropdown; the store freezes
+   funds at session entry (removing gear frees budget, adding over it blocks Save);
+   boot-time + load-restore tables agree.
 8. No save-game regressions from changed entity ordering.

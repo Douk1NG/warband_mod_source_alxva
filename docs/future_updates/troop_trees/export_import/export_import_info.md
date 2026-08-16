@@ -68,6 +68,7 @@ Escrito por `script_kct_export_tree_to_file` (`tree_io.py:90-170`) con
 ```
 kct_version   = 1            (int, para migraciones futuras)
 kct_tree      = 0..3         (int, índice del preset de rama)
+kct_budget    = 0..3         (int, presupuesto de equipo del árbol; 3 = Auto)
 kct_count     = N            (int, número de tropas)
 kct_prefix    = "Calradian"  (string, prefijo / nombre del árbol)
 
@@ -80,6 +81,14 @@ Por cada tropa i:
   t{i}_eq_item{j}  /  t{i}_eq_mod{j}   j=0..num_equipment_kinds-1  (equipo + modificadores)
   t{i}_conf        (int, flag de configurado)
 ```
+
+`kct_budget` es la clave **aditiva** del presupuesto per-tree (0 Balanced /
+1 Boosted / 2 Cheater / 3 Auto), reemplaza la mod-option global `kct_funds_tier`
+(eliminada). Se guarda en el slot `cstm_slot_tree_budget_begin + kct_tree` (521–524)
+del troop prefijo compartido (`trp_cstm_custom_troops_end`). Por eso `kct_version`
+**sigue en 1**: los JSON exportados antes de la clave no tienen `kct_budget` y al
+importarlos se asume **Auto (3)** (se adaptan al coste real del equipo, sin denares
+gratis).
 
 ### ¿Por qué plano?
 
@@ -129,7 +138,9 @@ con clave de versión).
    - Si no, el **primer slot vacío**.
    - Si todos llenos y sin coincidencia → no guarda, mensaje en rojo.
 4. `script_kct_export_tree_to_file` empaqueta el árbol en el dict y lo guarda
-   como `<prefijo>.json`.
+   como `<prefijo>.json`. Además del resto del árbol escribe `@kct_budget`,
+   leído del slot `cstm_slot_tree_budget_begin + $cstm_selected_tree` del troop
+   prefijo (el mismo valor que muestra el dropdown "Budget:" del creador).
 5. Mensaje "Tree saved to slot {n}".
 
 Fuente de verdad: la tropa real (no héroe) para stats/equipo; el dummy (héroe)
@@ -149,8 +160,10 @@ pantalla de gestión (botón Load):
      (`script_kct_compute_tree_range`).
 3. Aplica: prefijo, nombre/plural de cada dummy, atributos, habilidades,
    proficiencias, equipo con modificadores, flag de configurado.
-4. Sincroniza los dummies y re-equipa su inventario.
-5. `reg0 = 1` en éxito → abre el creador con el árbol cargado.
+4. Lee `@kct_budget` con **default 3 (Auto)** y lo guarda en el slot
+   `cstm_slot_tree_budget_begin + kct_tree` del troop prefijo.
+5. Sincroniza los dummies y re-equipa su inventario.
+6. `reg0 = 1` en éxito → abre el creador con el árbol cargado.
 
 ---
 
@@ -184,6 +197,10 @@ vanilla ni en WSE1). Implicaciones:
 
 - Export, import y gestión de slots: **implementados y compilando**
   (`python compiler\compile.py tag` → COMPILATION SUCCESSFUL).
+- Presupuesto per-tree (`@kct_budget`, modo **Auto** por defecto para importados):
+  **implementado y compilando**. La mod-option global `kct_funds_tier` fue
+  eliminada; el presupuesto vive en el troop prefijo (slots 521–524) y se exporta
+  con el árbol.
 - Esquema plano v1, requisito WSE2, sin compartición entre máquinas: **aceptado
   por el usuario**.
 - Posibles mejoras futuras (no planificadas): anidamiento real de JSON (si WSE lo

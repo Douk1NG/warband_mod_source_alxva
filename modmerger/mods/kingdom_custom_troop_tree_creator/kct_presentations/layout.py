@@ -82,7 +82,7 @@ CSTM_TREE_X_RIGHT_PADDING = 150
 
 CSTM_TREE_Y_OFFSET = 145
 
-CSTM_PREFIX_LABEL_POS_X = CSTM_TREE_TITLE_POS_X
+CSTM_PREFIX_LABEL_POS_X = CSTM_TREE_TITLE_POS_X - 20
 CSTM_PREFIX_LABEL_WIDTH = 75
 CSTM_PREFIX_POS_Y = 660
 
@@ -93,6 +93,15 @@ CSTM_BUTTONS_SIZE_Y = 30
 CSTM_BUTTONS_GAP = 20
 
 CSTM_EXPORT_BUTTON_POS = (CSTM_BUTTONS_POS_X - 60, CSTM_BUTTONS_POS_Y - 10)
+
+# Per-tree equipment budget selector (creator header, below the prefix input):
+# a combo BUTTON (dropdown) whose options carry the "Budget:" prefix baked in,
+# so no separate label overlay is needed. Balanced (0) / Boosted (1) / Cheater
+# (2) use the level tables; Auto (3) uses the gear cost (import default). No
+# overlay_set_size on the combo (user rule) - the store/picker combos use the
+# default size.
+BUDGET_OPTIONS = ("Balanced", "Boosted", "Cheater", "Auto")
+BUDGET_COMBO_POS  = (165, 610)
 
 # Preset-4 node portrait size (sits inline with the branch skeleton).
 P4_PORTRAIT_W = 330

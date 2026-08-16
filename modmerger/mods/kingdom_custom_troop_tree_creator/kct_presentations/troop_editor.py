@@ -134,18 +134,52 @@ kct_customise_core = (
 			(try_end),
 
 			# Consume the fresh-entry flag on every store load (configured units
-			# included) so internal reloads never re-derive mid-edit.
+			# included) so internal reloads never re-derive mid-edit. The flag is
+			# captured first: the funds block below uses it to freeze the budget
+			# at the session's first open.
+			(assign, ":fresh_entry", "$g_kct_recalc_baseline"),
 			(assign, "$g_kct_recalc_baseline", 0),
 			
 			(store_character_level, ":troop_level", "$cstm_troop_being_customised"),
 			
-			# Custom troop funds tier (mod options > Custom Troop Funds):
-			# Balanced (0) / Boosted (1) / Cheater (2) are three tables stored
-			# contiguously in trp_cstm_inventory_values (EQUIPMENT_FUNDS_TABLE_SIZE
-			# entries each); read the selected tier's table at the troop's level.
-			(store_mul, ":funds_slot", "$g_kct_funds_tier", EQUIPMENT_FUNDS_TABLE_SIZE),
-			(val_add, ":funds_slot", ":troop_level"),
-			(troop_get_slot, "$cstm_total_funds", "trp_cstm_inventory_values", ":funds_slot"),
+			# Per-tree equipment budget (cstm_slot_tree_budget_begin +
+			# $cstm_selected_tree on the shared prefix troop): Balanced (0) /
+			# Boosted (1) / Cheater (2) are three tables stored contiguously in
+			# trp_cstm_inventory_values (EQUIPMENT_FUNDS_TABLE_SIZE entries
+			# each); read the tree's budget's table at the troop's level. Auto
+			# (3) derives the funds from the troop's gear cost at entry, so ANY
+			# imported template - whatever budget model it was authored under -
+			# opens editable with remaining exactly 0 (no free denars). The gear
+			# value is always the floor for the explicit tiers (snapshot): a tree
+			# authored on a higher budget (or the budget lowered after saving)
+			# costs more than the tier allows and would otherwise open negative;
+			# max() covers the gap exactly so remaining = 0 and a raised budget
+			# never hands out free denars.
+			# Funds are computed ONLY on the session's fresh entry. Internal
+			# reloads (add/remove item, class, boxes, Reset) must NOT re-derive
+			# them from the evolving dummy gear: Auto would shrink the budget
+			# when gear is removed (remaining stuck at 0, the removed item
+			# unrecoverable) and grow it when gear is added (no real limit).
+			# Frozen at entry, removing gear frees budget (remaining goes
+			# positive and is spendable) and adding beyond it shows negative
+			# (red) until balanced - the Save gate enforces remaining >= 0.
+			(try_begin,),
+				(eq, ":fresh_entry", 1),
+				(call_script, "script_kct_troop_get_inventory_value", ":dummy"),
+				(assign, ":gear_value", reg0),
+				(store_add, ":budget_slot", cstm_slot_tree_budget_begin, "$cstm_selected_tree"),
+				(troop_get_slot, ":budget", cstm_troop_tree_prefix, ":budget_slot"),
+				(try_begin,),
+					(eq, ":budget", 3),
+					(assign, "$cstm_total_funds", ":gear_value"),
+				(else_try,),
+					(store_mul, ":funds_slot", ":budget", EQUIPMENT_FUNDS_TABLE_SIZE),
+					(val_add, ":funds_slot", ":troop_level"),
+					(troop_get_slot, ":funds", "trp_cstm_inventory_values", ":funds_slot"),
+					(val_max, ":funds", ":gear_value"),
+					(assign, "$cstm_total_funds", ":funds"),
+				(try_end,),
+			(try_end,),
 			
 			(call_script, "script_kct_troop_copy_inventory", "$cstm_presentation_troop", ":dummy"),
 			(troop_sort_inventory, "$cstm_presentation_troop"),
@@ -757,19 +791,15 @@ kct_customise_core = (
 				(try_begin),
 					(gt, ":upgrade", 0),
 					
-					(call_script, "script_kct_troop_tree_copy_inventory_if_unmodified", ":upgrade", ":dummy"),
-					(call_script, "script_kct_troop_tree_copy_stats_if_higher", "$cstm_troop_being_customised", ":dummy"),
+				(call_script, "script_kct_troop_tree_copy_inventory_if_unmodified", ":upgrade", ":dummy"),
 					
 					(troop_get_upgrade_troop, ":upgrade", "$cstm_troop_being_customised", 1),
 					(gt, ":upgrade", 0),
 					
-					(call_script, "script_kct_troop_tree_copy_inventory_if_unmodified", ":upgrade", ":dummy"),
-					(call_script, "script_kct_troop_tree_copy_stats_if_higher", "$cstm_troop_being_customised", ":dummy"),
-				(try_end),
-				
-				(call_script, "script_kct_troop_tree_update_stat_minimums", "$cstm_troop_being_customised"),
-				
-				(str_store_troop_name, s0, ":dummy"),
+				(call_script, "script_kct_troop_tree_copy_inventory_if_unmodified", ":upgrade", ":dummy"),
+			(try_end),
+			
+			(str_store_troop_name, s0, ":dummy"),
 				(troop_set_name, "$cstm_presentation_troop", s0),
 				(str_store_troop_name_plural, s0, ":dummy"),
 				(troop_set_plural_name, "$cstm_presentation_troop", s0),

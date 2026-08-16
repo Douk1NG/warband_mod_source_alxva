@@ -221,6 +221,20 @@ def _build_create_load_ops():
 	ops.append((call_script, "script_kct_create_text_box_overlay", "str_s0", CSTM_PREFIX_LABEL_POS_X + CSTM_PREFIX_LABEL_WIDTH, CSTM_PREFIX_POS_Y))
 	ops.append((assign, "$cstm_set_prefix", reg1))
 
+	## BUDGET (per-tree equipment budget, stored on the shared prefix troop at
+	## slot cstm_slot_tree_budget_begin + $cstm_selected_tree): a combo BUTTON
+	## dropdown of Balanced (0) / Boosted (1) / Cheater (2) / Auto (3). The
+	## "Budget:" prefix is baked into every option, so no separate label overlay
+	## is needed. No overlay_set_size on the combo (user rule).
+	ops.append((call_script, "script_kct_create_combo_button_overlay", BUDGET_COMBO_POS[0], BUDGET_COMBO_POS[1]))
+	ops.append((assign, "$kct_budget_selector", reg1))
+	for name in BUDGET_OPTIONS:
+		ops.append((str_store_string, s1, "@Budget: " + name))
+		ops.append((overlay_add_item, "$kct_budget_selector", s1))
+	ops.append((store_add, ":budget_slot", cstm_slot_tree_budget_begin, "$cstm_selected_tree"))
+	ops.append((troop_get_slot, ":budget", cstm_troop_tree_prefix, ":budget_slot"))
+	ops.append((overlay_set_val, "$kct_budget_selector", ":budget"))
+
 	## TREE VIEWER
 	# Preset 4 draws just the branch skeleton (big, connected) for now; presets
 	# 1-3 use the working mod's recursive layout with portraits + names.
@@ -281,6 +295,7 @@ def _build_create_run_ops():
 def _build_create_event_ops():
 	ops = [
 		(store_trigger_param_1, ":object"),
+		(store_trigger_param_2, ":value"),
 		(try_begin,),
 			## NODE CLICKED -> open the customisation store for that troop
 			(troop_get_slot, ":troop", "trp_cstm_overlay_troops", ":object"),
@@ -341,6 +356,13 @@ def _build_create_event_ops():
 			(display_message, "@Kingdom recruitment updated."),
 			(change_screen_return),
 			(presentation_set_duration, 0),
+		(else_try,),
+			## BUDGET CHANGED (dropdown) - persist the per-tree budget on the
+			## shared prefix troop and refresh so the combo shows the new value.
+			(eq, ":object", "$kct_budget_selector"),
+			(store_add, ":budget_slot", cstm_slot_tree_budget_begin, "$cstm_selected_tree"),
+			(troop_set_slot, cstm_troop_tree_prefix, ":budget_slot", ":value"),
+			(start_presentation, "prsnt_cstm_create_troop_tree"),
 	]
 	# TEMP P4 drag tools: SNAPSHOT - log every label's current (dx, dy), ready to
 	# paste into P4_LABEL_MANUAL. Each block MUST open its own else_try branch (a

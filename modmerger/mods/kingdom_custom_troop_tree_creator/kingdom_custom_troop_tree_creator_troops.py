@@ -59,6 +59,17 @@ def modmerge(var_set):
 		tf_hero, 0, 0, fac_player_supporters_faction, [], level(1)|def_attrib, 0, 0, 0, 0
 	])
 
+	# Blank the prefix sentinel's name/plural (inserted by the base mod as
+	# blank_troop("cstm_custom_troops_end"), whose default name IS that id
+	# string). The prefix is stored in this troop's name; with an empty name the
+	# KCT's str_is_empty guards fall back to "Custom" on new games instead of
+	# showing the sentinel id as the tree prefix.
+	for troop in orig_troops:
+		if troop[0] == "cstm_custom_troops_end":
+			troop[1] = ""
+			troop[2] = ""
+			break
+
 	# Dummy troops (used by the presentation for name/equipment display) go at the
 	# very end of the troop list, like the base mod's dummies.
 	for skin_id, face_code_1, face_code_2 in skins:

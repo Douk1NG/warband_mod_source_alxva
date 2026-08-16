@@ -479,19 +479,6 @@ mod_options = [
 		[
 			(assign, "$g_auto_upgrade_mode", reg1),
 		],
-	),
-
-    ( "kct_funds_tier", xgm_ov_combolabel,
-        ["Balanced", "Boosted", "Cheater"],
-        "Custom Troop Funds:", 0,
-        "Equipment budget for the Kingdom custom troop store. Three explicit level tables: Balanced (110-20000), Boosted = Balanced x1.5 (165-30000), Cheater = Balanced x3 capped at 60000 (35-40). See CSTM_TROOP_TREES_SPEC.md section 5.",
-        0,
-        [  # initialization block (set value in reg1)
-            (assign, reg1, "$g_kct_funds_tier"),
-        ],
-        [  # update block (value is in reg1)
-            (assign, "$g_kct_funds_tier", reg1),
-        ],
     ),
 
     ("horizontal_divide", xgm_ov_line, [], "", 0,"", 0,[],[],),

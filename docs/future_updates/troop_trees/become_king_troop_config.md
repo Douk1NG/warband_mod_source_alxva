@@ -24,8 +24,18 @@ para que un agente builder pueda empezar.
 
 ## Presentación del árbol
 
-- La presentación tiene el **árbol de ramas** con sus dummies y labels, un input en el que se establece el pre fijo de tropas, y debajo un botón de **exportar** que sirvará para guardar el árbol externamente, además de un botón en la parte superior derecha para salir de la presentación.
+- La presentación tiene el **árbol de ramas** con sus dummies y labels, un input en el que se establece el pre fijo de tropas, un **selector de presupuesto de equipo** (dropdown "Budget:" debajo del input) y debajo un botón de **exportar** que sirvará para guardar el árbol externamente, además de un botón en la parte superior derecha para salir de la presentación.
 - **Se guarda automáticamente al salir de la presentación.**
+
+### Presupuesto de equipo (por árbol)
+
+- Cada árbol lleva su propio presupuesto (ya no hay una opción global en mod options).
+- Opciones: **Balanced / Boosted / Cheater** (tablas de niveles) y **Auto** (el
+  presupuesto = coste del equipo actual; es el valor por defecto al **importar**
+  una plantilla, así cualquier árbol definido antes se adapta sin denares gratis).
+- En el store de asignación, el presupuesto se congela al entrar: quitar equipo
+  libera dinero y añadir por encima del presupuesto se bloquea (quedando en rojo
+  hasta equilibrar).
 ## Asignación de valores
 
 - Una vez definido el árbol, si no cargaste una plantilla, se va **tropa por tropa
@@ -42,9 +52,3 @@ por defecto `array_save_file` / `array_load_file` guardan en
 `.wsedict` y `.json`. **No** es la carpeta de la partida
 (`Documents\Mount&Blade Warband Savegames\<módulo>\`). La carpeta real se puede fijar
 vía `storage_path` en `wse_settings.ini`. Decisión de diseño pendiente del usuario.
-
-
-
-bugs to review
-guards in city/town
-script to update kingdom troops

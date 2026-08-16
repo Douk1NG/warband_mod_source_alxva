@@ -102,6 +102,9 @@ TREE_IO_SCRIPTS = [
 		(dict_create, "$kct_export_dict"),
 		(dict_set_int, "$kct_export_dict", "@kct_version", 1),
 		(dict_set_int, "$kct_export_dict", "@kct_tree", "$cstm_selected_tree"),
+		(store_add, ":budget_slot", cstm_slot_tree_budget_begin, "$cstm_selected_tree"),
+		(troop_get_slot, ":budget", cstm_troop_tree_prefix, ":budget_slot"),
+		(dict_set_int, "$kct_export_dict", "@kct_budget", ":budget"),
 		(dict_set_str, "$kct_export_dict", "@kct_prefix", s2),
 
 		(assign, ":index", 0),
@@ -156,7 +159,79 @@ TREE_IO_SCRIPTS = [
 
 			(assign, reg0, ":index"),
 			(str_store_string, s1, "@t{reg0}_conf"),
-			(troop_get_slot, ":val", ":troop", cstm_slot_troop_configured),
+			# t{i}_conf = 1 if the node is fully defined: its store Save was
+			# pressed (slot 520), it carries any equipment, or any stat/skill/
+			# proficiency is above the CSTM defaults (gender-aware). A blank
+			# node (no gear, exactly the seeded defaults) exports 0, so the
+			# bottom-up editing restriction survives an export/import round-trip
+			# unless the node was actually configured.
+			(assign, ":val", 0),
+			(troop_get_slot, ":conf", ":troop", cstm_slot_troop_configured),
+			(try_begin,),
+				(eq, ":conf", 1),
+				(assign, ":val", 1),
+			(try_end,),
+			(try_begin,),
+				(eq, ":val", 0),
+				(try_for_range, ":slot", 0, num_equipment_kinds),
+					(troop_get_inventory_slot, ":item", ":troop", ":slot"),
+					(gt, ":item", 0),
+					(assign, ":val", 1),
+				(try_end,),
+			(try_end,),
+			(try_begin,),
+				(eq, ":val", 0),
+				(troop_get_type, ":gender", ":troop"),
+				(assign, ":def_str", CSTM_STR_START),
+				(assign, ":def_agi", CSTM_AGI_START),
+				(assign, ":def_int", CSTM_INT_START),
+				(assign, ":def_cha", CSTM_CHA_START),
+				(try_begin,),
+					(eq, ":gender", 1),
+					(val_add, ":def_agi", 1),
+				(else_try,),
+					(val_add, ":def_str", 1),
+				(try_end,),
+				(store_attribute_level, ":cur", ":troop", ca_strength),
+				(gt, ":cur", ":def_str"),
+				(assign, ":val", 1),
+				(store_attribute_level, ":cur", ":troop", ca_agility),
+				(gt, ":cur", ":def_agi"),
+				(assign, ":val", 1),
+				(store_attribute_level, ":cur", ":troop", ca_intelligence),
+				(gt, ":cur", ":def_int"),
+				(assign, ":val", 1),
+				(store_attribute_level, ":cur", ":troop", ca_charisma),
+				(gt, ":cur", ":def_cha"),
+				(assign, ":val", 1),
+				(store_skill_level, ":cur", skl_trade, ":troop"),
+				(gt, ":cur", 2),
+				(assign, ":val", 1),
+				(store_skill_level, ":cur", skl_inventory_management, ":troop"),
+				(gt, ":cur", 2),
+				(assign, ":val", 1),
+				(store_skill_level, ":cur", skl_prisoner_management, ":troop"),
+				(gt, ":cur", 1),
+				(assign, ":val", 1),
+				(store_skill_level, ":cur", skl_leadership, ":troop"),
+				(gt, ":cur", 1),
+				(assign, ":val", 1),
+				(try_for_range, ":proficiency", proficiencies_begin, proficiencies_end),
+					(store_proficiency_level, ":cur", ":troop", ":proficiency"),
+					(gt, ":cur", CSTM_WP_LEVELS_START),
+					(assign, ":val", 1),
+				(try_end,),
+			(try_end,),
+			(dict_set_int, "$kct_export_dict", s1, ":val"),
+
+			# t{i}_eqmod = the node's "defined" state (same derivation as conf).
+			# The store's Save-time propagation only writes into troops whose
+			# equipment_modified slot is 0; exporting this flag lets a restored
+			# imported tree carry it so an edited ancestor never overwrites an
+			# already-defined node's gear. Computed at export, restored verbatim
+			# at import (the import never derives it).
+			(assign, reg0, ":index"),
+			(str_store_string, s1, "@t{reg0}_eqmod"),
 			(dict_set_int, "$kct_export_dict", s1, ":val"),
 
 			(assign, reg0, ":index"),
@@ -277,6 +352,13 @@ TREE_IO_SCRIPTS = [
 				(dict_get_str, s0, "$kct_import_dict", "@kct_prefix"),
 				(troop_set_name, cstm_troop_tree_prefix, s0),
 
+				# Per-tree budget: read @kct_budget (default 3 = Auto so templates
+				# without the key - exported before this feature - adapt to the
+				# gear cost instead of a fixed level table).
+				(dict_get_int, ":budget", "$kct_import_dict", "@kct_budget", 3),
+				(store_add, ":budget_slot", cstm_slot_tree_budget_begin, "$cstm_selected_tree"),
+				(troop_set_slot, cstm_troop_tree_prefix, ":budget_slot", ":budget"),
+
 				(assign, ":index", 0),
 				(try_for_range, ":troop", "$cstm_troops_begin", "$cstm_troops_end"),
 					(troop_get_slot, ":dummy", ":troop", cstm_slot_troop_dummy),
@@ -341,6 +423,11 @@ TREE_IO_SCRIPTS = [
 					(str_store_string, s1, "@t{reg0}_conf"),
 					(dict_get_int, ":conf", "$kct_import_dict", s1, 0),
 					(troop_set_slot, ":troop", cstm_slot_troop_configured, ":conf"),
+
+					(assign, reg0, ":index"),
+					(str_store_string, s1, "@t{reg0}_eqmod"),
+					(dict_get_int, ":eqmod", "$kct_import_dict", s1, 0),
+					(troop_set_slot, ":troop", cstm_slot_troop_equipment_modified, ":eqmod"),
 
 					(assign, reg0, ":index"),
 					(str_store_string, s1, "@t{reg0}_cls"),

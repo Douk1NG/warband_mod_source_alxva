@@ -92,7 +92,8 @@ BRANCH_DISPLAY_SCRIPTS = [
 
 		(val_add, ":pos_y", ":offset_y"),
 
-		(str_store_troop_name, s0, ":troop"),
+		(troop_get_slot, ":dummy", ":troop", cstm_slot_troop_dummy),
+		(str_store_troop_name, s0, ":dummy"),
 		(call_script, "script_kct_create_text_overlay", "str_s0", ":pos_x", ":pos_y", 600, ":gap_x", 50, tf_center_justify|tf_vertical_align_center),
 		(troop_set_slot, "trp_cstm_overlay_troops", reg1, ":troop"),
 
