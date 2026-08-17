@@ -73,9 +73,14 @@ UI_HELPER_SCRIPTS = [
 		(position_set_x, pos1, ":pos_x"),
 		(position_set_y, pos1, ":pos_y"),
 		(overlay_set_position, reg1, pos1),
-		(position_set_x, pos1, ":size"),
-		(position_set_y, pos1, ":size"),
-		(overlay_set_size, reg1, pos1),
+		# Size 0 = native mesh size (the native pattern: checkboxes are never
+		# resized - a small overlay_set_size renders them invisible).
+		(try_begin),
+			(gt, ":size", 0),
+			(position_set_x, pos1, ":size"),
+			(position_set_y, pos1, ":size"),
+			(overlay_set_size, reg1, pos1),
+		(try_end),
 	]),
 
 	# script_kct_create_game_button_overlay

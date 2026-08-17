@@ -55,7 +55,7 @@ KTF_ROW_UNSEL_TEXT_COLOR = 0x777777
 # Radio-style checkbox indicator at the left of each row
 KTF_CHECKBOX_X = 18
 KTF_CHECKBOX_Y = 8
-KTF_CHECKBOX_SIZE = 40
+KTF_CHECKBOX_SIZE = 0   # 0 = native mesh size (no overlay_set_size)
 
 KTF_BUTTON_ROW_Y = 90
 KTF_BUTTON_SIZE_X = 140

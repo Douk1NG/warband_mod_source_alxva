@@ -92,8 +92,20 @@ def _build_apply_kingdom_setup_ops():
 	# refreshes volunteers). This is needed because fiefs captured before the
 	# tree was chosen kept their original culture - the base mod only switches
 	# to fac_culture_player when $cstm_troops_begin is already set.
+	# Wire the chosen tree's reinforcement party templates (_a/_b/_c, computed
+	# by _build_create_setup_ops into $cstm_reinforcement_templates_begin) into
+	# the player supporters faction slots that cf_reinforce_party reads, so
+	# garrisons and AI lord parties of the player kingdom are reinforced with
+	# the current tree instead of nothing - the base mod never sets them for
+	# fac_culture_player. Switching trees re-points these slots.
 	ops = [
 		(faction_set_slot, "fac_culture_player", slot_faction_tier_1_troop, "$cstm_troops_begin"),
+		(assign, ":reinforcements", "$cstm_reinforcement_templates_begin"),
+		(faction_set_slot, "fac_player_supporters_faction", slot_faction_reinforcements_a, ":reinforcements"),
+		(val_add, ":reinforcements", 1),
+		(faction_set_slot, "fac_player_supporters_faction", slot_faction_reinforcements_b, ":reinforcements"),
+		(val_add, ":reinforcements", 1),
+		(faction_set_slot, "fac_player_supporters_faction", slot_faction_reinforcements_c, ":reinforcements"),
 		(try_for_range, ":center", walled_centers_begin, walled_centers_end),
 		(store_faction_of_party, ":fac", ":center"),
 		(eq, ":fac", "fac_player_supporters_faction"),
@@ -222,18 +234,40 @@ def _build_create_load_ops():
 	ops.append((assign, "$cstm_set_prefix", reg1))
 
 	## BUDGET (per-tree equipment budget, stored on the shared prefix troop at
-	## slot cstm_slot_tree_budget_begin + $cstm_selected_tree): a combo BUTTON
-	## dropdown of Balanced (0) / Boosted (1) / Cheater (2) / Auto (3). The
-	## "Budget:" prefix is baked into every option, so no separate label overlay
-	## is needed. No overlay_set_size on the combo (user rule).
+	## slot cstm_slot_tree_budget_begin + $cstm_selected_tree): picker-style
+	## "label -> select" - a separate "Budget" text label sits LEFT of a combo
+	## BUTTON (dropdown) of Balanced (0) / Boosted (1) / Cheater (2) / Auto (3);
+	## the option strings carry no prefix so the select shows just the option.
+	## BUDGET_COMBO_SIZE is applied with overlay_set_size exactly like the troop
+	## editor's item-type / item-modifier selects (750x750 - the proven store
+	## pattern), so the combo renders at that size instead of the native default.
+	ops.append((str_store_string, s0, "@Budget:"))
+	ops.append((call_script, "script_kct_create_text_overlay", "str_s0", BUDGET_LABEL_POS[0], BUDGET_LABEL_POS[1], BUDGET_LABEL_FONT, BUDGET_LABEL_AREA[0], BUDGET_LABEL_AREA[1], tf_center_justify|tf_vertical_align_center))
 	ops.append((call_script, "script_kct_create_combo_button_overlay", BUDGET_COMBO_POS[0], BUDGET_COMBO_POS[1]))
 	ops.append((assign, "$kct_budget_selector", reg1))
 	for name in BUDGET_OPTIONS:
-		ops.append((str_store_string, s1, "@Budget: " + name))
+		ops.append((str_store_string, s1, "@" + name))
 		ops.append((overlay_add_item, "$kct_budget_selector", s1))
 	ops.append((store_add, ":budget_slot", cstm_slot_tree_budget_begin, "$cstm_selected_tree"))
 	ops.append((troop_get_slot, ":budget", cstm_troop_tree_prefix, ":budget_slot"))
 	ops.append((overlay_set_val, "$kct_budget_selector", ":budget"))
+	ops.append((set_fixed_point_multiplier, 1000))
+	ops.append((position_set_x, pos1, BUDGET_COMBO_SIZE[0]))
+	ops.append((position_set_y, pos1, BUDGET_COMBO_SIZE[1]))
+	ops.append((overlay_set_size, "$kct_budget_selector", pos1))
+
+	## EXISTING-TROOPS TOGGLE (checkbox below the Budget combo): an "Update
+	## troops:" text label aligned with the Budget label (X=60, same style, but
+	## lower on screen so it never overlaps the budget row) with a checkbox to
+	## its right. Checked (1) = Yes: on Save the owned garrisons get the 50/50
+	## infantry/archer focused refill (default refill when the tree cannot
+	## provide both lineages) and the player's party custom stacks are re-created
+	## fresh. Persisted in $cstm_update_existing_troops (0/1, default 0).
+	ops.append((str_store_string, s0, "@Update troops:"))
+	ops.append((call_script, "script_kct_create_text_overlay", "str_s0", UPDATE_EXISTING_LABEL_POS[0], UPDATE_EXISTING_LABEL_POS[1], UPDATE_EXISTING_LABEL_FONT, UPDATE_EXISTING_LABEL_AREA[0], UPDATE_EXISTING_LABEL_AREA[1], tf_center_justify|tf_vertical_align_center))
+	ops.append((call_script, "script_kct_create_check_box_overlay", UPDATE_EXISTING_CHECKBOX_POS[0], UPDATE_EXISTING_CHECKBOX_POS[1], UPDATE_EXISTING_CHECKBOX_SIZE))
+	ops.append((assign, "$kct_update_existing_checkbox", reg1))
+	ops.append((overlay_set_val, "$kct_update_existing_checkbox", "$cstm_update_existing_troops"))
 
 	## TREE VIEWER
 	# Preset 4 draws just the branch skeleton (big, connected) for now; presets
@@ -353,6 +387,11 @@ def _build_create_event_ops():
 				(call_script, "script_cstm_center_set_culture", ":center", "fac_culture_player"),
 			(try_end,),
 			(call_script, "script_kct_apply_guard_replacements"),
+			(try_begin,),
+				(eq, "$cstm_update_existing_troops", 1),
+				(call_script, "script_kct_reset_garrisons_focused"),
+				(call_script, "script_kct_update_player_party"),
+			(try_end,),
 			(display_message, "@Kingdom recruitment updated."),
 			(change_screen_return),
 			(presentation_set_duration, 0),
@@ -362,6 +401,13 @@ def _build_create_event_ops():
 			(eq, ":object", "$kct_budget_selector"),
 			(store_add, ":budget_slot", cstm_slot_tree_budget_begin, "$cstm_selected_tree"),
 			(troop_set_slot, cstm_troop_tree_prefix, ":budget_slot", ":value"),
+			(start_presentation, "prsnt_cstm_create_troop_tree"),
+		(else_try,),
+			## EXISTING-TROOPS CHECKBOX CLICKED - flip the toggle and restart so
+			## the checkbox redraws with the new checked state (the engine does
+			## not toggle the box visually on click).
+			(eq, ":object", "$kct_update_existing_checkbox"),
+			(store_sub, "$cstm_update_existing_troops", 1, "$cstm_update_existing_troops"),
 			(start_presentation, "prsnt_cstm_create_troop_tree"),
 	]
 	# TEMP P4 drag tools: SNAPSHOT - log every label's current (dx, dy), ready to

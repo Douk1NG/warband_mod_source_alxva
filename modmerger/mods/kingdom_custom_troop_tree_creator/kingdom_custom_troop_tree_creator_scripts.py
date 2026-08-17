@@ -23,8 +23,9 @@ from kingdom_custom_troop_tree_creator.kct_scripts.branch_display import BRANCH_
 from kingdom_custom_troop_tree_creator.kct_scripts.troop_editor import TROOP_EDITOR_SCRIPTS
 from kingdom_custom_troop_tree_creator.kct_scripts.tree_io import TREE_IO_SCRIPTS
 from kingdom_custom_troop_tree_creator.kct_scripts.guard_replacements import GUARD_REPLACEMENTS_SCRIPTS
+from kingdom_custom_troop_tree_creator.kct_scripts.existing_troops import EXISTING_TROOPS_SCRIPTS
 
-new_scripts = UI_HELPER_SCRIPTS + BRANCH_DISPLAY_SCRIPTS + TROOP_EDITOR_SCRIPTS + TREE_IO_SCRIPTS + GUARD_REPLACEMENTS_SCRIPTS
+new_scripts = UI_HELPER_SCRIPTS + BRANCH_DISPLAY_SCRIPTS + TROOP_EDITOR_SCRIPTS + TREE_IO_SCRIPTS + GUARD_REPLACEMENTS_SCRIPTS + EXISTING_TROOPS_SCRIPTS
 
 # Set the dummy/custom-troop slot links for preset 4 at game start and seed the
 # real troop with the default stats (and copy them to its dummy), mirroring

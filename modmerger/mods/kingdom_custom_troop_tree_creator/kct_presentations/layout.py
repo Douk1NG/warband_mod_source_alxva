@@ -95,13 +95,33 @@ CSTM_BUTTONS_GAP = 20
 CSTM_EXPORT_BUTTON_POS = (CSTM_BUTTONS_POS_X - 60, CSTM_BUTTONS_POS_Y - 10)
 
 # Per-tree equipment budget selector (creator header, below the prefix input):
-# a combo BUTTON (dropdown) whose options carry the "Budget:" prefix baked in,
-# so no separate label overlay is needed. Balanced (0) / Boosted (1) / Cheater
-# (2) use the level tables; Auto (3) uses the gear cost (import default). No
-# overlay_set_size on the combo (user rule) - the store/picker combos use the
-# default size.
+# picker-style "label -> select": a separate "Budget" text label overlay sits to
+# the LEFT of a combo BUTTON (dropdown); the option strings carry no prefix, so
+# the select shows just Balanced (0) / Boosted (1) / Cheater (2) / Auto (3).
+# Auto uses the gear cost (import default).
+# BUDGET_COMBO_SIZE is applied with overlay_set_size exactly like the troop
+# editor's item-type / item-modifier selects (750x750 - the proven store
+# pattern), so the combo renders at that size instead of the native default.
 BUDGET_OPTIONS = ("Balanced", "Boosted", "Cheater", "Auto")
-BUDGET_COMBO_POS  = (165, 610)
+BUDGET_COMBO_POS  = (245, 610)
+BUDGET_LABEL_POS  = (60, 625)
+BUDGET_LABEL_FONT = 900
+BUDGET_LABEL_AREA = (130, 50)
+BUDGET_COMBO_SIZE = (750, 750)   # store-proven combo resize
+
+# Existing-troops toggle (below the Budget combo): a checkbox labelled
+# "Update troops:" - the text label is aligned with the Budget label (X=60,
+# same font/style) but sits lower on screen so it never overlaps the budget
+# row; the checkbox sits to its right. Checked (1) = Yes: on Save the owned
+# garrisons get the 50/50 infantry/archer focused refill (default refill when
+# the tree cannot provide both lineages) and the player's party custom stacks
+# are re-created fresh. Value persisted in $cstm_update_existing_troops (0/1,
+# default 0 = unchecked).
+UPDATE_EXISTING_LABEL_POS      = (90, 570)
+UPDATE_EXISTING_LABEL_FONT     = 900
+UPDATE_EXISTING_LABEL_AREA     = (260, 50)
+UPDATE_EXISTING_CHECKBOX_POS   = (160, 560)
+UPDATE_EXISTING_CHECKBOX_SIZE  = 0   # 0 = native mesh size (no overlay_set_size)
 
 # Preset-4 node portrait size (sits inline with the branch skeleton).
 P4_PORTRAIT_W = 330
