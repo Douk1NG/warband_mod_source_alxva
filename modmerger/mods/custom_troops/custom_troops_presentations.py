@@ -130,9 +130,6 @@ new_presentations = [
 				(faction_set_color, "fac_player_supporters_faction", 0xFF0000),
 				(assign, "$players_kingdom_name_set", 1),
 				
-				# Return to the town menu and let its redirect open the KCT picker
-				# (same pattern the constable/minister dialogs use) - this is more
-				# robust than starting the picker presentation directly from here.
 				(assign, "$cstm_open_troop_tree_view", 1),
 				(presentation_set_duration, 0),
 			(try_end),
