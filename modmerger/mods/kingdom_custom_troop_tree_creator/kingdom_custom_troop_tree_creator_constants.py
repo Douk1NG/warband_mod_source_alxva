@@ -159,6 +159,8 @@ cstm_troop_tree_prefix = "trp_cstm_custom_troops_end"
 # plus kct_template_nodes_per_slot hero troops. The node width matches preset 4,
 # the largest current tree, while smaller presets use only the first N nodes.
 kct_template_slot_count = 12
+kct_import_preview_backup_slot = kct_template_slot_count
+kct_template_storage_slot_count = kct_template_slot_count + 1
 kct_template_nodes_per_slot = max([len(units) for _, _, units in KCT_CUSTOM_PRESETS])
 
 # Metadata slots on trp_kct_template_slot_<n>_meta.

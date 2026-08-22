@@ -332,6 +332,8 @@ def _build_create_run_ops():
 	ops = [
 		(try_begin,),
 			(key_clicked, key_escape),
+			(call_script, "script_kct_restore_import_preview_backup"),
+			(assign, "$kct_manage_from_picker", 0),
 			(start_presentation, "prsnt_cstm_choose_troop_tree"),
 		(try_end,),
 	]
@@ -391,6 +393,12 @@ def _build_create_event_ops():
 			## name, else first empty) and stay in the creator
 			(eq, ":object", "$kct_export_tree_button"),
 			(call_script, "script_kct_save_tree_to_slot"),
+			(try_begin,),
+				(eq, reg0, 1),
+				(assign, "$kct_import_preview_active", 0),
+				(assign, "$kct_manage_from_picker", 0),
+				(call_script, "script_kct_clear_template_slot", kct_import_preview_backup_slot),
+			(try_end,),
 			(start_presentation, "prsnt_cstm_create_troop_tree"),
 		(else_try,),
 			## SAVE BUTTON PRESSED - apply the kingdom wiring (recruit troop as
@@ -401,6 +409,9 @@ def _build_create_event_ops():
 			## deliberately bound to this Save event (never automatic), so no
 			## tree saved = native guards untouched.
 			(eq, ":object", "$kct_apply_tree_button"),
+			(assign, "$kct_import_preview_active", 0),
+			(assign, "$kct_manage_from_picker", 0),
+			(call_script, "script_kct_clear_template_slot", kct_import_preview_backup_slot),
 			(faction_set_slot, "fac_culture_player", slot_faction_tier_1_troop, "$cstm_troops_begin"),
 			(try_for_range, ":center", walled_centers_begin, walled_centers_end),
 				(store_faction_of_party, ":fac", ":center"),

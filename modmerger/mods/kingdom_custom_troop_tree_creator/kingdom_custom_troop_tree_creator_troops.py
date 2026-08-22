@@ -34,7 +34,7 @@ def build_custom_preset_dummy_skin(tree_index, units, skin_id, face_code_1, face
 
 def build_template_storage_troops():
 	troop_list = []
-	for slot_index in xrange(kct_template_slot_count):
+	for slot_index in xrange(kct_template_storage_slot_count):
 		meta_id = kct_template_meta_troop_id(slot_index)
 		troop_list.append([
 			meta_id, "", "", tf_hero, 0, 0, fac_player_supporters_faction, [],

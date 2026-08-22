@@ -70,7 +70,7 @@ def _build_compute_range_ops():
 
 def _build_template_meta_resolver_ops():
 	ops = [(store_script_param, ":slot", 1), (assign, reg0, 0)]
-	for slot_index in xrange(kct_template_slot_count):
+	for slot_index in xrange(kct_template_storage_slot_count):
 		ops.extend([
 			(try_begin,),
 				(eq, ":slot", slot_index),
@@ -85,7 +85,7 @@ def _build_template_node_resolver_ops():
 		(store_script_param, ":node", 2),
 		(assign, reg0, 0),
 	]
-	for slot_index in xrange(kct_template_slot_count):
+	for slot_index in xrange(kct_template_storage_slot_count):
 		ops.append((try_begin,) if slot_index == 0 else (else_try,))
 		ops.append((eq, ":slot", slot_index))
 		for node_index in xrange(kct_template_nodes_per_slot):
@@ -327,6 +327,45 @@ TREE_IO_SCRIPTS = [
 	("kct_get_template_node_troop", _build_template_node_resolver_ops()),
 	("kct_seed_default_template_slots", _build_seed_default_slots_ops()),
 
+# script_kct_export_tree_to_slot_quiet - same storage copy as export, but
+# without UI messages. Used for hidden import-preview backups.
+	("kct_export_tree_to_slot_quiet",
+	[
+		(store_script_param, ":slot", 1),
+		(call_script, "script_kct_get_template_meta_troop", ":slot"),
+		(assign, ":meta", reg0),
+
+		(str_store_troop_name, s2, cstm_troop_tree_prefix),
+		(try_begin,),
+			(str_is_empty, s2),
+			(str_store_string, s2, "@Custom"),
+			(troop_set_name, cstm_troop_tree_prefix, s2),
+		(try_end,),
+		(troop_set_name, ":meta", s2),
+		(troop_set_plural_name, ":meta", s2),
+
+		(store_sub, ":count", "$cstm_troops_end", "$cstm_troops_begin"),
+		(store_add, ":budget_slot", cstm_slot_tree_budget_begin, "$cstm_selected_tree"),
+		(troop_get_slot, ":budget", cstm_troop_tree_prefix, ":budget_slot"),
+		(troop_set_slot, ":meta", kct_slot_template_occupied, 1),
+		(troop_set_slot, ":meta", kct_slot_template_tree, "$cstm_selected_tree"),
+		(troop_set_slot, ":meta", kct_slot_template_gender, "$cstm_selected_gender"),
+		(troop_set_slot, ":meta", kct_slot_template_count, ":count"),
+		(troop_set_slot, ":meta", kct_slot_template_budget, ":budget"),
+		(troop_set_slot, ":meta", kct_slot_template_version, kct_template_version),
+
+		(assign, ":index", 0),
+		(try_for_range, ":troop", "$cstm_troops_begin", "$cstm_troops_end"),
+			(troop_get_slot, ":dummy", ":troop", cstm_slot_troop_dummy),
+			(call_script, "script_kct_get_template_node_troop", ":slot", ":index"),
+			(assign, ":template", reg0),
+	] + _copy_troop_record_ops(":troop", ":dummy", ":template") + [
+			(val_add, ":index", 1),
+		(try_end,),
+
+		(assign, reg0, 1),
+	]),
+
 # script_kct_export_tree_to_slot - param 1: save slot index. Copies the current
 # KCTT tree into vanilla hidden template troops. This replaces the WSE JSON file
 # backend while keeping the same player-facing save/load workflow.
@@ -442,6 +481,12 @@ TREE_IO_SCRIPTS = [
 			(display_message, "@Template slot version is unsupported", 0xff0000),
 			(assign, reg0, 0),
 		(else_try,),
+			(try_begin,),
+				(eq, "$kct_manage_from_picker", 1),
+				(eq, "$kct_import_preview_active", 1),
+				(call_script, "script_kct_restore_import_preview_backup"),
+				(assign, "$kct_manage_from_picker", 1),
+			(try_end,),
 			(troop_get_slot, "$cstm_selected_tree", ":meta", kct_slot_template_tree),
 			(call_script, "script_kct_compute_tree_range"),
 			(store_sub, ":range_count", "$cstm_troops_end", "$cstm_troops_begin"),
@@ -450,6 +495,13 @@ TREE_IO_SCRIPTS = [
 			(display_message, "@Template slot does not match the selected tree", 0xff0000),
 			(assign, reg0, 0),
 		(else_try,),
+			(try_begin,),
+				(eq, "$kct_manage_from_picker", 1),
+				(neq, "$kct_import_preview_active", 1),
+				(call_script, "script_kct_export_tree_to_slot_quiet", kct_import_preview_backup_slot),
+				(assign, "$kct_import_preview_active", 1),
+			(try_end,),
+
 			(str_store_troop_name, s0, ":meta"),
 			(troop_set_name, cstm_troop_tree_prefix, s0),
 			(troop_get_slot, ":budget", ":meta", kct_slot_template_budget),
@@ -479,6 +531,46 @@ TREE_IO_SCRIPTS = [
 	[
 		(store_script_param, ":slot", 1),
 		(call_script, "script_kct_import_tree_from_slot", ":slot"),
+	]),
+
+	("kct_restore_import_preview_backup",
+	[
+		(try_begin,),
+			(eq, "$kct_import_preview_active", 1),
+			(call_script, "script_kct_get_template_meta_troop", kct_import_preview_backup_slot),
+			(assign, ":meta", reg0),
+			(troop_slot_eq, ":meta", kct_slot_template_occupied, 1),
+
+			(troop_get_slot, "$cstm_selected_tree", ":meta", kct_slot_template_tree),
+			(troop_get_slot, "$cstm_selected_gender", ":meta", kct_slot_template_gender),
+			(call_script, "script_kct_compute_tree_range"),
+			(store_sub, ":range_count", "$cstm_troops_end", "$cstm_troops_begin"),
+			(troop_get_slot, ":file_count", ":meta", kct_slot_template_count),
+			(eq, ":range_count", ":file_count"),
+
+			(str_store_troop_name, s0, ":meta"),
+			(troop_set_name, cstm_troop_tree_prefix, s0),
+			(troop_get_slot, ":budget", ":meta", kct_slot_template_budget),
+			(store_add, ":budget_slot", cstm_slot_tree_budget_begin, "$cstm_selected_tree"),
+			(troop_set_slot, cstm_troop_tree_prefix, ":budget_slot", ":budget"),
+
+			(assign, ":index", 0),
+			(try_for_range, ":troop", "$cstm_troops_begin", "$cstm_troops_end"),
+				(troop_get_slot, ":dummy", ":troop", cstm_slot_troop_dummy),
+				(call_script, "script_kct_get_template_node_troop", kct_import_preview_backup_slot, ":index"),
+				(assign, ":template", reg0),
+	] + _copy_troop_record_ops(":template", ":template", ":troop") + [
+				(str_store_troop_name, s0, ":template"),
+				(troop_set_name, ":dummy", s0),
+				(str_store_troop_name_plural, s0, ":template"),
+				(troop_set_plural_name, ":dummy", s0),
+				(call_script, "script_kct_copy_custom_troop_to_dummy", ":troop"),
+				(call_script, "script_kct_replace_custom_troop_with_dummy", ":troop"),
+				(val_add, ":index", 1),
+			(try_end,),
+		(try_end,),
+		(assign, "$kct_import_preview_active", 0),
+		(call_script, "script_kct_clear_template_slot", kct_import_preview_backup_slot),
 	]),
 
 	("kct_clear_template_slot",

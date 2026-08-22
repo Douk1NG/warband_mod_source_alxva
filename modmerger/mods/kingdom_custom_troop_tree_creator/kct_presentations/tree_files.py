@@ -135,6 +135,7 @@ def _build_run_ops():
 	return [
 		(try_begin,),
 			(key_clicked, key_escape),
+			(assign, "$kct_manage_from_picker", 0),
 			(start_presentation, "prsnt_cstm_choose_troop_tree"),
 		(try_end,),
 	]
@@ -207,6 +208,7 @@ def _build_event_ops():
 			(try_end,),
 		(else_try,),
 			(eq, ":object", "$kct_tree_files_exit"),
+			(assign, "$kct_manage_from_picker", 0),
 			(start_presentation, "prsnt_cstm_choose_troop_tree"),
 		(try_end,),
 	])
