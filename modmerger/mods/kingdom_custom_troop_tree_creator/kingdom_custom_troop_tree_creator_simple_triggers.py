@@ -36,14 +36,6 @@ class SimpleTrigger:
 # we restore every real troop in that range from its dummy - same guard-and-copy
 # pattern as the preset-4 block below.
 new_load_operations = [
-	# Array handles are runtime-only in WSE2 (not serialized into savegames), so
-	# after loading a save the handles cached in these globals are stale/invalid.
-	# Zero them so the > 0 guards in the store's code (kct_save_tree_to_slot,
-	# tree_files) skip the array_free and re-create the arrays fresh instead of
-	# freeing an invalid handle.
-	(assign, "$kct_tree_registry", 0),
-	(assign, "$kct_slot_row_texts", 0),
-	(assign, "$kct_slot_checkboxes", 0),
 	(try_for_range, ":troop", cstm_troops_begin, cstm_troops_end),
 		(try_begin,),
 			(troop_get_slot, ":dummy", ":troop", cstm_slot_troop_dummy),
@@ -52,16 +44,28 @@ new_load_operations = [
 		(try_end,),
 	(try_end,),
 ]
-for skin_id in (0, 1):
-	for node_index in xrange(len(PRESET_4_UNITS)):
-		real_id = "trp_" + preset_4_troop_id(skin_id, node_index)
-		new_load_operations.extend([
-			(try_begin,),
-				(troop_get_slot, ":dummy", real_id, cstm_slot_troop_dummy),
-				(gt, ":dummy", 0),
-				(call_script, "script_kct_replace_custom_troop_with_dummy", real_id),
-			(try_end,),
-		])
+for tree_index, _, units in KCT_CUSTOM_PRESETS:
+	index_of = {}
+	for node_index, (label, _, _) in enumerate(units):
+		index_of[label] = node_index
+	for skin_id in (0, 1):
+		for node_index in xrange(len(units)):
+			real_id = "trp_" + kct_custom_preset_troop_id(tree_index, skin_id, node_index)
+			dummy_id = real_id + "_dummy"
+			new_load_operations.extend([
+				(troop_set_type, real_id, skin_id),
+				(troop_set_type, dummy_id, skin_id),
+				(troop_set_slot, real_id, cstm_slot_troop_dummy, dummy_id),
+				(troop_set_slot, dummy_id, cstm_slot_troop_custom_troop, real_id),
+				(try_begin,),
+					(troop_get_slot, ":dummy", real_id, cstm_slot_troop_dummy),
+					(gt, ":dummy", 0),
+					(call_script, "script_kct_replace_custom_troop_with_dummy", real_id),
+				(try_end,),
+			])
+			for child_label in units[node_index][2]:
+				child_real = "trp_" + kct_custom_preset_troop_id(tree_index, skin_id, index_of[child_label])
+				new_load_operations.append((troop_set_slot, child_real, cstm_slot_troop_base_troop, real_id))
 
 # Heal the native kingdoms' guard-site faction slots (guard, castle guard,
 # prison) on every load. Earlier dev builds polluted some native kingdoms'
@@ -74,6 +78,17 @@ for skin_id in (0, 1):
 # fac_player_supporters_faction / fac_culture_player slots with the preset-1
 # male tree. Those slots persist correctly in the savegame.
 new_load_operations.append((call_script, "script_kct_restore_native_guards"))
+# Retired temporary migration, 2026-08-22:
+# Re-seeded old saves once after expanding the vanilla template bank to 12
+# slots and adding Rhodoks/Falcon/Calradian. The active saves have now been
+# opened/saved, so keep this breadcrumb without running it on every load.
+# new_load_operations.extend([
+# 	(try_begin,),
+# 		(neq, "$kct_template_slots_preset8_rhodoks_migrated", 1),
+# 		(call_script, "script_kct_seed_default_template_slots"),
+# 		(assign, "$kct_template_slots_preset8_rhodoks_migrated", 1),
+# 	(try_end,),
+# ])
 
 new_simple_triggers = [
 	(0, new_load_operations),

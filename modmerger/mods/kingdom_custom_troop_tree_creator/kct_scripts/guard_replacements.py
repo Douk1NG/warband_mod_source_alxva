@@ -57,22 +57,15 @@ PRESET_TREES_1_3 = [
 	("3_tiers", 3, 5),
 ]
 
-# Preset 4 node indices per level (0 = weakest .. 5 = strongest). The tree's
-# levels map to tiers; each level lists every node the player can build there.
-PRESET_4_LEVELS = [
-	[0], [1, 2], [3, 4, 5, 6], [7, 8, 9, 10, 11, 12],
-	[13, 14, 15, 16, 17, 18], [19, 20, 21],
-]
-
 # Tree tier index used as the floor for every guard-picking scan ("tier 3 en
 # adelante"): the tiers that fill the game's tier_3/tier_4 slots.
 MIN_GUARD_TIER = 3
 
-def _troop_id(tree_id, skin_id, branch_or_node, tier, preset4=False):
+def _troop_id(tree_id, skin_id, branch_or_node, tier, custom_graph=False):
 	# presets 1-3: (branch, tier) -> cstm_custom_troop_<tree>_<skin>_<branch>_<tier>
-	# preset 4:    branch_or_node is the node index -> cstm_custom_troop_4_<skin>_<node>_0
-	if preset4:
-		return "trp_" + preset_4_troop_id(skin_id, branch_or_node)
+	# custom graph presets: branch_or_node is the node index -> cstm_custom_troop_<tree>_<skin>_<node>_0
+	if custom_graph:
+		return "trp_" + kct_custom_preset_troop_id(tree_id, skin_id, branch_or_node)
 	return "trp_cstm_custom_troop_%s_%d_%d_%d" % (tree_id, skin_id, branch_or_node, tier)
 
 def _emit_class_scan_ops(candidates, infantry_only, fallback, best_reg=":best", found_reg=":found"):
@@ -114,26 +107,34 @@ def _emit_write_ops(slots, guarded, best_reg=":best"):
 		ops += [(try_end,)]
 	return ops
 
-def _build_tree_guard_ops(tree_id, num_branches, num_tiers, skin_id, preset4):
+def _levels_for_units(units):
+	return sorted(set([unit_level for _, unit_level, _ in units]))
+
+def _nodes_for_level(units, level):
+	return [node_index for node_index, (_, unit_level, _) in enumerate(units) if unit_level == level]
+
+def _build_tree_guard_ops(tree_id, num_branches, num_tiers, skin_id, custom_graph, units=None):
 	ops = []
-	if preset4:
+	if custom_graph:
+		levels = _levels_for_units(units)
 		# Street slots scan their level (floor 3): tier_2 -> level 3, tier_3 ->
 		# level 4, tier_4 -> level 5. Fallback = the level's first node,
 		# regardless of class.
 		street_slots = [slot_faction_tier_2_troop, slot_faction_tier_3_troop, slot_faction_tier_4_troop]
-		for slot, level in zip(street_slots, (3, 4, 5)):
-			nodes = PRESET_4_LEVELS[level]
-			candidates = [_troop_id(None, skin_id, n, None, preset4=True) for n in nodes]
+		for slot, level_index in zip(street_slots, (min(3, len(levels) - 1), min(4, len(levels) - 1), min(5, len(levels) - 1))):
+			nodes = _nodes_for_level(units, levels[level_index])
+			candidates = [_troop_id(tree_id, skin_id, n, None, custom_graph=True) for n in nodes]
 			ops += _emit_class_scan_ops(candidates, infantry_only=False, fallback=candidates[0])
 			ops += _emit_write_ops([slot], guarded=False)
 		# guard + castle_guard = last infantry/archer tier: levels 5..3, all nodes.
 		guard_candidates = []
-		for level in (5, 4, 3):
-			guard_candidates += [_troop_id(None, skin_id, n, None, preset4=True) for n in PRESET_4_LEVELS[level]]
+		for level_index in range(len(levels) - 1, max(MIN_GUARD_TIER - 1, -1), -1):
+			guard_candidates += [_troop_id(tree_id, skin_id, n, None, custom_graph=True) for n in _nodes_for_level(units, levels[level_index])]
 		ops += _emit_class_scan_ops(guard_candidates, infantry_only=False, fallback=None)
 		ops += _emit_write_ops([slot_faction_guard_troop, slot_faction_castle_guard_troop], guarded=True)
 		# prison = mid tier (6 // 2 = 3), first node, any class.
-		prison_troop = _troop_id(None, skin_id, PRESET_4_LEVELS[3][0], None, preset4=True)
+		prison_level_index = max(min(len(levels) // 2, len(levels) - 1), min(MIN_GUARD_TIER, len(levels) - 1))
+		prison_troop = _troop_id(tree_id, skin_id, _nodes_for_level(units, levels[prison_level_index])[0], None, custom_graph=True)
 	else:
 		# Street slots per branch: tier_2 -> branch 0, tier_3 -> branch 1 (if
 		# the tree has two branches, else branch 0), tier_4 -> branch 2 (if it
@@ -176,16 +177,16 @@ def _build_apply_guard_replacements_ops():
 		for s in (0, 1):
 			ops.append((try_begin,) if s == 0 else (else_try,))
 			ops.append((eq, "$cstm_selected_gender", s))
-			ops.extend(_build_tree_guard_ops(tree_id, num_branches, num_tiers, s, preset4=False))
+			ops.extend(_build_tree_guard_ops(tree_id, num_branches, num_tiers, s, custom_graph=False))
 		ops.append((try_end,))
-	# Preset 4 (6 tiers)
-	ops.append((else_try,))
-	ops.append((eq, "$cstm_selected_tree", 3))
-	for s in (0, 1):
-		ops.append((try_begin,) if s == 0 else (else_try,))
-		ops.append((eq, "$cstm_selected_gender", s))
-		ops.extend(_build_tree_guard_ops(None, None, 6, s, preset4=True))
-	ops.append((try_end,))
+	for tree_index, _, units in KCT_CUSTOM_PRESETS:
+		ops.append((else_try,))
+		ops.append((eq, "$cstm_selected_tree", tree_index - 1))
+		for s in (0, 1):
+			ops.append((try_begin,) if s == 0 else (else_try,))
+			ops.append((eq, "$cstm_selected_gender", s))
+			ops.extend(_build_tree_guard_ops(tree_index, None, None, s, custom_graph=True, units=units))
+		ops.append((try_end,))
 	ops.append((try_end,))
 	return ops
 

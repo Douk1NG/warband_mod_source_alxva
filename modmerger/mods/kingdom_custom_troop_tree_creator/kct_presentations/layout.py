@@ -15,8 +15,8 @@ from module_constants import *
 # item-type strings and stat ranges - custom_troops is active and mandatory.
 from custom_troops_constants import *
 
-# Preset-4 troops (single source of truth for the 22-unit tree shape).
-from kingdom_custom_troop_tree_creator_constants import PRESET_4_UNITS, preset_4_troop_id
+# KCTT custom preset troops (single source of truth for additional graph shapes).
+from kingdom_custom_troop_tree_creator_constants import KCT_CUSTOM_PRESETS, PRESET_4_UNITS, preset_4_troop_id, kct_custom_preset_units
 
 # Pick screen (prsnt_cstm_choose_troop_tree):
 # A column of two label -> select lines at the top: the tree select labelled
@@ -40,8 +40,7 @@ PRESET_NAMES = [
 	"Preset 1 - 1 branch, 7 tiers",
 	"Preset 2 - 2 branches, 6 tiers",
 	"Preset 3 - 3 branches, 5 tiers",
-	"Preset 4 - custom (22 units)",
-]
+] + [name for _, name, _ in KCT_CUSTOM_PRESETS]
 
 NODE_LABEL_SIZE = 900
 NODE_LABEL_W = 100
@@ -266,6 +265,23 @@ def _preset_4_positions():
 			positions[key] = (x, y)
 	return positions
 
+def _custom_preset_positions(tree_index):
+	tiers, edges, _ = _custom_preset_spec(tree_index)
+	units = kct_custom_preset_units(tree_index)
+	lane = _custom_preset_lanes(tree_index)
+	num_leaves = sum(1 for _, _, child_labels in units if len(child_labels) == 0)
+	cx, cy, qw, qh = PREVIEW
+	spacing = qh / float(num_leaves + 1)
+	root_lane = lane[0]
+	positions = {}
+	num_tiers = max(1, len(tiers) - 1)
+	for tier, row in enumerate(tiers):
+		for key in row:
+			x = 50 + int(round(tier * (780.0 / num_tiers)))
+			y = int(round(cy + (lane[key] - root_lane) * spacing))
+			positions[key] = (x, y)
+	return positions
+
 # Manual per-node portrait nudge (dx, dy) for the preset-4 dummies, in points.
 # Node index = order in PRESET_4_UNITS:
 #   0=A  1=B1 2=B2 3=C1 4=C2 5=C3 6=C4 7=D1 8=D2 9=D3 10=D4 11=D5 12=D6
@@ -419,6 +435,22 @@ def _preset_4_viewer_positions():
 			positions[key] = (x, y)
 	return positions
 
+def _custom_preset_viewer_positions(tree_index):
+	tiers, _, _ = _custom_preset_spec(tree_index)
+	lane = _custom_preset_lanes(tree_index)
+	num_tiers = max(1, len(tiers) - 1)
+	gap_x = 900 / num_tiers
+	gap_y = 104
+	root_lane = lane[0]
+	center_y = 248
+	positions = {}
+	for tier, row in enumerate(tiers):
+		for key in row:
+			x = 50 + tier * gap_x
+			y = int(round(center_y + (lane[key] - root_lane) * gap_y)) - P4_VIEWER_Y_SHIFT
+			positions[key] = (x, y)
+	return positions
+
 def _layout_positions(cx, cy, qw, qh, tiers):
 	"""tiers: list of lists of node keys. Returns {key: (x, y)} with tier 0 on the
 	left and each subsequent tier a column to the right (horizontal, root-left)."""
@@ -470,6 +502,55 @@ def _preset_4_spec():
 	codes = [label for label, _, _ in PRESET_4_UNITS]
 	return tiers, edges, codes
 
+def _custom_preset_spec(tree_index):
+	units = kct_custom_preset_units(tree_index)
+	index_of = {}
+	for i, (label, _, _) in enumerate(units):
+		index_of[label] = i
+	children = []
+	edges = []
+	for i, (_, _, child_labels) in enumerate(units):
+		child_idx = [index_of[c] for c in child_labels]
+		children.append(child_idx)
+		for c in child_idx:
+			edges.append((i, c))
+	tiers = []
+	frontier = [0]
+	while frontier:
+		tiers.append(frontier)
+		nxt = []
+		for parent in frontier:
+			nxt.extend(children[parent])
+		frontier = nxt
+	codes = [label for label, _, _ in units]
+	return tiers, edges, codes
+
+def _custom_preset_lanes(tree_index):
+	tiers, edges, _ = _custom_preset_spec(tree_index)
+	children = {}
+	parent = {}
+	for p, c in edges:
+		children.setdefault(p, []).append(c)
+		parent[c] = p
+	root = 0
+	lane = {}
+	next_lane = [0]
+	def assign_leaves(u):
+		if u not in children:
+			lane[u] = next_lane[0]
+			next_lane[0] += 1
+		else:
+			for c in children[u]:
+				assign_leaves(c)
+	assign_leaves(root)
+	def centre(u):
+		if u not in children:
+			return lane[u]
+		lane[u] = sum(centre(c) for c in children[u]) / float(len(children[u]))
+		return lane[u]
+	centre(root)
+	return lane
+
 def _branch_tier_code_ops(branch, tier):
 	return [(str_store_string, s0, "@|" + chr(ord('A') + branch) + str(tier + 1) + "|")]
 
@@ -515,6 +596,7 @@ def _tree_specs():
 	for tree_id, num_branches, num_tiers in PRESET_TREES_1_3:
 		tiers, edges = _tree_specs_1_3(tree_id, num_branches, num_tiers)
 		specs.append((tiers, edges, lambda key: _branch_tier_code_ops(key[0], key[1])))
-	tiers, edges, codes = _preset_4_spec()
-	specs.append((tiers, edges, lambda key: _code_label_ops(codes[key])))
+	for tree_index, _, _ in KCT_CUSTOM_PRESETS:
+		tiers, edges, codes = _custom_preset_spec(tree_index)
+		specs.append((tiers, edges, lambda key, codes=codes: _code_label_ops(codes[key])))
 	return specs

@@ -14,7 +14,7 @@ from custom_troops_constants import *
 from kingdom_custom_troop_tree_creator_constants import *
 
 from kingdom_custom_troop_tree_creator.kct_presentations.layout import *
-from kingdom_custom_troop_tree_creator.kct_presentations.layout import _tree_specs, _preset_4_positions, _draw_tree_ops
+from kingdom_custom_troop_tree_creator.kct_presentations.layout import _tree_specs, _custom_preset_positions, _draw_tree_ops
 
 def _build_load_ops():
 	ops = [
@@ -44,7 +44,7 @@ def _build_load_ops():
 	for i, (tiers, edges, label_fn) in enumerate(specs):
 		ops.append((try_begin,) if i == 0 else (else_try,))
 		ops.append((eq, "$cstm_tree_preview_index", i))
-		pos = _preset_4_positions() if i == 3 else None
+		pos = _custom_preset_positions(i + 1) if i >= 3 else None
 		ops.extend(_draw_tree_ops(tiers, edges, label_fn, pos))
 	ops.append((try_end,))
 	# Tree name (= the kingdom troop prefix) defaults to "Custom" until the
@@ -87,6 +87,7 @@ def _build_event_ops():
 		(else_try,),
 			(eq, ":object", "$cstm_gender_selector"),
 			(assign, "$cstm_selected_gender", ":value"),
+			(start_presentation, "prsnt_cstm_choose_troop_tree"),
 		(else_try,),
 			(eq, ":object", "$cstm_choose_tree_button"),
 			(assign, "$cstm_selected_tree", "$cstm_tree_preview_index"),

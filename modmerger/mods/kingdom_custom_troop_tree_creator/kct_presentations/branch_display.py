@@ -14,14 +14,14 @@ from custom_troops_constants import *
 from kingdom_custom_troop_tree_creator_constants import *
 
 from kingdom_custom_troop_tree_creator.kct_presentations.layout import *
-from kingdom_custom_troop_tree_creator.kct_presentations.layout import _preset_4_spec, _preset_4_viewer_positions, _preset_4_dummy_offset
+from kingdom_custom_troop_tree_creator.kct_presentations.layout import _custom_preset_spec, _custom_preset_viewer_positions, _preset_4_dummy_offset
 
 ####################################################################################################################
 # TROOP TREE CREATION step (prsnt_cstm_create_troop_tree).
 #
 # Entered after the player picks a tree + gender in prsnt_cstm_choose_troop_tree
 # ("Choose" button). State available on entry:
-#   $cstm_selected_tree   0..3  index into PRESET_NAMES (0-2 = presets 1-3, 3 = preset 4)
+#   $cstm_selected_tree   index into PRESET_NAMES (0-2 = base presets, 3+ = KCTT custom graph presets)
 #   $cstm_selected_gender 0/1   skin id (0 = male, 1 = female)
 #
 # The presentation is a self-contained port of the working mod's tree viewer
@@ -60,23 +60,35 @@ def _build_create_setup_ops():
 			ops.append((assign, "$cstm_reinforcement_templates_begin", "pt_cstm_kingdom_player_%s_%d_reinforcements_a" % (tree_id, s)))
 			ops.append((store_add, "$cstm_reinforcement_templates_end", "$cstm_reinforcement_templates_begin", 3))
 		ops.append((try_end,))
-	# Preset 4 (6 tiers)
-	ops.append((else_try,))
-	ops.append((eq, "$cstm_selected_tree", 3))
-	ops.append((assign, "$cstm_num_tiers", 6))
-	for s in (0, 1):
-		ops.append((try_begin,) if s == 0 else (else_try,))
-		ops.append((eq, "$cstm_selected_gender", s))
-		begin = "trp_" + preset_4_troop_id(s, 0)
-		end = "trp_cstm_custom_troop_4_1_0_0" if s == 0 else "trp_cstm_custom_troop_4_end"
-		ops.append((assign, "$cstm_troops_begin", begin))
-		ops.append((assign, "$cstm_troops_end", end))
-		ops.append((assign, "$cstm_presentation_troop", "trp_cstm_presentation_troop_%d" % s))
-		# Reinforcement party templates for AI lord/garrison recruitment (3
-		# consecutive templates _a/_b/_c per skin, end is exclusive).
-		ops.append((assign, "$cstm_reinforcement_templates_begin", "pt_cstm_kingdom_player_4_%d_reinforcements_a" % s))
-		ops.append((store_add, "$cstm_reinforcement_templates_end", "$cstm_reinforcement_templates_begin", 3))
-	ops.append((try_end,))
+	for tree_index, _, units in KCT_CUSTOM_PRESETS:
+		tiers, _, _ = _custom_preset_spec(tree_index)
+		ops.append((else_try,))
+		ops.append((eq, "$cstm_selected_tree", tree_index - 1))
+		ops.append((assign, "$cstm_num_tiers", len(tiers)))
+		for s in (0, 1):
+			ops.append((try_begin,) if s == 0 else (else_try,))
+			ops.append((eq, "$cstm_selected_gender", s))
+			begin = "trp_" + kct_custom_preset_troop_id(tree_index, s, 0)
+			end = "trp_" + (kct_custom_preset_troop_id(tree_index, 1, 0) if s == 0 else "cstm_custom_troop_%d_end" % tree_index)
+			ops.append((assign, "$cstm_troops_begin", begin))
+			ops.append((assign, "$cstm_troops_end", end))
+			ops.append((assign, "$cstm_presentation_troop", "trp_cstm_presentation_troop_%d" % s))
+			ops.append((assign, "$cstm_reinforcement_templates_begin", "pt_cstm_kingdom_player_%d_%d_reinforcements_a" % (tree_index, s)))
+			ops.append((store_add, "$cstm_reinforcement_templates_end", "$cstm_reinforcement_templates_begin", 3))
+			index_of = {}
+			for node_index, (label, _, _) in enumerate(units):
+				index_of[label] = node_index
+			for node_index, (_, _, children) in enumerate(units):
+				real_id = "trp_" + kct_custom_preset_troop_id(tree_index, s, node_index)
+				dummy_id = real_id + "_dummy"
+				ops.append((troop_set_type, real_id, s))
+				ops.append((troop_set_type, dummy_id, s))
+				ops.append((troop_set_slot, real_id, cstm_slot_troop_dummy, dummy_id))
+				ops.append((troop_set_slot, dummy_id, cstm_slot_troop_custom_troop, real_id))
+				for child_label in children:
+					child_real = "trp_" + kct_custom_preset_troop_id(tree_index, s, index_of[child_label])
+					ops.append((troop_set_slot, child_real, cstm_slot_troop_base_troop, real_id))
+		ops.append((try_end,))
 	ops.append((try_end,))
 	# The side-effect wiring (recruit troop as the culture's tier-1 + refresh
 	# every player-faction centre's culture/volunteers) lives in its own helper
@@ -114,14 +126,14 @@ def _build_apply_kingdom_setup_ops():
 	]
 	return ops
 
-def _build_preset4_viewer_ops():
-	"""Preset-4 tree: a dummy portrait at each node (centred on the branch point)
+def _build_custom_preset_viewer_ops(tree_index):
+	"""Custom graph preset: a dummy portrait at each node (centred on the branch point)
 	with the branch lines drawn ON TOP of the portraits so the connected tree stays
 	visible through the overlap - same look as the presets 1-3 branches. Names stay
 	hidden for now. The portrait is the node's dummy troop (averaged face); the
 	overlay slot maps to the real troop so clicks target the customisable troop."""
-	tiers, edges, _ = _preset_4_spec()
-	positions = _preset_4_viewer_positions()
+	tiers, edges, _ = _custom_preset_spec(tree_index)
+	positions = _custom_preset_viewer_positions(tree_index)
 	children_by_index = {}
 	for parent, child in edges:
 		children_by_index.setdefault(parent, []).append(child)
@@ -133,14 +145,14 @@ def _build_preset4_viewer_ops():
 		for row in tiers:
 			for node_index in row:
 				x, y = positions[node_index]
-				dummy_id = "trp_" + preset_4_troop_id(s, node_index) + "_dummy"
-				real_id = "trp_" + preset_4_troop_id(s, node_index)
+				dummy_id = "trp_" + kct_custom_preset_troop_id(tree_index, s, node_index) + "_dummy"
+				real_id = "trp_" + kct_custom_preset_troop_id(tree_index, s, node_index)
 				ops.append((troop_set_slot, real_id, cstm_slot_troop_dummy, dummy_id))
 				ops.append((troop_set_slot, dummy_id, cstm_slot_troop_custom_troop, real_id))
 				# Self-heal the parent (base_troop) links for saves made before the
 				# game-start loop existed - the restriction reads these at click time.
 				for child_node in children_by_index.get(node_index, []):
-					child_real = "trp_" + preset_4_troop_id(s, child_node)
+					child_real = "trp_" + kct_custom_preset_troop_id(tree_index, s, child_node)
 					ops.append((troop_set_slot, child_real, cstm_slot_troop_base_troop, real_id))
 				# Equip the dummy before rendering so the portrait shows the saved
 				# gear: the store moves the dummy's equipped items into its
@@ -151,7 +163,7 @@ def _build_preset4_viewer_ops():
 				# kct_create_troop_image_size anchors by top-left; subtract half the
 				# size so the portrait is centred on the branch point, then apply
 				# the global dummy lift (Y) / shift (X) and the per-node nudge.
-				dx, dy = _preset_4_dummy_offset(node_index)
+				dx, dy = _preset_4_dummy_offset(node_index) if tree_index == 4 else (0, 0)
 				base_x = x - P4_PORTRAIT_W // 2 + P4_DUMMY_X_OFFSET
 				base_y = y - P4_PORTRAIT_H // 2 - P4_DUMMY_Y_OFFSET
 				ops.append((call_script, "script_kct_create_troop_image_size", dummy_id, base_x + dx, base_y + dy, P4_PORTRAIT_W, P4_PORTRAIT_H))
@@ -169,15 +181,12 @@ def _build_preset4_viewer_ops():
 		ops.append((call_script, "script_kct_prsnt_lines_to", px, py, qx, qy, EDGE_COLOR))
 	return ops
 
-def _build_preset4_label_ops():
-	"""Name label for every preset-4 dummy portrait, showing the unit name only
-	(the dummy troop's name, e.g. "Unit A"). TEMP tuning mode: every label is
-	dropped at P4_LABEL_CENTER so none are lost off-screen, then registered with
-	the label drag tool and moved by hand; Snapshot bakes each label's delta (vs
-	the centre) into P4_LABEL_MANUAL. Labels are plain text overlays (no action),
-	so they never block node clicks. Remove the tool and restore a per-label base
-	when the offsets are baked."""
-	tiers, _, _ = _preset_4_spec()
+def _build_custom_preset_label_ops(tree_index):
+	"""Name label for every custom-graph dummy portrait, showing the unit name only.
+	Preset 4 keeps its baked manual label positions. Smaller graph presets use
+	automatic labels beside each portrait, matching the base preset behavior."""
+	tiers, _, _ = _custom_preset_spec(tree_index)
+	positions = _custom_preset_viewer_positions(tree_index)
 	last_tier = set(tiers[-1])
 	ops = []
 	for s in (0, 1):
@@ -185,13 +194,24 @@ def _build_preset4_label_ops():
 		ops.append((eq, "$cstm_selected_gender", s))
 		for row in tiers:
 			for node_index in row:
-				dummy_id = "trp_" + preset_4_troop_id(s, node_index) + "_dummy"
+				dummy_id = "trp_" + kct_custom_preset_troop_id(tree_index, s, node_index) + "_dummy"
 				if node_index in last_tier:
 					flags = tf_right_align | tf_vertical_align_center
 				else:
 					flags = tf_left_align | tf_vertical_align_center
-				base_x, base_y = P4_LABEL_CENTER
-				manual_dx, manual_dy = P4_LABEL_MANUAL.get(node_index, (0, 0))
+				if tree_index == 4:
+					base_x, base_y = P4_LABEL_CENTER
+					manual_dx, manual_dy = P4_LABEL_MANUAL.get(node_index, (0, 0))
+				else:
+					x, y = positions[node_index]
+					portrait_x = x - P4_PORTRAIT_W // 2 + P4_DUMMY_X_OFFSET
+					portrait_y = y - P4_PORTRAIT_H // 2 - P4_DUMMY_Y_OFFSET
+					if node_index in last_tier:
+						base_x = portrait_x + P4_LABEL_LEFT_DX
+					else:
+						base_x = portrait_x + P4_LABEL_RIGHT_DX
+					base_y = portrait_y + P4_LABEL_DY
+					manual_dx, manual_dy = (0, 0)
 				ops.append((str_store_troop_name, s0, dummy_id))
 				ops.append((call_script, "script_kct_create_text_overlay", "str_s0", base_x + manual_dx, base_y + manual_dy, P4_LABEL_FONT, P4_LABEL_W, P4_LABEL_H, flags))
 				# TEMP label drag tool: register the label as a draggable item.
@@ -270,12 +290,13 @@ def _build_create_load_ops():
 	ops.append((overlay_set_val, "$kct_update_existing_checkbox", "$cstm_update_existing_troops"))
 
 	## TREE VIEWER
-	# Preset 4 draws just the branch skeleton (big, connected) for now; presets
-	# 1-3 use the working mod's recursive layout with portraits + names.
+	# Preset 4 keeps its special large-graph renderer. Presets 1-3 and the
+	# smaller graph presets 5-7 use the recursive preset renderer, so portraits
+	# and labels stay coupled by the real upgrade links.
 	ops.append((try_begin,))
 	ops.append((eq, "$cstm_selected_tree", 3))
-	ops.extend(_build_preset4_viewer_ops())
-	ops.extend(_build_preset4_label_ops())
+	ops.extend(_build_custom_preset_viewer_ops(4))
+	ops.extend(_build_custom_preset_label_ops(4))
 	ops.append((else_try,))
 	ops.append((store_sub, ":num_splits", "$cstm_num_tiers", 1))
 	ops.append((store_div, ":offset_x", 1000 - (CSTM_TREE_POS_X + CSTM_TREE_X_RIGHT_PADDING), ":num_splits"))

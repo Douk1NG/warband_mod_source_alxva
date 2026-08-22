@@ -27,7 +27,7 @@ from kingdom_custom_troop_tree_creator.kct_scripts.existing_troops import EXISTI
 
 new_scripts = UI_HELPER_SCRIPTS + BRANCH_DISPLAY_SCRIPTS + TROOP_EDITOR_SCRIPTS + TREE_IO_SCRIPTS + GUARD_REPLACEMENTS_SCRIPTS + EXISTING_TROOPS_SCRIPTS
 
-# Set the dummy/custom-troop slot links for preset 4 at game start and seed the
+# Set the dummy/custom-troop slot links for KCTT custom graph presets at game start and seed the
 # real troop with the default stats (and copy them to its dummy), mirroring
 # custom_tree_start_slot_operations for the base trees (presets 1-3). Without
 # this seeding the preset-4 troops keep level(troop_level)|def_attrib (STR 5,
@@ -35,30 +35,27 @@ new_scripts = UI_HELPER_SCRIPTS + BRANCH_DISPLAY_SCRIPTS + TROOP_EDITOR_SCRIPTS 
 # store's point budget (level+20 based on the CSTM defaults 6/5/6/5+gender), so
 # opening the store for a preset-4 troop triggers the "maximum was being set to
 # X, but current value is Y" warnings that presets 1-3 never show.
-# Label -> index lookup for PRESET_4_UNITS (used for the parent links below).
-preset_4_index_of_label = {}
-for _i, (_label, _level, _children) in enumerate(PRESET_4_UNITS):
-	preset_4_index_of_label[_label] = _i
-
 new_start_operations = []
-for skin_id in (0, 1):
-	for node_index in xrange(len(PRESET_4_UNITS)):
-		real_id = "trp_" + preset_4_troop_id(skin_id, node_index)
-		dummy_id = real_id + "_dummy"
-		new_start_operations.extend([
-			(troop_set_slot, real_id, cstm_slot_troop_dummy, dummy_id),
-			(troop_set_slot, dummy_id, cstm_slot_troop_custom_troop, real_id),
-			(call_script, "script_kct_troop_set_stats_to_default", real_id),
-			(call_script, "script_kct_copy_custom_troop_to_dummy", real_id),
-		])
-		# Parent (upgrade) links for the bottom-up editing restriction (spec §7),
-		# mirroring the base mod's loop for presets 1-3: each child's base_troop
-		# is this node, so a node unlocks only after its parent is configured.
-		# Also activates the min_from_tree stat minimums for preset 4.
-		for child_label in PRESET_4_UNITS[node_index][2]:
-			child_index = preset_4_index_of_label[child_label]
-			child_real = "trp_" + preset_4_troop_id(skin_id, child_index)
-			new_start_operations.append((troop_set_slot, child_real, cstm_slot_troop_base_troop, real_id))
+for tree_index, _, units in KCT_CUSTOM_PRESETS:
+	index_of_label = {}
+	for _i, (_label, _level, _children) in enumerate(units):
+		index_of_label[_label] = _i
+	for skin_id in (0, 1):
+		for node_index in xrange(len(units)):
+			real_id = "trp_" + kct_custom_preset_troop_id(tree_index, skin_id, node_index)
+			dummy_id = real_id + "_dummy"
+			new_start_operations.extend([
+				(troop_set_type, real_id, skin_id),
+				(troop_set_type, dummy_id, skin_id),
+				(troop_set_slot, real_id, cstm_slot_troop_dummy, dummy_id),
+				(troop_set_slot, dummy_id, cstm_slot_troop_custom_troop, real_id),
+				(call_script, "script_kct_troop_set_stats_to_default", real_id),
+				(call_script, "script_kct_copy_custom_troop_to_dummy", real_id),
+			])
+			for child_label in units[node_index][2]:
+				child_index = index_of_label[child_label]
+				child_real = "trp_" + kct_custom_preset_troop_id(tree_index, skin_id, child_index)
+				new_start_operations.append((troop_set_slot, child_real, cstm_slot_troop_base_troop, real_id))
 # Populate the item arrays + funds/proficiency tables the kct store needs
 # (self-contained copies of the custom_troops game-start ops).
 new_start_operations.append((assign, "$cstm_items_array", cstm_items_arrays_begin))
@@ -85,6 +82,12 @@ for i in xrange(EQUIPMENT_FUNDS_TABLE_SIZE):
 # Set item types of arrays
 for item_type in cstm_item_type_strings.keys():
 	new_start_operations.append((troop_set_slot, "trp_" + cstm_items_array_id(item_type), cstm_slot_array_item_type, item_type))
+
+# Seed visible default/faction import slots on new game. Existing saves are
+# already updated; the old load-trigger migration is retired/commented.
+new_start_operations.append((call_script, "script_kct_seed_default_template_slots"))
+# Retired migration breadcrumb:
+# new_start_operations.append((assign, "$kct_template_slots_preset8_rhodoks_migrated", 1))
 
 
 class Script:
