@@ -203,6 +203,184 @@ def _apply_template_record_ops(destination, record):
 	])
 	return ops
 
+def _kct_wse_filename(slot_index):
+	return "@" + kct_wse_slot_filename(slot_index)
+
+def _build_wse_export_ops():
+	ops = [
+		(store_script_param, ":slot", 1),
+		(dict_create, ":dict"),
+		(str_store_troop_name, s2, cstm_troop_tree_prefix),
+		(try_begin,),
+			(str_is_empty, s2),
+			(str_store_string, s2, "@Custom"),
+		(try_end,),
+		(dict_set_str, ":dict", "@kct prefix", s2),
+		(store_sub, ":count", "$cstm_troops_end", "$cstm_troops_begin"),
+		(dict_set_int, ":dict", "@kct count", ":count"),
+		(dict_set_int, ":dict", "@kct tree", "$cstm_selected_tree"),
+		(dict_set_int, ":dict", "@kct gender", "$cstm_selected_gender"),
+		(store_add, ":budget_slot", cstm_slot_tree_budget_begin, "$cstm_selected_tree"),
+		(troop_get_slot, ":budget", cstm_troop_tree_prefix, ":budget_slot"),
+		(dict_set_int, ":dict", "@kct budget", ":budget"),
+		(dict_set_int, ":dict", "@kct version", kct_template_version),
+		(assign, ":index", 0),
+		(try_for_range, ":troop", "$cstm_troops_begin", "$cstm_troops_end"),
+			(troop_get_slot, ":dummy", ":troop", cstm_slot_troop_dummy),
+	]
+	for idx in xrange(kct_template_nodes_per_slot):
+		ops.append((try_begin,) if idx == 0 else (else_try,))
+		ops.append((eq, ":index", idx))
+		ops.append((str_store_troop_name, s0, ":dummy"))
+		ops.append((dict_set_str, ":dict", "@t%d name" % idx, s0))
+		ops.append((str_store_troop_name_plural, s0, ":dummy"))
+		ops.append((dict_set_str, ":dict", "@t%d plural" % idx, s0))
+		for att in xrange(4):
+			ops.extend([(store_attribute_level, ":val", ":troop", att), (dict_set_int, ":dict", "@t%d att%d" % (idx, att), ":val")])
+		for skl in xrange(42):
+			ops.extend([(store_skill_level, ":val", skl, ":troop"), (dict_set_int, ":dict", "@t%d skl%d" % (idx, skl), ":val")])
+		for wpt in xrange(7):
+			ops.extend([(store_proficiency_level, ":val", ":troop", wpt), (dict_set_int, ":dict", "@t%d wpt%d" % (idx, wpt), ":val")])
+		for eq_idx in xrange(num_equipment_kinds):
+			ops.extend([(troop_get_inventory_slot, ":item", ":troop", eq_idx), (troop_get_inventory_slot_modifier, ":imod", ":troop", eq_idx), (dict_set_int, ":dict", "@t%d eq item%d" % (idx, eq_idx), ":item"), (dict_set_int, ":dict", "@t%d eq mod%d" % (idx, eq_idx), ":imod")])
+		for slot_id, key in [(cstm_slot_troop_configured, "@t%d conf" % idx), (cstm_slot_troop_equipment_modified, "@t%d eqmod" % idx), (cstm_slot_troop_class_override, "@t%d cls" % idx), (cstm_slot_troop_gender, "@t%d gender" % idx)]:
+			ops.extend([(troop_get_slot, ":val", ":troop", slot_id), (dict_set_int, ":dict", key, ":val")])
+	ops.append((try_end,))
+	ops.extend([
+			(val_add, ":index", 1),
+		(try_end,),
+	])
+	for s_idx in xrange(kct_seeded_template_slot_count, kct_template_slot_count):
+		ops.append((try_begin,) if s_idx == kct_seeded_template_slot_count else (else_try,))
+		ops.append((eq, ":slot", s_idx))
+		ops.append((dict_save_json, ":dict", _kct_wse_filename(s_idx)))
+	ops.append((try_end,))
+	ops.extend([(dict_free, ":dict"), (assign, reg0, 1)])
+	return ops
+
+def _build_wse_import_ops():
+	ops = [
+		(store_script_param, ":slot", 1),
+		(dict_create, ":dict"),
+	]
+	for s_idx in xrange(kct_seeded_template_slot_count, kct_template_slot_count):
+		ops.append((try_begin,) if s_idx == kct_seeded_template_slot_count else (else_try,))
+		ops.append((eq, ":slot", s_idx))
+		ops.append((dict_load_file_json, ":dict", _kct_wse_filename(s_idx)))
+	ops.append((try_end,))
+	ops.extend([
+		(try_begin,),
+			(dict_is_empty, ":dict"),
+			(dict_free, ":dict"),
+			(display_message, "@This slot is empty", 0xff0000),
+			(assign, reg0, 0),
+		(else_try,),
+			(dict_get_int, ":version", ":dict", "@kct version", 0),
+			(neq, ":version", kct_template_version),
+			(dict_free, ":dict"),
+			(display_message, "@Template slot version is unsupported", 0xff0000),
+			(assign, reg0, 0),
+		(else_try,),
+			(try_begin,),
+				(eq, "$kct_manage_from_picker", 1),
+				(eq, "$kct_import_preview_active", 1),
+				(call_script, "script_kct_restore_import_preview_backup"),
+				(assign, "$kct_manage_from_picker", 1),
+			(try_end,),
+			(dict_get_int, "$cstm_selected_tree", ":dict", "@kct tree", 0),
+			(call_script, "script_kct_compute_tree_range"),
+			(store_sub, ":range_count", "$cstm_troops_end", "$cstm_troops_begin"),
+			(dict_get_int, ":file_count", ":dict", "@kct count", 0),
+			(neq, ":range_count", ":file_count"),
+			(dict_free, ":dict"),
+			(display_message, "@Template slot does not match the selected tree", 0xff0000),
+			(assign, reg0, 0),
+		(else_try,),
+			(try_begin,),
+				(eq, "$kct_manage_from_picker", 1),
+				(neq, "$kct_import_preview_active", 1),
+				(call_script, "script_kct_export_tree_to_slot_quiet", kct_import_preview_backup_slot),
+				(assign, "$kct_import_preview_active", 1),
+			(try_end,),
+			(dict_get_str, s0, ":dict", "@kct prefix", "@Custom"),
+			(troop_set_name, cstm_troop_tree_prefix, s0),
+			(dict_get_int, ":budget", ":dict", "@kct budget", 3),
+			(store_add, ":budget_slot", cstm_slot_tree_budget_begin, "$cstm_selected_tree"),
+			(troop_set_slot, cstm_troop_tree_prefix, ":budget_slot", ":budget"),
+			(assign, ":index", 0),
+			(try_for_range, ":troop", "$cstm_troops_begin", "$cstm_troops_end"),
+				(troop_get_slot, ":dummy", ":troop", cstm_slot_troop_dummy),
+	])
+	for idx in xrange(kct_template_nodes_per_slot):
+		ops.append((try_begin,) if idx == 0 else (else_try,))
+		ops.append((eq, ":index", idx))
+		ops.append((dict_get_str, s0, ":dict", "@t%d name" % idx, "@Unit"))
+		ops.append((troop_set_name, ":troop", s0))
+		ops.append((troop_set_name, ":dummy", s0))
+		ops.append((dict_get_str, s0, ":dict", "@t%d plural" % idx, "@Units"))
+		ops.append((troop_set_plural_name, ":troop", s0))
+		ops.append((troop_set_plural_name, ":dummy", s0))
+		ops.append((call_script, "script_kct_troop_reset_stats", ":troop"))
+		for att in xrange(4):
+			ops.extend([(dict_get_int, ":val", ":dict", "@t%d att%d" % (idx, att), 0), (troop_raise_attribute, ":troop", att, ":val")])
+		for skl in xrange(42):
+			ops.extend([(dict_get_int, ":val", ":dict", "@t%d skl%d" % (idx, skl), 0), (troop_raise_skill, ":troop", skl, ":val")])
+		for wpt in xrange(7):
+			ops.extend([(dict_get_int, ":val", ":dict", "@t%d wpt%d" % (idx, wpt), 0), (troop_raise_proficiency_linear, ":troop", wpt, ":val")])
+		ops.append((troop_clear_inventory, ":troop"))
+		for eq_idx in xrange(num_equipment_kinds):
+			ops.extend([(dict_get_int, ":item", ":dict", "@t%d eq item%d" % (idx, eq_idx), 0), (dict_get_int, ":imod", ":dict", "@t%d eq mod%d" % (idx, eq_idx), 0), (try_begin,), (gt, ":item", 0), (troop_set_inventory_slot, ":troop", eq_idx, ":item"), (troop_set_inventory_slot_modifier, ":troop", eq_idx, ":imod"), (try_end,)])
+		for slot_id, key in [(cstm_slot_troop_configured, "@t%d conf" % idx), (cstm_slot_troop_equipment_modified, "@t%d eqmod" % idx), (cstm_slot_troop_class_override, "@t%d cls" % idx), (cstm_slot_troop_gender, "@t%d gender" % idx)]:
+			ops.extend([(dict_get_int, ":val", ":dict", key, 0), (troop_set_slot, ":troop", slot_id, ":val")])
+		ops.extend([(call_script, "script_kct_copy_custom_troop_to_dummy", ":troop"), (call_script, "script_kct_replace_custom_troop_with_dummy", ":troop")])
+	ops.append((try_end,))
+	ops.extend([
+				(val_add, ":index", 1),
+			(try_end,),
+			(call_script, "script_kct_reapply_all_genders"),
+			(dict_free, ":dict"),
+			(assign, reg0, 1),
+			(display_message, "@Tree imported"),
+		(try_end,),
+	])
+	return ops
+
+def _build_wse_is_occupied_ops():
+	ops = [(store_script_param, ":slot", 1), (assign, reg0, 0), (dict_create, ":dict")]
+	for s_idx in xrange(kct_seeded_template_slot_count, kct_template_slot_count):
+		ops.append((try_begin,) if s_idx == kct_seeded_template_slot_count else (else_try,))
+		ops.append((eq, ":slot", s_idx))
+		ops.append((dict_load_file_json, ":dict", _kct_wse_filename(s_idx)))
+	ops.append((try_end,))
+	ops.extend([
+		(try_begin,),
+			(neg|dict_is_empty, ":dict"),
+			(assign, reg0, 1),
+		(try_end,),
+		(dict_free, ":dict"),
+	])
+	return ops
+
+def _build_wse_clear_ops():
+	ops = [(store_script_param, ":slot", 1)]
+	for s_idx in xrange(kct_seeded_template_slot_count, kct_template_slot_count):
+		ops.append((try_begin,) if s_idx == kct_seeded_template_slot_count else (else_try,))
+		ops.append((eq, ":slot", s_idx))
+		ops.append((dict_delete_file, _kct_wse_filename(s_idx)))
+	ops.append((try_end,))
+	ops.append((assign, reg0, 1))
+	return ops
+
+def _build_wse_get_name_ops():
+	ops = [(store_script_param, ":slot", 1), (dict_create, ":dict")]
+	for s_idx in xrange(kct_seeded_template_slot_count, kct_template_slot_count):
+		ops.append((try_begin,) if s_idx == kct_seeded_template_slot_count else (else_try,))
+		ops.append((eq, ":slot", s_idx))
+		ops.append((dict_load_file_json, ":dict", _kct_wse_filename(s_idx)))
+	ops.append((try_end,))
+	ops.extend([(dict_get_str, s0, ":dict", "@kct prefix"), (dict_free, ":dict")])
+	return ops
+
 NATIVE_DEFAULT_SLOT_TEMPLATES = [
 	("Swadia", 4, [
 		"trp_swadian_recruit",
@@ -592,5 +770,117 @@ TREE_IO_SCRIPTS = [
 		(troop_set_slot, ":meta", kct_slot_template_count, 0),
 		(troop_set_slot, ":meta", kct_slot_template_budget, 0),
 		(troop_set_slot, ":meta", kct_slot_template_version, kct_template_version),
+	]),
+
+	# WSE backend (optional, cross-save). Same 4 user slots 8-11 but stored in
+	# WSE managed JSON files kct_slot_8..11 - survives across saves.
+	("kct_wse_export_tree_to_slot", _build_wse_export_ops()),
+	("kct_wse_import_tree_from_slot", _build_wse_import_ops()),
+	("kct_wse_is_occupied", _build_wse_is_occupied_ops()),
+	("kct_wse_clear_slot", _build_wse_clear_ops()),
+	("kct_wse_get_name", _build_wse_get_name_ops()),
+
+	# Conditional wrappers - same 4 indices use WSE when available, vanilla otherwise.
+	# WSE detection: (neg|is_vanilla_warband) succeeds only on WSE.
+	("kct_slot_is_occupied",
+	[
+		(store_script_param, ":slot", 1),
+		(try_begin,),
+			(neg|is_vanilla_warband),
+			(ge, ":slot", kct_seeded_template_slot_count),
+			(call_script, "script_kct_wse_is_occupied", ":slot"),
+			(assign, reg0, reg0),
+		(else_try,),
+			(call_script, "script_kct_get_template_meta_troop", ":slot"),
+			(troop_slot_eq, reg0, kct_slot_template_occupied, 1),
+			(assign, reg0, 1),
+		(else_try,),
+			(assign, reg0, 0),
+		(try_end,),
+	]),
+	("kct_slot_get_name",
+	[
+		(store_script_param, ":slot", 1),
+		(try_begin,),
+			(neg|is_vanilla_warband),
+			(ge, ":slot", kct_seeded_template_slot_count),
+			(call_script, "script_kct_wse_get_name", ":slot"),
+		(else_try,),
+			(call_script, "script_kct_get_template_meta_troop", ":slot"),
+			(str_store_troop_name, s0, reg0),
+		(try_end,),
+	]),
+	("kct_slot_export_tree",
+	[
+		(store_script_param, ":slot", 1),
+		(try_begin,),
+			(neg|is_vanilla_warband),
+			(ge, ":slot", kct_seeded_template_slot_count),
+			(call_script, "script_kct_wse_export_tree_to_slot", ":slot"),
+		(else_try,),
+			(call_script, "script_kct_export_tree_to_slot", ":slot"),
+		(try_end,),
+	]),
+	("kct_slot_import_tree",
+	[
+		(store_script_param, ":slot", 1),
+		(try_begin,),
+			(neg|is_vanilla_warband),
+			(ge, ":slot", kct_seeded_template_slot_count),
+			(call_script, "script_kct_wse_import_tree_from_slot", ":slot"),
+		(else_try,),
+			(call_script, "script_kct_import_tree_from_slot", ":slot"),
+		(try_end,),
+	]),
+	("kct_slot_clear",
+	[
+		(store_script_param, ":slot", 1),
+		(try_begin,),
+			(neg|is_vanilla_warband),
+			(ge, ":slot", kct_seeded_template_slot_count),
+			(call_script, "script_kct_wse_clear_slot", ":slot"),
+		(else_try,),
+			(call_script, "script_kct_clear_template_slot", ":slot"),
+		(try_end,),
+	]),
+	("kct_slot_save_tree_auto",
+	[
+		(str_store_troop_name, s1, cstm_troop_tree_prefix),
+		(try_begin,),
+			(str_is_empty, s1),
+			(str_store_string, s1, "@Custom"),
+			(troop_set_name, cstm_troop_tree_prefix, s1),
+		(try_end,),
+		(assign, ":slot", -1),
+		(try_for_range, ":i", kct_seeded_template_slot_count, kct_template_slot_count),
+			(eq, ":slot", -1),
+			(call_script, "script_kct_slot_is_occupied", ":i"),
+			(eq, reg0, 1),
+			(call_script, "script_kct_slot_get_name", ":i"),
+			(str_compare, ":cmp", s0, s1, 1),
+			(eq, ":cmp", 0),
+			(assign, ":slot", ":i"),
+		(try_end,),
+		(try_begin,),
+			(eq, ":slot", -1),
+			(try_for_range, ":i", kct_seeded_template_slot_count, kct_template_slot_count),
+				(eq, ":slot", -1),
+				(call_script, "script_kct_slot_is_occupied", ":i"),
+				(eq, reg0, 0),
+				(assign, ":slot", ":i"),
+			(try_end,),
+		(try_end,),
+		(try_begin,),
+			(eq, ":slot", -1),
+			(display_message, "@All slots are full - delete a tree first", 0xff0000),
+			(assign, reg0, 0),
+		(else_try,),
+			(assign, "$kct_selected_slot", ":slot"),
+			(call_script, "script_kct_slot_export_tree", ":slot"),
+			(assign, reg1, ":slot"),
+			(val_add, reg1, 1),
+			(display_message, "@Tree saved to slot {reg1}"),
+			(assign, reg0, 1),
+		(try_end,),
 	]),
 ]
