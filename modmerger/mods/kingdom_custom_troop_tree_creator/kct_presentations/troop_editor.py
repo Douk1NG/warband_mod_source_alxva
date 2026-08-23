@@ -131,6 +131,8 @@ kct_customise_core = (
 				(eq, "$g_kct_recalc_baseline", 1),
 				(troop_get_slot, "$cstm_class_override_original", "$cstm_troop_being_customised", cstm_slot_troop_class_override),
 				(assign, "$cstm_class_changed", 0),
+				(troop_get_slot, "$cstm_gender_original", "$cstm_troop_being_customised", cstm_slot_troop_gender),
+				(assign, "$cstm_gender_changed", 0),
 			(try_end),
 
 			# Consume the fresh-entry flag on every store load (configured units
@@ -333,7 +335,26 @@ kct_customise_core = (
 			(store_character_level, reg0, "$cstm_troop_being_customised"),
 			(store_troop_health, reg1, "$cstm_troop_being_customised", 1),
 			(str_store_string, s0, "@Level {reg0}    HP {reg1}"),
-      (call_script, "script_kct_create_text_overlay", "str_s0", 0, KCT_STATS_GAP_Y * 3 + KCT_STATS_ATTR_SECTION_HEIGHT + KCT_STATS_SKL_SECTION_HEIGHT + KCT_STATS_PROF_SECTION_HEIGHT + KCT_CLASS_SECTION_HEIGHT, KCT_STATS_SKL_TEXT_SIZE, KCT_STATS_SIZE_X, 50, tf_left_align),
+			(call_script, "script_kct_create_text_overlay", "str_s0", 0, KCT_STATS_GAP_Y * 3 + KCT_STATS_ATTR_SECTION_HEIGHT + KCT_STATS_SKL_SECTION_HEIGHT + KCT_STATS_PROF_SECTION_HEIGHT + KCT_CLASS_SECTION_HEIGHT, KCT_STATS_SKL_TEXT_SIZE, KCT_STATS_SIZE_X, 50, tf_left_align),
+
+			## CLASS SELECTOR INNER - label separate + select below Level/HP
+			(str_store_string, s0, "@Class:"),
+			(call_script, "script_kct_create_text_overlay", "str_s0", KCT_CLASS_LABEL[0], KCT_CLASS_LABEL[1], 900, 60, 25, tf_left_align),
+			(call_script, "script_kct_create_combo_button_overlay", KCT_CLASS_SELECT[0], KCT_CLASS_SELECT[1]),
+			(assign, "$cstm_class_selector", reg1),
+			(str_store_string, s0, "@Auto"),
+			(overlay_add_item, "$cstm_class_selector", s0),
+			(str_store_string, s0, "@Infantry"),
+			(overlay_add_item, "$cstm_class_selector", s0),
+			(str_store_string, s0, "@Cavalry"),
+			(overlay_add_item, "$cstm_class_selector", s0),
+			(str_store_string, s0, "@Archers"),
+			(overlay_add_item, "$cstm_class_selector", s0),
+			(troop_get_slot, ":class_override", "$cstm_troop_being_customised", cstm_slot_troop_class_override),
+			(overlay_set_val, "$cstm_class_selector", ":class_override"),
+			(position_set_x, pos1, 750),
+			(position_set_y, pos1, 750),
+			(overlay_set_size, "$cstm_class_selector", pos1),
 			
 			(try_for_range, ":attribute", attributes_begin, ca_intelligence + 1),
 			(call_script, "script_kct_get_grid_position", ":attribute", 3, KCT_STATS_ATTR_CONT_WIDTH, KCT_STATS_ATTR_COL_WIDTH, KCT_STATS_ATTR_ROW_HEIGHT),
@@ -472,29 +493,37 @@ kct_customise_core = (
       (call_script, "script_kct_create_text_box_overlay", "str_s0", KCT_NAME_POS_X + KCT_NAME_LABEL_WIDTH + KCT_NAME_GAP, KCT_NAME_POS_Y),
       (assign, "$cstm_set_name_plural", reg1),
 			
-			## CLASS SELECTOR (troop class override, bottom-right below the stats panel)
-			# "Auto" keeps the game-derived class computed on Save (cavalry when the
-			# troop has a horse, archers for bow/crossbow, else infantry). The other
-			# options pin the class explicitly. Persisted in the real troop's
-			# cstm_slot_troop_class_override slot so it survives loads/export. A
-			# combo LABEL is used instead of a combo button because the row sits at
-			# the very bottom of the screen (y = 52) - a dropdown would only open
-			# downward, off-screen. Left/right clicks cycle the 4 options.
-			(call_script, "script_kct_create_combo_label_overlay", KCT_CLASS_POS_X, KCT_CLASS_POS_Y),
-			(assign, "$cstm_class_selector", reg1),
-			(str_store_string, s0, "@Auto"),
-			(overlay_add_item, "$cstm_class_selector", s0),
-			(str_store_string, s0, "@Infantry"),
-			(overlay_add_item, "$cstm_class_selector", s0),
-			(str_store_string, s0, "@Cavalry"),
-			(overlay_add_item, "$cstm_class_selector", s0),
-			(str_store_string, s0, "@Archers"),
-			(overlay_add_item, "$cstm_class_selector", s0),
-			(troop_get_slot, ":class_override", "$cstm_troop_being_customised", cstm_slot_troop_class_override),
-			(overlay_set_val, "$cstm_class_selector", ":class_override"),
+			## CLASS SELECTOR - MOVED INSIDE STATS (hidden outside, see inner block below Level/HP)
+			(assign, "$cstm_class_selector", -1),
+
+			## GENDER SELECTOR (branch-gender hierarchy: flipping a node flips its entire subtree)
+			# SELECT (combo button dropdown) - proven store pattern 750x750, not label.
+			(call_script, "script_kct_create_combo_button_overlay", KCT_GENDER_POS[0], KCT_GENDER_POS[1]),
+			(assign, "$cstm_gender_selector", reg1),
+			(str_store_string, s0, "@Male"),
+			(overlay_add_item, "$cstm_gender_selector", s0),
+			(str_store_string, s0, "@Female"),
+			(overlay_add_item, "$cstm_gender_selector", s0),
+			(troop_get_slot, ":gender_flipped", "$cstm_troop_being_customised", cstm_slot_troop_gender),
+			(try_begin),
+				(eq, ":gender_flipped", 1),
+				(try_begin),
+					(eq, "$cstm_selected_gender", 0),
+					(assign, ":gender_display", 1),
+				(else_try),
+					(assign, ":gender_display", 0),
+				(try_end),
+			(else_try),
+				(assign, ":gender_display", "$cstm_selected_gender"),
+			(try_end),
+			(overlay_set_val, "$cstm_gender_selector", ":gender_display"),
+			(position_set_x, pos1, 750),
+			(position_set_y, pos1, 750),
+			(overlay_set_size, "$cstm_gender_selector", pos1),
 			
 			(assign, ":changes_made", "$cstm_name_changed"),
 			(val_add, ":changes_made", "$cstm_class_changed"),
+			(val_add, ":changes_made", "$cstm_gender_changed"),
 			(try_begin),
 				(call_script, "script_kct_cf_troop_stats_are_different", "$cstm_troop_being_customised", ":dummy"),
 				
@@ -661,6 +690,10 @@ kct_customise_core = (
 					(troop_get_slot, ":dummy", "$cstm_troop_being_customised", cstm_slot_troop_dummy),
 					(call_script, "script_kct_apply_troop_class", "$cstm_troop_being_customised", ":dummy", "$cstm_class_override_original"),
 				(try_end),
+				(try_begin),
+					(eq, "$cstm_gender_changed", 1),
+					(call_script, "script_kct_flip_subtree", "$cstm_troop_being_customised", "$cstm_gender_original"),
+				(try_end),
 				
 				(presentation_set_duration, 0),
 			(try_end),
@@ -730,6 +763,17 @@ kct_customise_core = (
 				
 				(start_presentation, "prsnt_kct_customise_troop"),
 			(else_try),
+				(eq, ":object", "$cstm_gender_selector"),
+				(try_begin),
+					(eq, ":value", "$cstm_selected_gender"),
+					(assign, ":flipped", 0),
+				(else_try),
+					(assign, ":flipped", 1),
+				(try_end),
+				(call_script, "script_kct_flip_subtree", "$cstm_troop_being_customised", ":flipped"),
+				(assign, "$cstm_gender_changed", 1),
+				(start_presentation, "prsnt_kct_customise_troop"),
+			(else_try),
 				(troop_slot_eq, "trp_cstm_overlay_is_attribute_box", ":object", 1),
 				(eq, "$cstm_troop_design_locked", 0),
 				
@@ -780,6 +824,7 @@ kct_customise_core = (
 				(troop_get_slot, ":class_override", "$cstm_troop_being_customised", cstm_slot_troop_class_override),
 				(call_script, "script_kct_apply_troop_class", "$cstm_troop_being_customised", ":dummy", ":class_override"),
 				(assign, "$cstm_class_changed", 0),
+				(assign, "$cstm_gender_changed", 0),
 				
 				(troop_sort_inventory, "$cstm_troop_being_customised"),
 				(troop_equip_items, "$cstm_troop_being_customised"),				
@@ -814,6 +859,8 @@ kct_customise_core = (
 				(display_message, "@Changes discarded"),
 				(assign, "$cstm_name_changed", 0),
 				(assign, "$cstm_class_changed", 0),
+				(assign, "$cstm_gender_changed", 0),
+				(call_script, "script_kct_flip_subtree", "$cstm_troop_being_customised", "$cstm_gender_original"),
 				(troop_set_slot, "$cstm_troop_being_customised", cstm_slot_troop_class_override, "$cstm_class_override_original"),
 				(call_script, "script_kct_copy_custom_troop_to_dummy", "$cstm_troop_being_customised"),
 				(troop_get_slot, ":dummy", "$cstm_troop_being_customised", cstm_slot_troop_dummy),
@@ -834,6 +881,10 @@ kct_customise_core = (
 					(troop_set_slot, "$cstm_troop_being_customised", cstm_slot_troop_class_override, "$cstm_class_override_original"),
 					(troop_get_slot, ":dummy", "$cstm_troop_being_customised", cstm_slot_troop_dummy),
 					(call_script, "script_kct_apply_troop_class", "$cstm_troop_being_customised", ":dummy", "$cstm_class_override_original"),
+				(try_end),
+				(try_begin),
+					(eq, "$cstm_gender_changed", 1),
+					(call_script, "script_kct_flip_subtree", "$cstm_troop_being_customised", "$cstm_gender_original"),
 				(try_end),
 				
 				(assign, "$cstm_item_modifier_selected", 0),

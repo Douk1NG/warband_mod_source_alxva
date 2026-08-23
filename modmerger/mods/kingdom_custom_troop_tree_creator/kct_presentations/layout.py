@@ -102,7 +102,7 @@ CSTM_EXPORT_BUTTON_POS = (CSTM_BUTTONS_POS_X - 60, CSTM_BUTTONS_POS_Y - 10)
 # editor's item-type / item-modifier selects (750x750 - the proven store
 # pattern), so the combo renders at that size instead of the native default.
 BUDGET_OPTIONS = ("Balanced", "Boosted", "Cheater", "Auto")
-BUDGET_COMBO_POS  = (245, 610)
+BUDGET_COMBO_POS  = (225, 610)
 BUDGET_LABEL_POS  = (60, 625)
 BUDGET_LABEL_FONT = 900
 BUDGET_LABEL_AREA = (130, 50)
@@ -189,18 +189,18 @@ KCT_NAME_POS_Y = 685
 KCT_NAME_LABEL_WIDTH = 125
 KCT_NAME_GAP = 340
 
-# Troop class selector: bottom-right of the store, as the LAST row of the stats
-# panel directly below the proficiency section. The stats content (proficiency,
-# skills, attributes, level) is lifted by KCT_CLASS_SECTION_HEIGHT to free this
-# bottom row, which holds just the class combo label and no "Class: " text
-# (0 = Auto / game-derived, 1 = Infantry, 2 = Cavalry, 3 = Archers). A combo
-# LABEL is used (not a combo button) so it cycles on click instead of opening a
-# dropdown - the row sits at the very bottom of the screen (y = 52) where a
-# dropdown would only open downward, off-screen. X = 750 was the original
-# anchor; the combo now sits 20 units to its right (770).
+# Gender select
+KCT_GENDER_POS = (730, 60)
+KCT_GENDER_SECTION_HEIGHT = 60
+
+
+# Troop class selector:
+# (0 = Auto / game-derived, 1 = Infantry, 2 = Cavalry, 3 = Archers)
 KCT_CLASS_SECTION_HEIGHT = 60
-KCT_CLASS_POS_X = 770
-KCT_CLASS_POS_Y = KCT_STATS_POS_Y + 52
+
+# Class inner - label + select below Level/HP, inside stats container.
+KCT_CLASS_LABEL = (0, 490)
+KCT_CLASS_SELECT = (200, 490)
 
 KCT_BUTTONS_POS_X = 800
 KCT_BUTTONS_POS_Y = KCT_NAME_POS_Y
@@ -600,3 +600,5 @@ def _tree_specs():
 		tiers, edges, codes = _custom_preset_spec(tree_index)
 		specs.append((tiers, edges, lambda key, codes=codes: _code_label_ops(codes[key])))
 	return specs
+
+

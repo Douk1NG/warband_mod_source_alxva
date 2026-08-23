@@ -134,6 +134,8 @@ def _copy_troop_record_ops(source, name_source, destination):
 		(troop_set_slot, destination, cstm_slot_troop_equipment_modified, ":val"),
 		(troop_get_slot, ":val", source, cstm_slot_troop_class_override),
 		(troop_set_slot, destination, cstm_slot_troop_class_override, ":val"),
+		(troop_get_slot, ":val", source, cstm_slot_troop_gender),
+		(troop_set_slot, destination, cstm_slot_troop_gender, ":val"),
 	]
 
 def _template_data_path(file_name):
@@ -197,6 +199,7 @@ def _apply_template_record_ops(destination, record):
 		(troop_set_slot, destination, cstm_slot_troop_configured, configured),
 		(troop_set_slot, destination, cstm_slot_troop_equipment_modified, equipment_modified),
 		(troop_set_slot, destination, cstm_slot_troop_class_override, class_override),
+		(troop_set_slot, destination, cstm_slot_troop_gender, 0),
 	])
 	return ops
 
@@ -522,6 +525,7 @@ TREE_IO_SCRIPTS = [
 				(call_script, "script_kct_replace_custom_troop_with_dummy", ":troop"),
 				(val_add, ":index", 1),
 			(try_end,),
+			(call_script, "script_kct_reapply_all_genders"),
 			(assign, reg0, 1),
 			(display_message, "@Tree imported"),
 		(try_end,),
@@ -568,6 +572,7 @@ TREE_IO_SCRIPTS = [
 				(call_script, "script_kct_replace_custom_troop_with_dummy", ":troop"),
 				(val_add, ":index", 1),
 			(try_end,),
+			(call_script, "script_kct_reapply_all_genders"),
 		(try_end,),
 		(assign, "$kct_import_preview_active", 0),
 		(call_script, "script_kct_clear_template_slot", kct_import_preview_backup_slot),

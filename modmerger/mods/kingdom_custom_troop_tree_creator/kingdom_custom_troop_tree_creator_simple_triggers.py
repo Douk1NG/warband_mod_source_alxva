@@ -78,6 +78,9 @@ for tree_index, _, units in KCT_CUSTOM_PRESETS:
 # fac_player_supporters_faction / fac_culture_player slots with the preset-1
 # male tree. Those slots persist correctly in the savegame.
 new_load_operations.append((call_script, "script_kct_restore_native_guards"))
+# Re-apply branch-gender flips after the type resets above (custom presets set
+# troop_set_type to skin_id). Persisted via slot 534 on real troops.
+new_load_operations.append((call_script, "script_kct_reapply_all_genders"))
 # Retired temporary migration, 2026-08-22:
 # Re-seeded old saves once after expanding the vanilla template bank to 12
 # slots and adding Rhodoks/Falcon/Calradian. The active saves have now been

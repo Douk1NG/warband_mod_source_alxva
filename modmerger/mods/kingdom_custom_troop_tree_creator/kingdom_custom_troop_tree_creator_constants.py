@@ -145,6 +145,14 @@ cstm_slot_troop_inherited = 528
 #      base mod's allocator ends at 519 and the KCT slots above use 520/528/531/532.
 cstm_slot_troop_class_override = 533
 
+# 534 = per-node gender override for branch-gender feature (0 = natural /
+#      follow block skin, 1 = flipped). Relative encoding keeps saves backward
+#      compatible and default 0 correct for both male and female trees. Applied
+#      via troop_set_type (op 1505) on real+dummy; re-applied on every load.
+#      Slot 534 is free: next after 533, no clash with base mod (ends 519) or
+#      budget slots 521-527.
+cstm_slot_troop_gender = 534
+
 # 521-527 = per-tree equipment budget for the Kingdom custom troop store. The
 # slots live on the SHARED prefix troop (cstm_troop_tree_prefix), one per tree
 # index 0-6. Values: 0 Balanced / 1 Boosted / 2 Cheater / 3 Auto. Slots 521-527
