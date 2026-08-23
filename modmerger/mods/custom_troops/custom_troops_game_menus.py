@@ -1,3 +1,4 @@
+# -*- coding: cp1254 -*-
 import collections
 
 from header_game_menus import *
@@ -43,10 +44,118 @@ from custom_troops_header_game_menus import *
 ## CUSTOMISE TROOPS TOWN MENU OPTION
 # The kingdom troop tree is chosen through the KCT picker
 # (prsnt_cstm_choose_troop_tree), which also loads an already-saved tree.
+# Smart entry: if a kingdom tree is already active, jump straight to the
+# creator viewer (prsnt_cstm_create_troop_tree) instead of the preset picker.
+# Detection is two-tier:
+#  1) fast path in-session globals ($cstm_troops_begin > 0)
+#  2) persistent faction slot (fac_culture_player tier_1) which survives
+#     save/load even when globals reset to 0 (see kct_simple_triggers).
+#     The slot holds the recruit troop of the active tree, so we restore
+#     $cstm_selected_tree/gender from it and call script_kct_compute_tree_range
+#     before opening the viewer.
 customise_troops_town_option = ("cstm_customise_troop", [(eq, "$g_player_court", "$current_town")], "Customise your kingdom's troops",
 	[
-		(assign, "$cstm_selected_troop", -1),
-		(start_presentation, "prsnt_cstm_choose_troop_tree"),
+		(try_begin),
+			(gt, "$cstm_troops_begin", 0),
+			(assign, "$cstm_selected_troop", -1),
+			(start_presentation, "prsnt_cstm_create_troop_tree"),
+		(else_try),
+			(faction_get_slot, ":cstm_tier1", "fac_culture_player", slot_faction_tier_1_troop),
+			(assign, ":cstm_found", 0),
+			# Restore $cstm_selected_tree/gender from the persistent recruit troop.
+			# Base presets 1-3 (6 recruits) — note tree ids include underscore:
+			# e.g. "cstm_custom_troop_1_tier_0_0_0" (tree "1_tier", skin 0, branch 0, tier 0)
+			(try_begin),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_1_tier_0_0_0"),
+				(assign, "$cstm_selected_tree", 0),
+				(assign, "$cstm_selected_gender", 0),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_1_tier_1_0_0"),
+				(assign, "$cstm_selected_tree", 0),
+				(assign, "$cstm_selected_gender", 1),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_2_tiers_0_0_0"),
+				(assign, "$cstm_selected_tree", 1),
+				(assign, "$cstm_selected_gender", 0),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_2_tiers_1_0_0"),
+				(assign, "$cstm_selected_tree", 1),
+				(assign, "$cstm_selected_gender", 1),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_3_tiers_0_0_0"),
+				(assign, "$cstm_selected_tree", 2),
+				(assign, "$cstm_selected_gender", 0),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_3_tiers_1_0_0"),
+				(assign, "$cstm_selected_tree", 2),
+				(assign, "$cstm_selected_gender", 1),
+				(assign, ":cstm_found", 1),
+			# KCT custom presets 4-8 (10 recruits) — format "cstm_custom_troop_<tree>_<skin>_<node>_0"
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_4_0_0_0"),
+				(assign, "$cstm_selected_tree", 3),
+				(assign, "$cstm_selected_gender", 0),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_4_1_0_0"),
+				(assign, "$cstm_selected_tree", 3),
+				(assign, "$cstm_selected_gender", 1),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_5_0_0_0"),
+				(assign, "$cstm_selected_tree", 4),
+				(assign, "$cstm_selected_gender", 0),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_5_1_0_0"),
+				(assign, "$cstm_selected_tree", 4),
+				(assign, "$cstm_selected_gender", 1),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_6_0_0_0"),
+				(assign, "$cstm_selected_tree", 5),
+				(assign, "$cstm_selected_gender", 0),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_6_1_0_0"),
+				(assign, "$cstm_selected_tree", 5),
+				(assign, "$cstm_selected_gender", 1),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_7_0_0_0"),
+				(assign, "$cstm_selected_tree", 6),
+				(assign, "$cstm_selected_gender", 0),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_7_1_0_0"),
+				(assign, "$cstm_selected_tree", 6),
+				(assign, "$cstm_selected_gender", 1),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_8_0_0_0"),
+				(assign, "$cstm_selected_tree", 7),
+				(assign, "$cstm_selected_gender", 0),
+				(assign, ":cstm_found", 1),
+			(else_try),
+				(eq, ":cstm_tier1", "trp_cstm_custom_troop_8_1_0_0"),
+				(assign, "$cstm_selected_tree", 7),
+				(assign, "$cstm_selected_gender", 1),
+				(assign, ":cstm_found", 1),
+			(try_end),
+			(eq, ":cstm_found", 1),
+			(call_script, "script_kct_compute_tree_range"),
+			(assign, "$cstm_tree_preview_index", "$cstm_selected_tree"),
+			(assign, "$cstm_selected_troop", -1),
+			(start_presentation, "prsnt_cstm_create_troop_tree"),
+		(else_try),
+			(assign, "$cstm_selected_troop", -1),
+			(start_presentation, "prsnt_cstm_choose_troop_tree"),
+		(try_end),
 	])
 
 def modmerge_cstm(var_set):
@@ -402,3 +511,5 @@ def modmerge_cstmmerge(var_set):
 def modmerge(var_set):
 	modmerge_cstm(var_set)
 	modmerge_cstmmerge(var_set)
+
+
