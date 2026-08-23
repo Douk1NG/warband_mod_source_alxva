@@ -481,15 +481,12 @@ flat. The tool is allowed to be nicer than the engine.
 
 ## Non-Goals
 
-- No vanilla runtime external file import/export.
 - No reliance on native character export/import.
 - No mandatory WSE.
-- No two-backend runtime complexity unless explicitly revived later.
 
-## Current Decision
+## Current Decision (2026-08-23 update — hybrid revived)
 
-Proceed with a vanilla-only in-game backend plus an optional external author tool
-for extracting/community-curating troop trees from savegames.
+Vanilla per-save sigue siendo el backend por defecto (slots ocultos `trp_kct_template_slot_*`). Además, **se revivió el backend WSE como opcional y condicional**: mismos índices `8-11` usan `kct_slot_8.json`..`11.json` (`dict_save_json`/`dict_load_file_json`) cuando `neg|is_vanilla_warband 1004` es true, con wrappers `kct_slot_is_occupied/get_name/export_tree/import_tree/clear/save_tree_auto` (`kct_scripts/tree_io.py:209,740`). Sin WSE el juego cae a vanilla sin cambios de UI; con WSE esos 4 slots son cross-save. Ver `export_import_info.md` para esquema y flujos. El tool externo `kctt_share_tool` sigue para share sin WSE.
 
 ## Implementation Log
 
@@ -609,3 +606,7 @@ Close-out QA:
   - Rhodoks uses preset 8.
 - In-game vanilla import/export is ready to commit.
 - External savegame extractor is now a separate follow-up/prototype task.
+
+### 2026-08-23
+
+Hybrid optional revived: wrappers `kct_slot_*` hacen que slots `8-11` usen WSE JSON `kct_slot_8.json` etc cuando WSE está presente (`neg|is_vanilla_warband`) y vanilla troop-slots cuando no. `prsnt_kct_manage_tree_files` y botón Export del creador ya usan wrappers; `quick_strings` vacía corregida (`@` → sin default). Compila y carga ok en native y WSE; cross-save verificado por presencia del archivo.

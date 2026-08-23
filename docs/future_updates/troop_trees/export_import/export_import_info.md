@@ -15,71 +15,70 @@ El flujo completo vive en el mod `kingdom_custom_troop_tree_creator`:
 2. **Creador** (`prsnt_cstm_create_troop_tree`) — muestra el árbol, edita el
    prefijo, edita cada tropa (store), botón **Export**.
 3. **Pantalla de gestión** (`prsnt_kct_manage_tree_files`) — desde el botón
-   **Import** del picker: lista 8 slots, carga o borra árboles guardados.
+   **Import** del picker: lista 12 slots (8 seed + 4 usuario), carga o borra árboles guardados.
 
-Toda la persistencia usa dos mecanismos de **WSE2** (obligatorio para el mod a
-partir de ahora):
+Persistencia **híbrida opcional** (`kct_scripts/tree_io.py`, `kingdom_custom_troop_tree_creator_constants.py:169`):
 
-- `dict_*` (3200-3218) → archivos **JSON** legibles (datos del árbol).
-- `array_*` (5003/5004) → archivos **binarios `.wsearray`** (registro slot→nombre).
+- **Vanilla (siempre):** 12 slots en tropas ocultas `trp_kct_template_slot_<n>_meta` + `trp_kct_template_slot_<n>_node_<00-21>` — per-save, sin dependencias. Slots `0-7` seed (6 facciones + Calradian/Falcon), `8-11` usuario.
+- **WSE2 (opcional, cross-save):** mismos índices `8-11` usan `dict_*` (3200-3218) → archivos JSON `kct_slot_8.json`..`kct_slot_11.json` en directorio WSE. Si WSE está presente (`neg|is_vanilla_warband 1004`), el wrapper `kct_slot_*` lee/escribe el archivo; si no, cae a vanilla. No hay `array_*` ni `kct trees.wsearray`.
 
-No existe opcode de escritura de texto plano (`str_save_to_file` no existe en WSE),
-así que las dos únicas vías de guardado son las de arriba.
+No existe opcode de escritura de texto plano (`str_save_to_file` no existe), así que vanilla usa tropas y WSE usa `dict_save_json`/`dict_load_file_json`.
 
 ---
 
-## 2. Dónde se guardan los archivos
+## 2. Dónde se guardan los datos
 
-En el **directorio gestionado por WSE2** del módulo, **fuera** de la carpeta del
-módulo y **fuera** de la carpeta de partidas:
+**Vanilla (per-save):** dentro del `.sav`, en tropas ocultas `trp_kct_template_slot_*` (`kingdom_custom_troop_tree_creator_troops.py:31`, `kct_scripts/tree_io.py:101`). Sin archivos externos. El meta guarda `occupied/tree/gender/count/budget/version` + nombre; cada `node_00..21` guarda una tropa (nombre/plural, 4 att, 42 skl, 7 wpt, equipo+mods, flags).
 
+**WSE2 (cross-save, opcional):** mismos índices `8-11` como JSON externo:
 ```
-Documents\Mount&Blade Warband WSE2\WSE\<nombre_del_módulo>\
-    ├── kct trees.wsearray      # registro de 8 slots (binario)
-    └── <prefijo>.json          # un archivo por árbol guardado (legible)
+Documents\Mount & Blade Warband\WSE\<módulo>\
+    ├── kct_slot_8.json   # slot 9 (usuario)
+    ├── kct_slot_9.json
+    ├── kct_slot_10.json
+    └── kct_slot_11.json
 ```
-
-- La ruta real puede fijarse con `storage_path` en `wse_settings.ini`.
-- Los archivos **se crean automáticamente** la primera vez que el juego los usa;
-  no se distribuyen con el módulo.
+- Nombre fijo `kct_wse_slot_filename(slot)` (`kingdom_custom_troop_tree_creator_constants.py:185` → `kct_slot_<n>`), sin path (WSE lo resuelve). `storage_path` en `wse_settings.ini` puede moverlo.
+- Slots `0-7` seed nunca usan WSE; siempre vanilla.
 
 ---
 
-## 3. El registro de slots (`kct trees.wsearray`)
+## 3. El registro de slots
 
-- Cadena `@kct_trees` = `kct_tree_registry_file` (`kingdom_custom_troop_tree_creator_constants.py:85`).
-- Array unidimensional de `kct_tree_slot_count = 8` entradas de string.
-- Entrada `i` = nombre del árbol en el slot `i`; string vacío = slot libre.
-- Binario (`array_save_file` / `array_load_file`); el jugador **no** lo edita a mano.
-- Autocuración: si el archivo no existe o tiene un tamaño distinto de 8, el código
-  lo recrea/vuelve a generar y lo reescribe (`tree_files.py:88-119`,
-  `tree_io.py:187-199`).
+Ya no existe `kct trees.wsearray`. El registro es el propio slot:
+
+- Vanilla: `troop_slot_eq meta kct_slot_template_occupied` + `str_store_troop_name meta`.
+- WSE: `dict_load_file_json kct_slot_<n>.json` + `neg|dict_is_empty` (`kct_scripts/tree_io.py:347,373`). Vacío = slot libre, con datos = ocupado. No hay array; cada índice es un archivo independiente.
 
 ---
 
-## 4. Los datos del árbol (`<prefijo>.json`)
+## 4. Los datos del árbol
 
-Escrito por `script_kct_export_tree_to_file` (`tree_io.py:90-170`) con
-`dict_save_json`; leído por `script_kct_import_tree_from_file` con
-`dict_load_file_json`.
+**Vanilla:** `script_kct_export_tree_to_slot` (`tree_io.py:549`) copia del rango live `$cstm_troops_begin..end` a `trp_kct_template_slot_<n>_node_*` vía `_copy_troop_record_ops` (`tree_io.py:101`); `script_kct_import_tree_from_slot` hace el inverso. Todo per-save.
 
-### Esquema (JSON plano, claves generadas)
+**WSE:** `script_kct_wse_export_tree_to_slot` / `script_kct_wse_import_tree_from_slot` (`tree_io.py:209,261`) hacen lo mismo pero vía `dict_*` JSON `kct_slot_8.json` etc.
+
+### Esquema (JSON plano WSE y vanilla share tool, claves idénticas)
 
 ```
-kct_version   = 1            (int, para migraciones futuras)
-kct_tree      = 0..3         (int, índice del preset de rama)
-kct_budget    = 0..3         (int, presupuesto de equipo del árbol; 3 = Auto)
-kct_count     = N            (int, número de tropas)
-kct_prefix    = "Calradian"  (string, prefijo / nombre del árbol)
+kct version   = 1            (int, @kct version)
+kct tree      = 0..7         (int, @kct tree — índice preset)
+kct gender    = 0..1         (int, @kct gender)
+kct budget    = 0..3         (int, @kct budget; 3 = Auto)
+kct count     = N            (int, @kct count)
+kct prefix    = "Calradian"  (string, @kct prefix)
 
-Por cada tropa i:
-  t{i}_name        (string, nombre singular — del dummy)
-  t{i}_plural      (string, nombre plural — del dummy)
-  t{i}_att{j}      j=0..3          (atributos)
-  t{i}_skl{j}      j=0..41         (42 habilidades)
-  t{i}_wpt{j}      j=0..6          (7 proficiencias)
-  t{i}_eq_item{j}  /  t{i}_eq_mod{j}   j=0..num_equipment_kinds-1  (equipo + modificadores)
-  t{i}_conf        (int, flag de configurado)
+Por cada tropa i (0..21 máx, solo las N primeras usadas):
+  t{i} name        (string, @t{i} name — del dummy)
+  t{i} plural      (string, @t{i} plural)
+  t{i} att{j}      j=0..3          (@t{i} att{j})
+  t{i} skl{j}      j=0..41         (@t{i} skl{j})
+  t{i} wpt{j}      j=0..6          (@t{i} wpt{j})
+  t{i} eq item{j}  /  t{i} eq mod{j}   j=0..num_equipment_kinds-1
+  t{i} conf        (int, @t{i} conf)
+  t{i} eqmod       (int, @t{i} eqmod)
+  t{i} cls         (int, @t{i} cls)
+  t{i} gender      (int, @t{i} gender)
 ```
 
 `kct_budget` es la clave **aditiva** del presupuesto per-tree (0 Balanced /
@@ -129,79 +128,56 @@ con clave de versión).
 
 ## 5. Flujo de Export
 
-`script_kct_save_tree_to_slot` (`tree_io.py:177-238`), llamado por el botón Export:
+`script_kct_slot_save_tree_auto` (`tree_io.py:800`, wrapper) → `script_kct_save_tree_to_slot` (vanilla) o `script_kct_wse_export_tree_to_slot` (WSE), llamado por el botón Export (`kct_presentations/branch_display.py:395`):
 
-1. Nombre = el prefijo del árbol (`cstm_troop_tree_prefix`); "Custom" si vacío.
-2. Carga (o crea) el registro de slots.
-3. **Auto-asignación de slot**:
-   - Si un slot ya tiene el mismo nombre → se **sobrescribe** (rename).
+1. Nombre = prefijo (`cstm_troop_tree_prefix`); "Custom" si vacío.
+2. **Auto-asignación de slot entre `8-11`** vía wrappers `kct_slot_is_occupied/get_name`:
+   - Si un slot ya tiene el mismo nombre → se **sobrescribe**.
    - Si no, el **primer slot vacío**.
-   - Si todos llenos y sin coincidencia → no guarda, mensaje en rojo.
-4. `script_kct_export_tree_to_file` empaqueta el árbol en el dict y lo guarda
-   como `<prefijo>.json`. Además del resto del árbol escribe `@kct_budget`,
-   leído del slot `cstm_slot_tree_budget_begin + $cstm_selected_tree` del troop
-   prefijo (el mismo valor que muestra el dropdown "Budget:" del creador).
-5. Mensaje "Tree saved to slot {n}".
+   - Si todos llenos → mensaje rojo, no guarda.
+3. Wrapper decide backend: `(neg|is_vanilla_warband 1004)` → WSE `dict_create` + `dict_set_*` + `dict_save_json kct_slot_<n>.json`; else vanilla `_copy_troop_record_ops` a `trp_kct_template_slot_<n>_*` + `troop_set_slot meta`.
+4. También escribe `@kct budget` (slot `cstm_slot_tree_budget_begin + $cstm_selected_tree`), `gender`, `tree`, `count`, `prefix`.
+5. Mensaje "Tree saved to slot {n}" + `kct_import_preview_backup_slot` limpiado.
 
-Fuente de verdad: la tropa real (no héroe) para stats/equipo; el dummy (héroe)
-para los nombres — el mismo split que usa el Save del store.
+Fuente de verdad: tropa real para stats/equipo; dummy para nombres.
 
 ---
 
 ## 6. Flujo de Import
 
-`script_kct_import_tree_from_file` (`tree_io.py:244-...`), llamado desde la
-pantalla de gestión (botón Load):
+`script_kct_slot_import_tree` (`tree_io.py:820`) → `script_kct_import_tree_from_slot` (vanilla) o `script_kct_wse_import_tree_from_slot` (WSE), llamado desde la pantalla de gestión (Load):
 
-1. `dict_load_file_json` con el nombre del slot.
-2. **Validaciones** (cualquier fallo → mensaje rojo, `reg0 = 0`):
-   - `kct_version` debe ser 1.
-   - `kct_count` debe coincidir con el nº de tropas del árbol actual
-     (`script_kct_compute_tree_range`).
-3. Aplica: prefijo, nombre/plural de cada dummy, atributos, habilidades,
-   proficiencias, equipo con modificadores, flag de configurado.
-4. Lee `@kct_budget` con **default 3 (Auto)** y lo guarda en el slot
-   `cstm_slot_tree_budget_begin + kct_tree` del troop prefijo.
-5. Sincroniza los dummies y re-equipa su inventario.
-6. `reg0 = 1` en éxito → abre el creador con el árbol cargado.
+1. Carga: vanilla `troop_get_slot meta` / WSE `dict_create` + `dict_load_file_json kct_slot_<n>.json`.
+2. **Validaciones** → rojo `reg0 = 0`:
+   - `kct version` == 1, `kct count` == `store_sub $cstm_troops_end $cstm_troops_begin` (`script_kct_compute_tree_range`).
+3. Aplica: `kct prefix` → `cstm_troop_tree_prefix` + slot `cstm_slot_tree_budget_begin + kct_tree` (`@kct budget` default 3 Auto), por nodo nombre/plural/att/skl/wpt/eq + `conf/eqmod/cls/gender`, `_copy_troop_record_ops` inverso + `kct_copy_custom_troop_to_dummy`/`kct_replace_custom_troop_with_dummy` + `kct_reapply_all_genders`.
+4. Preview backup `kct_import_preview_backup_slot` para deshacer.
+5. `reg0 = 1` → abre creador.
 
 ---
 
-## 7. Pantalla de gestión (`prsnt_kct_manage_tree_files`)
+## 7. Pantalla de gestión (`prsnt_kct_manage_tree_files` — `kct_presentations/tree_files.py`)
 
-- 8 filas con **checkbox + texto + barra dorada** indicando el slot seleccionado.
-- Click en fila o checkbox → selecciona (reinicio para redibujar).
-- **Load** → importa el slot seleccionado y abre el creador.
-- **Delete** → borra `<prefijo>.json` y limpia el slot en el registro
-  (`dict_delete_file` + `array_set_val` vacío + `array_save_file`).
-- **Exit** → vuelve al picker.
-- El registro se autocura en carga (no existe / tamaño incorrecto → recrear).
+- 12 filas (0-11) con **checkbox + texto + barra dorada**; `0-7` seed `Default N:` protegidos, `8-11` usuario `Slot N:`. Estado y nombre vía wrappers `kct_slot_is_occupied`/`kct_slot_get_name` (`tree_files.py:62`).
+- Click fila/checkbox → selecciona.
+- **Load** → `kct_slot_import_tree` (wrapper).
+- **Delete** → `kct_slot_clear` → WSE `dict_delete_file kct_slot_<n>.json` o vanilla `kct_clear_template_slot` (limpia `occupied` + nombres); seed `0-7` bloqueado "Default template slots cannot be deleted".
+- **Exit** → picker. Sin autocuración de array (no hay registro).
 
 ---
 
-## 8. Distribución al jugador (requisito WSE2)
+## 8. Distribución al jugador
 
-El mod **requiere WSE2** a partir de ahora (dict_* y array_* no existen ni en
-vanilla ni en WSE1). Implicaciones:
-
-- **No hay que empaquetar nada extra**: solo se exporta la carpeta `Modules\<módulo>`.
-- Los `.wsearray` / `.json` se crean solos en la carpeta WSE del jugador en su
-  primer uso (mecanismo de autocuración, sección 2).
-- Son **por-máquina** (no viajan con la partida): si el jugador cambia de PC,
-  sus árboles guardados no le siguen. Aceptado para la v1.
-- El jugador **no debe** ejecutar el mod sin WSE2 o la persistencia no funciona.
+- **Requisito:** WSE2 **opcional**. Vanilla funciona sin WSE (per-save). Con WSE, mismos `8-11` se vuelven cross-save sin cambiar UI.
+- **Empaquetado:** solo `Modules\<módulo>`. Los `kct_slot_*.json` se crean en WSE en el primer Export con WSE; no se distribuyen.
+- **Por-máquina cuando WSE:** los JSON no viajan con el `.sav`; cambiar de PC requiere copiar los `kct_slot_*.json` o usar el tool externo `kctt_share_tool` (extract-save → JSON → share) que lee el slot vanilla y produce JSON portable (`vanilla_share_journal.md`).
+- **Sin WSE:** no hay archivos; el share es vía savegame + extractor externo.
 
 ---
 
 ## 9. Estado / conclusión
 
-- Export, import y gestión de slots: **implementados y compilando**
-  (`python compiler\compile.py tag` → COMPILATION SUCCESSFUL).
-- Presupuesto per-tree (`@kct_budget`, modo **Auto** por defecto para importados):
-  **implementado y compilando**. La mod-option global `kct_funds_tier` fue
-  eliminada; el presupuesto vive en el troop prefijo (slots 521–524) y se exporta
-  con el árbol.
-- Esquema plano v1, requisito WSE2, sin compartición entre máquinas: **aceptado
-  por el usuario**.
-- Posibles mejoras futuras (no planificadas): anidamiento real de JSON (si WSE lo
-  añade), compartición/exportación de archivos entre PCs, migración de versiones.
+- Export, import y gestión de slots: **implementados y compilando** (`python compiler\compile.py tag` → COMPILATION SUCCESSFUL). `is_vanilla_warband 1004` decide backend.
+- Presupuesto per-tree `@kct budget` (521–524) + `@kct gender` incluidos en esquema; import default budget 3 Auto.
+- Esquema plano v1, 12 slots (8 seed + 4 usuario), híbrido vanilla/WSE opcional: **vigente**.
+- Futuro: nada planificado; `kctt_share_tool` cubre share sin WSE.

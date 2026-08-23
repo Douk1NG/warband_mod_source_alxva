@@ -391,8 +391,9 @@ def _build_create_event_ops():
 		(else_try,),
 			## EXPORT BUTTON PRESSED - save the tree directly (auto slot: match
 			## name, else first empty) and stay in the creator
+			## Wrapper uses WSE file when WSE is present (cross-save), vanilla troop slots otherwise.
 			(eq, ":object", "$kct_export_tree_button"),
-			(call_script, "script_kct_save_tree_to_slot"),
+			(call_script, "script_kct_slot_save_tree_auto"),
 			(try_begin,),
 				(eq, reg0, 1),
 				(assign, "$kct_import_preview_active", 0),

@@ -182,6 +182,11 @@ kct_slot_template_version = 5
 kct_template_version = 1
 kct_seeded_template_slot_count = 8
 
+# WSE external file backend (optional, cross-save). One file per user slot 8-11,
+# name is not a path - WSE stores in its managed directory.
+def kct_wse_slot_filename(slot_index):
+	return "kct_slot_%d" % slot_index
+
 def kct_template_meta_troop_id(slot_index):
 	return "kct_template_slot_%d_meta" % (slot_index)
 
