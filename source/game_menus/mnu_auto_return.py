@@ -19,7 +19,16 @@ auto_return_menu = [
     "auto_return",0,
     "{!}This menu automatically returns to caller.",
     "none",
-    [(change_screen_return, 0)],
+    [
+      (try_begin),
+        (eq, "$cstm_open_troop_tree_view", 1),
+        (assign, "$cstm_open_troop_tree_view", 0),
+        (assign, "$cstm_selected_troop", -1),
+        (start_presentation, "prsnt_cstm_choose_troop_tree"),
+      (else_try),
+        (change_screen_return, 0),
+      (try_end),
+    ],
     [
     ]
   )

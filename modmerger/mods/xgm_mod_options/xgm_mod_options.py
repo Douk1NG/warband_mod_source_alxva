@@ -479,7 +479,7 @@ mod_options = [
 		[
 			(assign, "$g_auto_upgrade_mode", reg1),
 		],
-	),
+    ),
 
     ("horizontal_divide", xgm_ov_line, [], "", 0,"", 0,[],[],),
 

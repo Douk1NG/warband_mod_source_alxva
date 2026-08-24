@@ -61,11 +61,13 @@ for i in xrange(max(cstm_proficiency_requirements.keys()) + 1):
 	new_start_operations.append((troop_set_slot, "trp_cstm_proficiency_requirements", i, requirement))
 	#print "troop_set_slot, trp_cstm_proficiency_requirements, %d, %d" % (i, requirement)
 
-# Set the allocated equipment funds for each troop level
-for i in xrange(64):
-	inventory_value = equipment_funds_available(i)
-	new_start_operations.append((troop_set_slot, "trp_cstm_inventory_values", i, inventory_value))
-	#print "Setting inventory value for level %d to %d" % (i, inventory_value)
+# Set the allocated equipment funds for each troop level (Balanced, Boosted, Cheater
+# tables written contiguously; the store reads level + tier * EQUIPMENT_FUNDS_TABLE_SIZE).
+for i in xrange(EQUIPMENT_FUNDS_TABLE_SIZE):
+	balanced, boosted, cheater = equipment_funds_available(i)
+	new_start_operations.append((troop_set_slot, "trp_cstm_inventory_values", i, balanced))
+	new_start_operations.append((troop_set_slot, "trp_cstm_inventory_values", i + EQUIPMENT_FUNDS_TABLE_SIZE, boosted))
+	new_start_operations.append((troop_set_slot, "trp_cstm_inventory_values", i + 2 * EQUIPMENT_FUNDS_TABLE_SIZE, cheater))
 
 # Add start operations for each combionation of tree option and skin (things like setting the dummy slots)
 for tree in CUSTOM_TROOP_TREES:
@@ -765,8 +767,8 @@ new_scripts = [
 			(eq, ":skill", skl_weapon_master),
 			
 			(store_skill_level, ":weapon_master", skl_weapon_master, ":troop"),
-			(store_mul, ":proficiency_cap", 40, ":weapon_master"),
-			(val_add, ":proficiency_cap", 60),
+			(store_mul, ":proficiency_cap", CSTM_WP_CAP_LEVELS_PER_WM, ":weapon_master"),
+			(val_add, ":proficiency_cap", CSTM_WP_CAP_ADDITIONAL),
 			
 			(assign, ":end_cond", proficiencies_end),
 			(try_for_range, ":proficiency", 0, ":end_cond"),

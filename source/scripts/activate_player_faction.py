@@ -36,6 +36,10 @@ activate_player_faction_scripts = [
 	(try_begin),
 		(faction_slot_eq, "fac_player_supporters_faction", slot_faction_state, sfs_inactive),
 		(neg|is_between, ":liege", pretenders_begin, pretenders_end),
+		(try_begin),
+			(eq, ":liege", "trp_player"),
+			(assign, "$cstm_open_troop_tree_view", 1),
+		(try_end),
 		(call_script, "script_add_notification_menu", "mnu_notification_player_faction_active", 0, 0),
 		##diplomacy begin
 		(call_script, "script_add_notification_menu", "mnu_dplmc_domestic_policy", 0, 0),

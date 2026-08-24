@@ -180,6 +180,7 @@ scripts = [
 			(faction_set_color,"fac_player_supporters_faction",0xFF0000),
 			(assign,"$players_kingdom","fac_player_supporters_faction"),
 			(assign,"$g_player_banner_granted",1),
+			(assign, "$cstm_open_troop_tree_view", 1),
 		]),
 
 	("c3_create_player_party",
