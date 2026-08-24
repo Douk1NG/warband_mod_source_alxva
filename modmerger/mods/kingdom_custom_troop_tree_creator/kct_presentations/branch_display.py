@@ -90,6 +90,11 @@ def _build_create_setup_ops():
 					ops.append((troop_set_slot, child_real, cstm_slot_troop_base_troop, real_id))
 		ops.append((try_end,))
 	ops.append((try_end,))
+	# Re-apply per-node gender flips (slot 534) after the type resets above
+	# (custom presets set troop_set_type to skin_id). Without this the branch
+	# viewer portrait would show the global picker gender instead of the flipped
+	# node's gender — visual bug only (slot data remains correct).
+	ops.append((call_script, "script_kct_reapply_all_genders"))
 	# The side-effect wiring (recruit troop as the culture's tier-1 + refresh
 	# every player-faction centre's culture/volunteers) lives in its own helper
 	# so the presentation can re-apply it from a Save button too.
@@ -245,6 +250,9 @@ def _build_create_load_ops():
 	ops.append((try_for_range, ":custom_troop", "$cstm_troops_begin", "$cstm_troops_end"))
 	ops.append((call_script, "script_kct_replace_custom_troop_with_dummy", ":custom_troop"))
 	ops.append((try_end,))
+	# Defensive re-apply after dummy->real restore (no type clobber today, but keeps
+	# portraits in sync if future restores touch type).
+	ops.append((call_script, "script_kct_reapply_all_genders"))
 
 	## PREFIX (also the tree name - Export saves the tree as <prefix>.json)
 	ops.append((str_store_string, s0, "@Prefix: "))
