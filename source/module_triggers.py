@@ -63,6 +63,7 @@ from triggers.move_fast_reset import move_fast_reset_triggers
 from triggers.zaitenko_reinforcements import zaitenko_reinforcements_triggers
 from triggers.feast_relations import feast_relations_triggers
 from triggers.transfer_mode_reset import transfer_mode_reset_triggers
+from triggers.dummy_save_fix import dummy_save_fix_triggers
 
 triggers = []
 triggers.extend(tutorial_map1_triggers)
@@ -97,6 +98,7 @@ triggers.extend(move_fast_reset_triggers)
 triggers.extend(zaitenko_reinforcements_triggers)
 triggers.extend(feast_relations_triggers)
 triggers.extend(transfer_mode_reset_triggers)
+triggers.extend(dummy_save_fix_triggers)
 
 # modmerger_start version=201 type=2
 try:
