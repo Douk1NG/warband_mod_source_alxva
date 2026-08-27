@@ -81,17 +81,18 @@ new_load_operations.append((call_script, "script_kct_restore_native_guards"))
 # Re-apply branch-gender flips after the type resets above (custom presets set
 # troop_set_type to skin_id). Persisted via slot 534 on real troops.
 new_load_operations.append((call_script, "script_kct_reapply_all_genders"))
-# Retired temporary migration, 2026-08-22:
-# Re-seeded old saves once after expanding the vanilla template bank to 12
-# slots and adding Rhodoks/Falcon/Calradian. The active saves have now been
-# opened/saved, so keep this breadcrumb without running it on every load.
-# new_load_operations.extend([
-# 	(try_begin,),
-# 		(neq, "$kct_template_slots_preset8_rhodoks_migrated", 1),
-# 		(call_script, "script_kct_seed_default_template_slots"),
-# 		(assign, "$kct_template_slots_preset8_rhodoks_migrated", 1),
-# 	(try_end,),
-# ])
+# Migrate old saves: seed default template slots if not already populated.
+# Checks slot 0 directly — if kct_slot_template_occupied != 1, the defaults
+# haven't been seeded. Idempotent: script_kct_seed_default_template_slots
+# overwrites with the same data, and the check prevents re-running on saves
+# that already have the trees.
+new_load_operations.extend([
+	(call_script, "script_kct_get_template_meta_troop", 0),
+	(assign, ":meta", reg0),
+	(neg|troop_slot_eq, ":meta", kct_slot_template_occupied, 1),
+	(call_script, "script_kct_seed_default_template_slots"),
+	(display_message, "@Default troop tree templates restored for old save", 0x44ff44),
+])
 
 new_simple_triggers = [
 	(0, new_load_operations),

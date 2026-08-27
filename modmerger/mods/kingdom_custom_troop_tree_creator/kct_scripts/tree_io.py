@@ -366,7 +366,7 @@ def _build_wse_clear_ops():
 	for s_idx in xrange(kct_seeded_template_slot_count, kct_template_slot_count):
 		ops.append((try_begin,) if s_idx == kct_seeded_template_slot_count else (else_try,))
 		ops.append((eq, ":slot", s_idx))
-		ops.append((dict_delete_file, _kct_wse_filename(s_idx)))
+		ops.append((dict_delete_file_json, _kct_wse_filename(s_idx)))
 	ops.append((try_end,))
 	ops.append((assign, reg0, 1))
 	return ops

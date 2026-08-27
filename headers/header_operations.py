@@ -1987,6 +1987,7 @@ dict_save_json             = 3218 #(dict_save_json, <dict>, <file>), #Saves <dic
 dict_from_url_encoded_json = 3219 #(dict_from_url_encoded_json, <dict>, <string>, [<mode>]), #Loads a url encoded json <string> into <dict>. [<mode>]: see above
 dict_to_url_encoded_json   = 3220 #(dict_to_url_encoded_json, <string_register>, <dict>), #Saves <dict> into a url encoded json and stores into <string_register>
 dict_erase                 = 3221 #(dict_erase, <dict>, <key>), #Removes value from <dict> paired to <key>
+dict_delete_file_json      = 3222 #(dict_delete_file_json, <file>), #Deletes dictionary json file <file> from disk
 
 agent_get_item_modifier                         = 3300 #(agent_get_item_modifier, <destination>, <agent_no>), #Stores <agent_no>'s horse item modifier (-1 if agent is not a horse) into <destination>
 agent_get_item_slot_modifier                    = 3301 #(agent_get_item_slot_modifier, <destination>, <agent_no>, <item_slot_no>), #Stores <agent_no>'s <item_slot_no> modifier into <destination>
