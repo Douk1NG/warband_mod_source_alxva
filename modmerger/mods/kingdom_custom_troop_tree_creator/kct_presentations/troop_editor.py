@@ -342,15 +342,22 @@ kct_customise_core = (
 			(call_script, "script_kct_create_text_overlay", "str_s0", KCT_CLASS_LABEL[0], KCT_CLASS_LABEL[1], 900, 60, 25, tf_left_align),
 			(call_script, "script_kct_create_combo_button_overlay", KCT_CLASS_SELECT[0], KCT_CLASS_SELECT[1]),
 			(assign, "$cstm_class_selector", reg1),
+			# Single source: party's renamed strings via str_store_class_name.
+			# 0 = Auto, then classes 0..8 in engine order (Infantry, Archers, Cavalry, Group 4..9 which may be renamed).
+			# Pistol users on Auto go to Group 4 (class 3). Whatever name you set via party Rename Group for Group 4 appears here.
 			(str_store_string, s0, "@Auto"),
 			(overlay_add_item, "$cstm_class_selector", s0),
-			(str_store_string, s0, "@Infantry"),
-			(overlay_add_item, "$cstm_class_selector", s0),
-			(str_store_string, s0, "@Cavalry"),
-			(overlay_add_item, "$cstm_class_selector", s0),
-			(str_store_string, s0, "@Archers"),
-			(overlay_add_item, "$cstm_class_selector", s0),
+			(try_for_range, ":class_id", 0, 9),
+				(str_store_class_name, s0, ":class_id"),
+				(overlay_add_item, "$cstm_class_selector", s0),
+			(try_end),
 			(troop_get_slot, ":class_override", "$cstm_troop_being_customised", cstm_slot_troop_class_override),
+			# Clamp out-of-range or legacy values to Auto so overlay stays valid (now 0..9 => Auto + 9 groups)
+			(try_begin),
+				(is_between, ":class_override", 0, 10),
+			(else_try),
+				(assign, ":class_override", 0),
+			(try_end),
 			(overlay_set_val, "$cstm_class_selector", ":class_override"),
 			(position_set_x, pos1, 750),
 			(position_set_y, pos1, 750),
@@ -493,9 +500,6 @@ kct_customise_core = (
       (call_script, "script_kct_create_text_box_overlay", "str_s0", KCT_NAME_POS_X + KCT_NAME_LABEL_WIDTH + KCT_NAME_GAP, KCT_NAME_POS_Y),
       (assign, "$cstm_set_name_plural", reg1),
 			
-			## CLASS SELECTOR - MOVED INSIDE STATS (hidden outside, see inner block below Level/HP)
-			(assign, "$cstm_class_selector", -1),
-
 			## GENDER SELECTOR (branch-gender hierarchy: flipping a node flips its entire subtree)
 			# SELECT (combo button dropdown) - proven store pattern 750x750, not label.
 			(call_script, "script_kct_create_combo_button_overlay", KCT_GENDER_POS[0], KCT_GENDER_POS[1]),

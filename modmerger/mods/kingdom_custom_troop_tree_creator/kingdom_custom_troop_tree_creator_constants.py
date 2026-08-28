@@ -139,10 +139,17 @@ cstm_slot_troop_proficiency_bonus = 532
 cstm_slot_troop_inherited = 528
 
 # 533 = troop class override chosen in the store's Class selector
-#      (0 = Auto / game-derived, 1 = grc_infantry, 2 = grc_cavalry, 3 = grc_archers).
-#      Persisted on the real troop so the class survives game loads (re-applied
-#      by the KCT start ops) and template export/import. Slot 533 is free: the
-#      base mod's allocator ends at 519 and the KCT slots above use 520/528/531/532.
+#      0 = Auto (derived from equipment: pistol/musket -> custom group 4,
+#          horse -> grc_cavalry, bow/crossbow -> grc_archers, else grc_infantry)
+#      1 = grc_infantry (engine class 0)
+#      2 = grc_archers  (engine class 1)
+#      3 = grc_cavalry  (engine class 2)
+#      4..9 = custom divisions 4..9 (engine class 3..8)
+#      Selector value N maps to engine class N-1. Persisted on the real troop
+#      so the class survives game loads (re-applied by
+#      script_kct_replace_custom_troop_with_dummy on every load) and template
+#      export/import. Slot 533 is free: the base mod's allocator ends at 519
+#      and the KCT slots above use 520/528/531/532.
 cstm_slot_troop_class_override = 533
 
 # 534 = per-node gender override for branch-gender feature (0 = natural /

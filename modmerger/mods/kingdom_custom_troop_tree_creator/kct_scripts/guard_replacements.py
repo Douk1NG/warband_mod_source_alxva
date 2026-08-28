@@ -198,43 +198,55 @@ GUARD_REPLACEMENTS_SCRIPTS = [
 # regardless of its class label (a "mounted archer" with class 3 or an
 # "infantry" that rides still fights mounted), so a horse in the inventory
 # disqualifies it from every guard slot, checked before the class label. Class
-# from slot 533: 1 = infantry, 2 = cavalry (never usable), 3 = archers; 0 = Auto,
-# derived from the troop's own equipment the same way script_kct_apply_troop_class
-# derives it (horse -> cavalry, bow/crossbow -> archers, otherwise infantry).
+# from slot 533: 0 = Auto (derive from equipment), 1..9 = engine class 0..8
+# (selector value N maps to engine class N-1, matching script_kct_apply_troop_class).
+# Only grc_infantry (engine class 0) and grc_archers (engine class 1) are usable
+# for guard slots; grc_cavalry (engine class 2) and any custom group (engine class
+# 3..8) are NEVER usable. A horse in inventory disqualifies in every case, so
+# a "mounted" troop never fills a castle guard slot regardless of its label.
 	("kct_guard_cf_troop_eligible",
 	[
 		(store_script_param, ":troop", 1),
 		(store_script_param, ":infantry_only", 2),
 
+		# Default: not eligible.
 		(assign, reg0, 0),
-		(troop_get_slot, ":class_override", ":troop", cstm_slot_troop_class_override),
-		(call_script, "script_kct_cf_troop_has_horse", ":troop"),
 
+		# A horse always disqualifies - skip class check entirely.
+		(call_script, "script_kct_cf_troop_has_horse", ":troop"),
 		(try_begin),
 			(eq, reg0, 1),
-			(assign, reg0, 0),
+			# reg0 already 0 from the default - nothing to do.
 		(else_try),
-			(eq, ":class_override", 2),
-			(assign, reg0, 0),
-		(else_try),
-			(eq, ":class_override", 1),
-			(assign, reg0, 1),
-		(else_try),
-			(eq, ":class_override", 3),
-			(eq, ":infantry_only", 0),
-			(assign, reg0, 1),
-		(else_try),
-			(eq, ":class_override", 0),
-			(call_script, "script_kct_cf_troop_has_bow_or_crossbow", ":troop"),
+			# No horse - translate slot to engine class and check eligibility.
+			(troop_get_slot, ":class_override", ":troop", cstm_slot_troop_class_override),
+			(assign, ":engine_class", grc_cavalry),  # default not eligible
 			(try_begin),
-				(eq, ":infantry_only", 0),
+				(eq, ":class_override", 0),
+				# Auto: bow/crossbow -> archers, else infantry. Horse already excluded.
+				(call_script, "script_kct_cf_troop_has_bow_or_crossbow", ":troop"),
+				(try_begin),
+					(eq, reg0, 1),
+					(assign, ":engine_class", grc_archers),
+				(else_try),
+					(assign, ":engine_class", grc_infantry),
+				(try_end),
+			(else_try),
+				(is_between, ":class_override", 1, 10),
+				(store_sub, ":engine_class", ":class_override", 1),
+			(try_end),
+
+			# Only grc_infantry (engine class 0) and grc_archers (engine class 1,
+			# when not infantry_only) are usable. grc_cavalry (2) and custom 3..8
+			# are NEVER usable - they don't fit a castle guard's role.
+			(try_begin),
+				(eq, ":engine_class", grc_infantry),
 				(assign, reg0, 1),
 			(else_try),
-				(assign, reg0, 0),
+				(eq, ":engine_class", grc_archers),
+				(eq, ":infantry_only", 0),
+				(assign, reg0, 1),
 			(try_end),
-		(else_try),
-			(eq, ":class_override", 0),
-			(assign, reg0, 1),
 		(try_end),
 	]),
 

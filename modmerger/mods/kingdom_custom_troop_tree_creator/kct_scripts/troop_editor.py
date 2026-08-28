@@ -951,41 +951,67 @@ TROOP_EDITOR_SCRIPTS = [
 		(eq, ":has_bow_or_crossbow", 1),
 	]),
 
+# script_kct_cf_troop_has_pistol_or_musket
+	("kct_cf_troop_has_pistol_or_musket",
+	[
+		(store_script_param, ":troop", 1),
+
+		(assign, ":has_pistol_or_musket", 0),
+
+		(troop_get_inventory_capacity, ":capacity", ":troop"),
+		(try_for_range, ":inv_slot", 0, ":capacity"),
+			(troop_get_inventory_slot, ":item", ":troop", ":inv_slot"),
+			(gt, ":item", 0),
+
+			(item_get_type, ":item_type", ":item"),
+			(this_or_next|eq, ":item_type", itp_type_pistol),
+			(eq, ":item_type", itp_type_musket),
+
+			(assign, ":has_pistol_or_musket", 1),
+		(try_end),
+
+		(eq, ":has_pistol_or_musket", 1),
+	]),
+
 # script_kct_apply_troop_class
 	("kct_apply_troop_class",
 	[
 		(store_script_param, ":troop", 1),
 		(store_script_param, ":dummy", 2),
 		(store_script_param, ":override", 3),
-		
+		## Selector value -> engine class:
+		##   0  = Auto (derived from dummy's equipment below)
+		##   1  = grc_infantry (0)
+		##   2  = grc_archers  (1)
+		##   3  = grc_cavalry  (2)
+		##   4..9 = custom divisions 4..9 (engine class 3..8)
+		## The selector exposes the 9 engine divisions in natural order with
+		## Auto prepended, so selector N maps to engine class N-1. Any value
+		## outside 0..9 falls through to Auto (defensive).
 		(try_begin),
-			(eq, ":override", 1),
-			
-			(troop_set_class, ":troop", grc_infantry),
-			(troop_set_class, ":dummy", grc_infantry),
+			(is_between, ":override", 1, 10),
+			(store_sub, ":engine_class", ":override", 1),
+			(troop_set_class, ":troop", ":engine_class"),
+			(troop_set_class, ":dummy", ":engine_class"),
 		(else_try),
-			(eq, ":override", 2),
-			
-			(troop_set_class, ":troop", grc_cavalry),
-			(troop_set_class, ":dummy", grc_cavalry),
-		(else_try),
-			(eq, ":override", 3),
-			
-			(troop_set_class, ":troop", grc_archers),
-			(troop_set_class, ":dummy", grc_archers),
-		(else_try),
-			(call_script, "script_kct_cf_troop_has_horse", ":dummy"),
-			
-			(troop_set_class, ":troop", grc_cavalry),
-			(troop_set_class, ":dummy", grc_cavalry),
-		(else_try),
-			(call_script, "script_kct_cf_troop_has_bow_or_crossbow", ":dummy"),
-			
-			(troop_set_class, ":troop", grc_archers),
-			(troop_set_class, ":dummy", grc_archers),
-		(else_try),
-			(troop_set_class, ":troop", grc_infantry),
-			(troop_set_class, ":dummy", grc_infantry),
+			## Auto: pistol/musket -> custom group 4 (engine class 3); horse ->
+			## grc_cavalry (2); bow/crossbow -> grc_archers (1); else grc_infantry (0).
+			(try_begin),
+				(call_script, "script_kct_cf_troop_has_pistol_or_musket", ":dummy"),
+				(troop_set_class, ":troop", 3),
+				(troop_set_class, ":dummy", 3),
+			(else_try),
+				(call_script, "script_kct_cf_troop_has_horse", ":dummy"),
+				(troop_set_class, ":troop", grc_cavalry),
+				(troop_set_class, ":dummy", grc_cavalry),
+			(else_try),
+				(call_script, "script_kct_cf_troop_has_bow_or_crossbow", ":dummy"),
+				(troop_set_class, ":troop", grc_archers),
+				(troop_set_class, ":dummy", grc_archers),
+			(else_try),
+				(troop_set_class, ":troop", grc_infantry),
+				(troop_set_class, ":dummy", grc_infantry),
+			(try_end),
 		(try_end),
 	]),
 
