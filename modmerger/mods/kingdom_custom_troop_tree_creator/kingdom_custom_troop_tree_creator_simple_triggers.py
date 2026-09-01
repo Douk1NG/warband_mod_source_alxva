@@ -93,6 +93,13 @@ new_load_operations.extend([
 	(call_script, "script_kct_seed_default_template_slots"),
 	(display_message, "@Default troop tree templates restored for old save", 0x44ff44),
 ])
+# Migrate v1 (legacy cstm/custom_troops) saves to the KCT shape. Runs after
+# the dummy->real restore above (which would otherwise wipe the v1 save's
+# real-troop edits by copying the empty legacy dummy). The migration does
+# its own real->dummy copy via script_kct_copy_custom_troop_to_dummy so the
+# subsequent loads are idempotent. Idempotent: script is a no-op unless
+# the save is detected as legacy.
+new_load_operations.append((call_script, "script_kct_migrate_legacy_v1"))
 
 new_simple_triggers = [
 	(0, new_load_operations),

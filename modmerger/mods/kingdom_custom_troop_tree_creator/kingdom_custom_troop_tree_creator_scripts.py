@@ -25,8 +25,9 @@ from kingdom_custom_troop_tree_creator.kct_scripts.tree_io import TREE_IO_SCRIPT
 from kingdom_custom_troop_tree_creator.kct_scripts.guard_replacements import GUARD_REPLACEMENTS_SCRIPTS
 from kingdom_custom_troop_tree_creator.kct_scripts.existing_troops import EXISTING_TROOPS_SCRIPTS
 from kingdom_custom_troop_tree_creator.kct_scripts.gender import GENDER_SCRIPTS
+from kingdom_custom_troop_tree_creator.kct_scripts.migrate_legacy_v1 import MIGRATE_LEGACY_V1_SCRIPTS
 
-new_scripts = UI_HELPER_SCRIPTS + BRANCH_DISPLAY_SCRIPTS + TROOP_EDITOR_SCRIPTS + TREE_IO_SCRIPTS + GUARD_REPLACEMENTS_SCRIPTS + EXISTING_TROOPS_SCRIPTS + GENDER_SCRIPTS
+new_scripts = UI_HELPER_SCRIPTS + BRANCH_DISPLAY_SCRIPTS + TROOP_EDITOR_SCRIPTS + TREE_IO_SCRIPTS + GUARD_REPLACEMENTS_SCRIPTS + EXISTING_TROOPS_SCRIPTS + GENDER_SCRIPTS + MIGRATE_LEGACY_V1_SCRIPTS
 
 # Set the dummy/custom-troop slot links for KCTT custom graph presets at game start and seed the
 # real troop with the default stats (and copy them to its dummy), mirroring
