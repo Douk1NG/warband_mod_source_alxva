@@ -7,5 +7,15 @@ rem instead of the moved .py, silently producing corrupt module data.
 del /s /q *.pyc 2>nul
 
 call python compiler\compile.py tag %1 %2 %3 %4 %5 %6 %7 %8 %9
+if errorlevel 1 goto :build_failed
+
+call python compiler\ui_color_patcher\ui_color_patcher.py
+
+:build_done
 pause
+exit /b 0
+
+:build_failed
+pause
+exit /b %errorlevel%
 
