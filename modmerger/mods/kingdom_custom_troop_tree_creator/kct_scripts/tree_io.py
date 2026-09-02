@@ -22,14 +22,11 @@ from kingdom_custom_troop_tree_creator_constants import *
 # prefix. Source of truth = the real custom troop for stats/equipment/slots; the
 # dummy troop supplies display names, matching the store's Save split.
 
-# Mirrors layout.PRESET_TREES_1_3 + branch_display._build_create_setup_ops so
-# the import (started from the picker, where $cstm_troops_begin/_end are not
-# set) can compute the troop range without re-rendering the presentation.
-PRESET_TREES_1_3 = [
-	("1_tier", 1, 7),
-	("2_tiers", 2, 6),
-	("3_tiers", 3, 5),
-]
+# PRESET_TREES_1_3 now imported from kingdom_custom_troop_tree_creator_constants
+# (single source of truth). The _build_compute_range_ops below mirrors the
+# branch_display._build_create_setup_ops troop range logic so the import
+# (started from the picker, where $cstm_troops_begin/_end are not set) can
+# compute the troop range without re-rendering the presentation.
 
 def _build_compute_range_ops():
 	ops = []

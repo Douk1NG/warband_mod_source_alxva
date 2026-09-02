@@ -16,7 +16,7 @@ from module_constants import *
 from custom_troops_constants import *
 
 # KCTT custom preset troops (single source of truth for additional graph shapes).
-from kingdom_custom_troop_tree_creator_constants import KCT_CUSTOM_PRESETS, PRESET_4_UNITS, preset_4_troop_id, kct_custom_preset_units
+from kingdom_custom_troop_tree_creator_constants import KCT_CUSTOM_PRESETS, PRESET_4_UNITS, PRESET_TREES_1_3, preset_4_troop_id, kct_custom_preset_units
 
 # Pick screen (prsnt_cstm_choose_troop_tree):
 # A column of two label -> select lines at the top: the tree select labelled
@@ -28,13 +28,6 @@ from kingdom_custom_troop_tree_creator_constants import KCT_CUSTOM_PRESETS, PRES
 # passes behind a label.
 # "Choose" records the selection and hands off to prsnt_cstm_create_troop_tree;
 # ESC / "Exit" close without recording.
-
-# Presets 1-3: (tree id, num branches, num tiers) - match custom_troops_constants
-PRESET_TREES_1_3 = [
-	("1_tier", 1, 7),
-	("2_tiers", 2, 6),
-	("3_tiers", 3, 5),
-]
 
 PRESET_NAMES = [
 	"Preset 1 - 1 branch, 7 tiers",
@@ -198,7 +191,6 @@ KCT_GENDER_SECTION_HEIGHT = 60
 # (0 = Auto / game-derived, 1 = Infantry, 2 = Cavalry, 3 = Archers)
 KCT_CLASS_SECTION_HEIGHT = 60
 
-# Class inner - label + select below Level/HP, inside stats container.
 KCT_CLASS_LABEL = (0, 490)
 KCT_CLASS_SELECT = (200, 490)
 
@@ -208,26 +200,49 @@ KCT_BUTTONS_SIZE_X = 100
 KCT_BUTTONS_SIZE_Y = 30
 KCT_BUTTONS_GAP = 20
 
-def _preset_4_lanes():
-	"""Lane per preset-4 node index: leaves get lanes 0..n-1 in left-to-right DFS
-	order and internal nodes sit at the mean lane of their children. Shared by the
-	picker preview and the creation viewer so both show the same shape."""
-	tiers, edges, _ = _preset_4_spec()
+def _build_spec_from_units(units):
+	"""Build (tiers, edges, codes) from a list of (label, level, [children_labels])
+	units. Node indices are the list order in `units`."""
+	index_of = {}
+	for i, (label, _, _) in enumerate(units):
+		index_of[label] = i
+	children = []
+	edges = []
+	for i, (_, _, child_labels) in enumerate(units):
+		child_idx = [index_of[c] for c in child_labels]
+		children.append(child_idx)
+		for c in child_idx:
+			edges.append((i, c))
+	tiers = []
+	frontier = [0]
+	while frontier:
+		tiers.append(frontier)
+		nxt = []
+		for parent in frontier:
+			nxt.extend(children[parent])
+		frontier = nxt
+	codes = [label for label, _, _ in units]
+	return tiers, edges, codes
+
+def _compute_lanes(tiers, edges):
+	"""Lane per node index: leaves get lanes 0..n-1 in left-to-right DFS order
+	and internal nodes sit at the mean lane of their children. Returns {key: lane}."""
 	children = {}
 	parent = {}
 	for p, c in edges:
 		children.setdefault(p, []).append(c)
 		parent[c] = p
-	# Find the root (the one node with no parent)
 	root = None
 	for row in tiers:
 		for key in row:
 			if key not in parent:
 				root = key
+				break
+		if root is not None:
+			break
 	lane = {}
 	next_lane = [0]
 	def assign_leaves(u):
-		"""Depth-first left-to-right: each leaf claims the next lane."""
 		if u not in children:
 			lane[u] = next_lane[0]
 			next_lane[0] += 1
@@ -236,7 +251,6 @@ def _preset_4_lanes():
 				assign_leaves(c)
 	assign_leaves(root)
 	def centre(u):
-		"""Internal nodes sit at the mean lane of their children."""
 		if u not in children:
 			return lane[u]
 		lane[u] = sum(centre(c) for c in children[u]) / float(len(children[u]))
@@ -244,43 +258,27 @@ def _preset_4_lanes():
 	centre(root)
 	return lane
 
-def _preset_4_positions():
-	"""Centred layout for the preset-4 tree so it matches the preset 1-3 look:
-	the root sits at the preview's vertical middle and every parent sits at the
-	vertical centre of its children (a 2-option parent is centred between its two
-	options, never inline with one of them). Leaves each get a lane in left-to-
-	right order; an internal node's lane is the mean of its children's lanes.
-	Returns {node index: (x, y)}."""
-	tiers, edges, _ = _preset_4_spec()
-	lane = _preset_4_lanes()
-	num_leaves = sum(1 for _, _, child_labels in PRESET_4_UNITS if len(child_labels) == 0)
-	cx, cy, qw, qh = PREVIEW
-	spacing = qh / float(num_leaves + 1)
+def _compute_positions_lane(tiers, lane, x_offset, gap_x, center_y, gap_y, y_shift=0):
+	"""Lane-based position computation. Returns {key: (x, y)} with
+	X = x_offset + tier * gap_x and Y = center_y + (lane[key] - root_lane) * gap_y - y_shift."""
 	root_lane = lane[0]
 	positions = {}
 	for tier, row in enumerate(tiers):
 		for key in row:
-			x = 50 + tier * 156
-			y = int(round(cy + (lane[key] - root_lane) * spacing))
+			x = x_offset + tier * gap_x
+			y = int(round(center_y + (lane[key] - root_lane) * gap_y)) - y_shift
 			positions[key] = (x, y)
 	return positions
 
 def _custom_preset_positions(tree_index):
-	tiers, edges, _ = _custom_preset_spec(tree_index)
 	units = kct_custom_preset_units(tree_index)
-	lane = _custom_preset_lanes(tree_index)
+	tiers, edges, _ = _build_spec_from_units(units)
+	lane = _compute_lanes(tiers, edges)
 	num_leaves = sum(1 for _, _, child_labels in units if len(child_labels) == 0)
 	cx, cy, qw, qh = PREVIEW
 	spacing = qh / float(num_leaves + 1)
-	root_lane = lane[0]
-	positions = {}
 	num_tiers = max(1, len(tiers) - 1)
-	for tier, row in enumerate(tiers):
-		for key in row:
-			x = 50 + int(round(tier * (780.0 / num_tiers)))
-			y = int(round(cy + (lane[key] - root_lane) * spacing))
-			positions[key] = (x, y)
-	return positions
+	return _compute_positions_lane(tiers, lane, 50, 780.0 / num_tiers, cy, spacing)
 
 # Manual per-node portrait nudge (dx, dy) for the preset-4 dummies, in points.
 # Node index = order in PRESET_4_UNITS:
@@ -377,40 +375,8 @@ P4_LABEL_MANUAL = {
 	21: (427, 296),
 }
 
-# TEMP P4 drag tools: two tuning tools (dummy portraits + name labels) share the
-# creation viewer's bottom strip. Each has its own live readout + Snapshot
-# button; readouts sit ABOVE the buttons (y 555/610 vs buttons at y 675) and are
-# kept narrow (x 430..830) so they never cover the buttons or each other.
-# Remove both with the tools when the offsets are baked.
-#
-# Both tools are DISABLED by default: the dummy offsets are baked into
-# P4_DUMMY_MANUAL and the label offsets into P4_LABEL_MANUAL. Flip a flag to
-# True to bring back that tool's readout + Snapshot button and re-wire its drag.
-ENABLE_DUMMY_TOOL = False
-ENABLE_LABEL_TOOL = False
-P4_DUMMY_TOOL_TEXT_POS      = (430, 555)
-P4_DUMMY_TOOL_TEXT_SIZE     = 900
-P4_DUMMY_TOOL_TEXT_W        = 400
-P4_DUMMY_TOOL_SNAPSHOT_POS  = (140, 675)
-
-P4_LABEL_TOOL_TEXT_POS      = (430, 610)
-P4_LABEL_TOOL_TEXT_SIZE     = 900
-P4_LABEL_TOOL_TEXT_W        = 400
-P4_LABEL_TOOL_SNAPSHOT_POS  = (360, 675)
-
-# TEMP tuning: every label is dropped at this screen-centre point instead of its
-# portrait-relative spot, so none are lost off-screen (right-side labels for the
-# rightmost dummies sat past x=1000). Move each label by hand, then Snapshot
-# bakes its delta (vs this centre) into P4_LABEL_MANUAL. Remove with the tool.
 P4_LABEL_CENTER = (500, 300)
 
-
-# TEMP P4 drag tools - helper files in this mod folder (imported here so the
-# presentation can wire them; modmerger does not auto-process them as
-# components). Each tool is self-contained: own slots in trp_temp_array_a/b/c/d,
-# own $<name>_* globals, own readout + Snapshot button.
-from kct_dummy_drag_tool import p4_dummy_tool
-from kct_label_drag_tool import p4_label_tool
 
 def _preset_4_dummy_offset(node_index):
 	"""Per-node nudge for the preset-4 dummy portraits (branch lines stay on the
@@ -420,36 +386,19 @@ def _preset_4_dummy_offset(node_index):
 def _preset_4_viewer_positions():
 	"""Lane-based skeleton layout for the preset-4 tree, filling the whole tree
 	area of the creation viewer (x 50..950, y 40..560)."""
-	tiers, _, _ = _preset_4_spec()
-	lane = _preset_4_lanes()
+	tiers, edges, _ = _build_spec_from_units(PRESET_4_UNITS)
+	lane = _compute_lanes(tiers, edges)
 	num_tiers = len(tiers)
 	gap_x = 900 / (num_tiers - 1)
-	gap_y = 104
-	root_lane = lane[0]
-	center_y = 248
-	positions = {}
-	for tier, row in enumerate(tiers):
-		for key in row:
-			x = 50 + tier * gap_x
-			y = int(round(center_y + (lane[key] - root_lane) * gap_y)) - P4_VIEWER_Y_SHIFT
-			positions[key] = (x, y)
-	return positions
+	return _compute_positions_lane(tiers, lane, 50, gap_x, 248, 104, y_shift=P4_VIEWER_Y_SHIFT)
 
 def _custom_preset_viewer_positions(tree_index):
-	tiers, _, _ = _custom_preset_spec(tree_index)
-	lane = _custom_preset_lanes(tree_index)
+	units = kct_custom_preset_units(tree_index)
+	tiers, edges, _ = _build_spec_from_units(units)
+	lane = _compute_lanes(tiers, edges)
 	num_tiers = max(1, len(tiers) - 1)
 	gap_x = 900 / num_tiers
-	gap_y = 104
-	root_lane = lane[0]
-	center_y = 248
-	positions = {}
-	for tier, row in enumerate(tiers):
-		for key in row:
-			x = 50 + tier * gap_x
-			y = int(round(center_y + (lane[key] - root_lane) * gap_y)) - P4_VIEWER_Y_SHIFT
-			positions[key] = (x, y)
-	return positions
+	return _compute_positions_lane(tiers, lane, 50, gap_x, 248, 104, y_shift=P4_VIEWER_Y_SHIFT)
 
 def _layout_positions(cx, cy, qw, qh, tiers):
 	"""tiers: list of lists of node keys. Returns {key: (x, y)} with tier 0 on the
@@ -478,78 +427,9 @@ def _tree_specs_1_3(tree_id, num_branches, num_tiers):
 				edges.append(((branch, tier), (branch + 1, tier + 1)))
 	return tiers, edges
 
-def _preset_4_spec():
-	"""Build (tiers, edges, codes) from the troops file so the preview always
-	matches the generated troops. Node indices are the list order in PRESET_4_UNITS."""
-	index_of = {}
-	for i, (label, _, _) in enumerate(PRESET_4_UNITS):
-		index_of[label] = i
-	children = []
-	edges = []
-	for i, (_, _, child_labels) in enumerate(PRESET_4_UNITS):
-		child_idx = [index_of[c] for c in child_labels]
-		children.append(child_idx)
-		for c in child_idx:
-			edges.append((i, c))
-	tiers = []
-	frontier = [0]
-	while frontier:
-		tiers.append(frontier)
-		nxt = []
-		for parent in frontier:
-			nxt.extend(children[parent])
-		frontier = nxt
-	codes = [label for label, _, _ in PRESET_4_UNITS]
-	return tiers, edges, codes
-
 def _custom_preset_spec(tree_index):
-	units = kct_custom_preset_units(tree_index)
-	index_of = {}
-	for i, (label, _, _) in enumerate(units):
-		index_of[label] = i
-	children = []
-	edges = []
-	for i, (_, _, child_labels) in enumerate(units):
-		child_idx = [index_of[c] for c in child_labels]
-		children.append(child_idx)
-		for c in child_idx:
-			edges.append((i, c))
-	tiers = []
-	frontier = [0]
-	while frontier:
-		tiers.append(frontier)
-		nxt = []
-		for parent in frontier:
-			nxt.extend(children[parent])
-		frontier = nxt
-	codes = [label for label, _, _ in units]
-	return tiers, edges, codes
+	return _build_spec_from_units(kct_custom_preset_units(tree_index))
 
-def _custom_preset_lanes(tree_index):
-	tiers, edges, _ = _custom_preset_spec(tree_index)
-	children = {}
-	parent = {}
-	for p, c in edges:
-		children.setdefault(p, []).append(c)
-		parent[c] = p
-	root = 0
-	lane = {}
-	next_lane = [0]
-	def assign_leaves(u):
-		if u not in children:
-			lane[u] = next_lane[0]
-			next_lane[0] += 1
-		else:
-			for c in children[u]:
-				assign_leaves(c)
-	assign_leaves(root)
-	def centre(u):
-		if u not in children:
-			return lane[u]
-		lane[u] = sum(centre(c) for c in children[u]) / float(len(children[u]))
-		return lane[u]
-	centre(root)
-	return lane
 
 def _branch_tier_code_ops(branch, tier):
 	return [(str_store_string, s0, "@|" + chr(ord('A') + branch) + str(tier + 1) + "|")]
@@ -600,5 +480,46 @@ def _tree_specs():
 		tiers, edges, codes = _custom_preset_spec(tree_index)
 		specs.append((tiers, edges, lambda key, codes=codes: _code_label_ops(codes[key])))
 	return specs
+
+
+# Inventory area
+KCT_INV_AREA_W       = 240
+KCT_INV_AREA_H       = 320
+KCT_INV_SLOT_FIXED   = 800   # mesh fixed-point (slot_size * 10)
+KCT_INV_HALF_SLOT    = 40    # slot_size / 2 - item center inside its slot
+KCT_INV_BELOW_Y      = 22
+
+# Store area
+KCT_STORE_RIGHT_EDGE = 565
+KCT_STORE_BOTTOM     = 610
+KCT_STORE_AREA_W     = 240
+KCT_STORE_AREA_H     = 560
+KCT_STORE_GRID_TOTAL = 21
+KCT_STORE_SLOT_FIXED = 800   # mesh fixed-point (slot_size * 10)
+KCT_STORE_HALF_SLOT  = 40    # slot_size / 2
+KCT_STORE_BELOW_Y    = 22
+KCT_TYPE_COMBO_POS_X = 700
+KCT_TYPE_COMBO_POS_Y = 630
+KCT_MOD_COMBO_POS_X  = 910
+KCT_MOD_COMBO_POS_Y  = 630
+KCT_PAGE_LABEL_POS_X = 485
+KCT_PAGE_LABEL_POS_Y = 625
+KCT_FUNDS_LABEL_POS_X= 322
+KCT_FUNDS_VALUE_POS_X= 565
+
+# Stats area
+KCT_LEVEL_HP_POS_Y   = 525
+KCT_ATTR_POS_Y       = 433
+KCT_ATTR_POINTS_POS_Y = 460
+KCT_PROF_POINTS_POS_Y = 168
+KCT_SKL_GRID_Y       = 233
+KCT_SKL_POINTS_POS_Y = 368
+
+# Name area
+KCT_NAME_COLUMN_X      = 165
+KCT_NAME_PLURAL_COLUMN_X = 505
+
+# Buttons
+KCT_BUTTON_RIGHT_X   = 920
 
 

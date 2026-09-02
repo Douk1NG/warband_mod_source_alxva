@@ -32,10 +32,7 @@ from kingdom_custom_troop_tree_creator.kct_presentations.layout import _custom_p
 # ESC / Exit return to the picker so the player can choose another preset.
 ####################################################################################################################
 
-def _build_create_setup_ops():
-	# Compute $cstm_troops_begin/_end/_num_tiers/_presentation_troop from the
-	# picker's selection (mirrors the working mod's menu flow, but for all four
-	# presets at runtime instead of one tree per menu option).
+def _emit_preset_1_3_setup_ops():
 	ops = []
 	for i, (tree_id, _, num_tiers) in enumerate(PRESET_TREES_1_3):
 		ops.append((try_begin,) if i == 0 else (else_try,))
@@ -60,6 +57,11 @@ def _build_create_setup_ops():
 			ops.append((assign, "$cstm_reinforcement_templates_begin", "pt_cstm_kingdom_player_%s_%d_reinforcements_a" % (tree_id, s)))
 			ops.append((store_add, "$cstm_reinforcement_templates_end", "$cstm_reinforcement_templates_begin", 3))
 		ops.append((try_end,))
+	return ops
+
+
+def _emit_custom_preset_setup_ops():
+	ops = []
 	for tree_index, _, units in KCT_CUSTOM_PRESETS:
 		tiers, _, _ = _custom_preset_spec(tree_index)
 		ops.append((else_try,))
@@ -89,6 +91,13 @@ def _build_create_setup_ops():
 					child_real = "trp_" + kct_custom_preset_troop_id(tree_index, s, index_of[child_label])
 					ops.append((troop_set_slot, child_real, cstm_slot_troop_base_troop, real_id))
 		ops.append((try_end,))
+	return ops
+
+
+def _build_create_setup_ops():
+	ops = []
+	ops.extend(_emit_preset_1_3_setup_ops())
+	ops.extend(_emit_custom_preset_setup_ops())
 	ops.append((try_end,))
 	# Re-apply per-node gender flips (slot 534) after the type resets above
 	# (custom presets set troop_set_type to skin_id). Without this the branch
@@ -143,7 +152,6 @@ def _build_custom_preset_viewer_ops(tree_index):
 	for parent, child in edges:
 		children_by_index.setdefault(parent, []).append(child)
 	ops = []
-	# Small dummy portrait per node (per skin)
 	for s in (0, 1):
 		ops.append((try_begin,) if s == 0 else (else_try,))
 		ops.append((eq, "$cstm_selected_gender", s))
@@ -173,13 +181,7 @@ def _build_custom_preset_viewer_ops(tree_index):
 				base_y = y - P4_PORTRAIT_H // 2 - P4_DUMMY_Y_OFFSET
 				ops.append((call_script, "script_kct_create_troop_image_size", dummy_id, base_x + dx, base_y + dy, P4_PORTRAIT_W, P4_PORTRAIT_H))
 				ops.append((troop_set_slot, "trp_cstm_overlay_troops", reg1, real_id))
-				# TEMP dummy drag tool: register the portrait as a draggable item
-				# so its position can be tuned in-game. Disabled (ENABLE_DUMMY_TOOL
-				# = False) - only the label tool is active (remove with the tool).
-				if ENABLE_DUMMY_TOOL:
-					ops.extend(p4_dummy_tool.register(node_index, reg1, base_x, base_y, dx, dy))
 	ops.append((try_end,))
-	# Branch lines centre-to-centre, on top of the portraits
 	for parent, child in edges:
 		px, py = positions[parent]
 		qx, qy = positions[child]
@@ -219,11 +221,6 @@ def _build_custom_preset_label_ops(tree_index):
 					manual_dx, manual_dy = (0, 0)
 				ops.append((str_store_troop_name, s0, dummy_id))
 				ops.append((call_script, "script_kct_create_text_overlay", "str_s0", base_x + manual_dx, base_y + manual_dy, P4_LABEL_FONT, P4_LABEL_W, P4_LABEL_H, flags))
-				# TEMP label drag tool: register the label as a draggable item.
-				# Disabled (ENABLE_LABEL_TOOL = False) - labels now show at their
-				# baked P4_LABEL_MANUAL positions (remove with the tool).
-				if ENABLE_LABEL_TOOL:
-					ops.extend(p4_label_tool.register(node_index, reg1, base_x, base_y, manual_dx, manual_dy))
 	ops.append((try_end,))
 	return ops
 
@@ -239,13 +236,6 @@ def _build_create_load_ops():
 	ops.append((try_for_range, ":overlay_id", 0, 9999))
 	ops.append((troop_set_slot, "trp_cstm_overlay_troops", ":overlay_id", -1))
 	ops.append((try_end,))
-	# P4 drag tools: clear their slots/globals before the portraits/labels
-	# register below. Both tools are disabled (ENABLE_DUMMY_TOOL /
-	# ENABLE_LABEL_TOOL) - their slots are not touched.
-	if ENABLE_DUMMY_TOOL:
-		ops.extend(p4_dummy_tool.reset())
-	if ENABLE_LABEL_TOOL:
-		ops.extend(p4_label_tool.reset())
 
 	ops.append((try_for_range, ":custom_troop", "$cstm_troops_begin", "$cstm_troops_end"))
 	ops.append((call_script, "script_kct_replace_custom_troop_with_dummy", ":custom_troop"))
@@ -323,16 +313,6 @@ def _build_create_load_ops():
 	ops.append((call_script, "script_kct_create_game_button_overlay", "str_s0", CSTM_BUTTONS_POS_X + 100, CSTM_BUTTONS_POS_Y - 10))
 	ops.append((assign, "$kct_apply_tree_button", reg1))
 
-	## TEMP P4 drag tools: SNAPSHOT buttons + live readouts (remove with the
-	## tools). Both tools are disabled (ENABLE_DUMMY_TOOL / ENABLE_LABEL_TOOL) -
-	## their readouts + Snapshot buttons are not created.
-	if ENABLE_DUMMY_TOOL:
-		ops.extend(p4_dummy_tool.create_snapshot_button(P4_DUMMY_TOOL_SNAPSHOT_POS))
-		ops.extend(p4_dummy_tool.create_readout("P4 dummy tool: press a portrait and drag", P4_DUMMY_TOOL_TEXT_POS, P4_DUMMY_TOOL_TEXT_SIZE, P4_DUMMY_TOOL_TEXT_W))
-	if ENABLE_LABEL_TOOL:
-		ops.extend(p4_label_tool.create_snapshot_button(P4_LABEL_TOOL_SNAPSHOT_POS))
-		ops.extend(p4_label_tool.create_readout("P4 label tool: press a label and drag", P4_LABEL_TOOL_TEXT_POS, P4_LABEL_TOOL_TEXT_SIZE, P4_LABEL_TOOL_TEXT_W))
-
 	ops.append((presentation_set_duration, 999999))
 	return ops
 
@@ -345,16 +325,7 @@ def _build_create_run_ops():
 			(start_presentation, "prsnt_cstm_choose_troop_tree"),
 		(try_end,),
 	]
-	# TEMP P4 label drag tool: while the left button is held the pressed label
-	# follows the mouse and its (dx, dy) vs its base shows in the readout; on
-	# release the drag stops and the label stays where it was dropped. The
-	# offsets are baked into P4_LABEL_MANUAL, so the tool is disabled
-	# (ENABLE_LABEL_TOOL) and its run block is skipped (remove with the tool).
 	ops.append((set_fixed_point_multiplier, 1000))
-	if ENABLE_DUMMY_TOOL:
-		ops.extend(p4_dummy_tool.run_ops())
-	if ENABLE_LABEL_TOOL:
-		ops.extend(p4_label_tool.run_ops())
 	return ops
 
 def _build_create_event_ops():
@@ -362,7 +333,6 @@ def _build_create_event_ops():
 		(store_trigger_param_1, ":object"),
 		(store_trigger_param_2, ":value"),
 		(try_begin,),
-			## NODE CLICKED -> open the customisation store for that troop
 			(troop_get_slot, ":troop", "trp_cstm_overlay_troops", ":object"),
 			(gt, ":troop", 0),
 			# Bottom-up editing restriction (spec §7): a node unlocks only after
@@ -383,7 +353,6 @@ def _build_create_event_ops():
 				(troop_set_name, "$cstm_presentation_troop", s0),
 				(str_store_troop_name_plural, s0, ":dummy"),
 				(troop_set_plural_name, "$cstm_presentation_troop", s0),
-				# Fresh store state on entry
 				(assign, "$cstm_item_modifier_selected", 0),
 				(assign, "$cstm_item_page_no", 0),
 				# Mark this as a fresh entry so the store's load trigger re-derives
@@ -392,7 +361,6 @@ def _build_create_event_ops():
 				(start_presentation, "prsnt_kct_customise_troop"),
 			(try_end,),
 		(else_try,),
-			## PREFIX CHANGED
 			(eq, ":object", "$cstm_set_prefix"),
 			(troop_set_name, cstm_troop_tree_prefix, s0),
 			(start_presentation, "prsnt_cstm_create_troop_tree"),
@@ -451,18 +419,6 @@ def _build_create_event_ops():
 			(store_sub, "$cstm_update_existing_troops", 1, "$cstm_update_existing_troops"),
 			(start_presentation, "prsnt_cstm_create_troop_tree"),
 	]
-	# TEMP P4 drag tools: SNAPSHOT - log every label's current (dx, dy), ready to
-	# paste into P4_LABEL_MANUAL. Each block MUST open its own else_try branch (a
-	# bare condition after a body is swallowed into the previous branch and never
-	# runs on its own) (remove with the tools). Both tools are disabled
-	# (ENABLE_DUMMY_TOOL / ENABLE_LABEL_TOOL) - their snapshot branches are
-	# dropped, so no else_try is emitted for them.
-	if ENABLE_DUMMY_TOOL:
-		ops.append((else_try,))
-		ops.extend(p4_dummy_tool.snapshot_event_ops("P4 DUMMY SNAPSHOT - paste into P4_DUMMY_MANUAL:"))
-	if ENABLE_LABEL_TOOL:
-		ops.append((else_try,))
-		ops.extend(p4_label_tool.snapshot_event_ops("P4 LABEL SNAPSHOT - paste into P4_LABEL_MANUAL:"))
 	ops.append((try_end,))
 	return ops
 
@@ -470,13 +426,4 @@ new_create_presentation = ("cstm_create_troop_tree", 0, mesh_load_window, [
 	(ti_on_presentation_load, _build_create_load_ops()),
 	(ti_on_presentation_run, _build_create_run_ops()),
 	(ti_on_presentation_event_state_change, _build_create_event_ops()),
-	# TEMP P4 drag tools: a left press on any registered label starts a drag
-	# (labels are mapped to items in trp_temp_array_a; everything else -
-	# portraits, lines, buttons - reads -1 and is ignored). Both tools are
-	# disabled (ENABLE_DUMMY_TOOL / ENABLE_LABEL_TOOL), so their mouse_press
-	# blocks are skipped too. Remove with the tools.
-	(ti_on_presentation_mouse_press, [
-		(store_trigger_param_1, ":object"),
-		(store_trigger_param_2, ":mouse_state"),
-	] + (p4_dummy_tool.mouse_press_ops() if ENABLE_DUMMY_TOOL else []) + (p4_label_tool.mouse_press_ops() if ENABLE_LABEL_TOOL else [])),
 ])

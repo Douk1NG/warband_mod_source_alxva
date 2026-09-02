@@ -48,14 +48,11 @@ from kingdom_custom_troop_tree_creator_constants import *
 # runs at Save time: script_kct_guard_cf_troop_eligible classifies one troop
 # and the generated script walks the selected tree's candidate units.
 #
-# Mirrors layout.PRESET_TREES_1_3 + branch_display._build_create_setup_ops so
-# the guard slots can be derived from the selected tree without re-deriving the
-# troop range (same pattern as tree_io.PRESET_TREES_1_3).
-PRESET_TREES_1_3 = [
-	("1_tier", 1, 7),
-	("2_tiers", 2, 6),
-	("3_tiers", 3, 5),
-]
+# PRESET_TREES_1_3 now imported from kingdom_custom_troop_tree_creator_constants
+# (single source of truth). The guard slots derivation mirrors
+# branch_display._build_create_setup_ops so they can be derived from the
+# selected tree without re-deriving the troop range (same pattern as
+# tree_io._build_compute_range_ops).
 
 # Tree tier index used as the floor for every guard-picking scan ("tier 3 en
 # adelante"): the tiers that fill the game's tier_3/tier_4 slots.

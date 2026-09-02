@@ -92,6 +92,14 @@ KCT_CUSTOM_PRESETS = [
 	(8, "Preset 8 - 3 branches, 5 tiers", PRESET_8_UNITS),
 ]
 
+# Presets 1-3: (tree id, num branches, num tiers) - match custom_troops_constants.
+# Single source of truth shared by layout.py, tree_io.py and guard_replacements.py.
+PRESET_TREES_1_3 = [
+	("1_tier", 1, 7),
+	("2_tiers", 2, 6),
+	("3_tiers", 3, 5),
+]
+
 def kct_custom_preset_units(tree_index):
 	for index, _, units in KCT_CUSTOM_PRESETS:
 		if index == tree_index:
