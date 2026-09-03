@@ -27,6 +27,7 @@ auto_menu_simple_triggers = [
    [         
      (try_begin),
        (gt, "$g_last_rest_center", 0),
+       (eq, "$g_siege_force_wait", 0), #respect player-initiated wait from mnu_castle_besiege wait_24_hours
        (party_get_battle_opponent, ":besieger_party", "$g_last_rest_center"),
        (gt, ":besieger_party", 0),
        (store_faction_of_party, ":encountered_faction", "$g_last_rest_center"),
