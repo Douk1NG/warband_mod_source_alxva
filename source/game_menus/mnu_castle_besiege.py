@@ -219,7 +219,7 @@ castle_besiege_menu = [
           (val_sub,":time_to_wait",":cur_time_of_day"),
           (val_mod,":time_to_wait",24),
           (val_add, ":time_to_wait", 1),
-          (rest_for_hours_interactive, ":time_to_wait", 5, 1), #rest while attackable
+          (rest_for_hours_interactive, ":time_to_wait", 0, 1), #rest while NOT attackable (fix: avoid AI lord encounters interrupting wait)
           (assign, "$cant_talk_to_enemy", 0),
           (change_screen_return),
           ]),

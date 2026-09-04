@@ -20,7 +20,8 @@ auto_besiege_progress_simple_triggers = [
       (gt,"$auto_besiege_town",0),
       (gt,"$g_player_besiege_town", 0),
       (ge, "$g_siege_method", 1),
-   
+      (eq, "$g_siege_force_wait", 0), #respect player-initiated wait from mnu_castle_besiege wait_24_hours
+
       (store_distance_to_party_from_party, ":distance", "$g_player_besiege_town", "p_main_party"),
       (try_begin),
         (gt, ":distance", raid_distance / 2),
