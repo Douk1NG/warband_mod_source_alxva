@@ -40,6 +40,18 @@ custom_item_prepare_component_scripts = [
 		(else_try),
 			(agent_get_slot, ":value", ":agent_no", ":agent_item_slot_no"), #
 		(try_end),
+		# SANITIZE (dthehun 2026-09-05): old slot collision put weapon-type ints (6, 7, ..., 20) into armor/helm mesh slots.
+		# Anything outside [-1, random_end) is garbage. Reset to -1 (random) so the next randomize block picks a valid component,
+		# and write back to the troop slot so the fix is permanent across saves.
+		(try_begin),
+			(neq, ":value", -1),
+			(neg|is_between, ":value", ":random_begin", ":random_end"),
+			(assign, ":value", -1),
+			(try_begin),
+				(eq, ":use_agent_slots", 0),
+				(troop_set_slot, ":troop_no", ":troop_item_slot_no", -1),
+			(try_end),
+		(try_end),
       #RANDOMIZE
 		(eq, ":value", -1),
 		(try_begin),

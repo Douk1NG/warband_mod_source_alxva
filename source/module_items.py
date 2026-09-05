@@ -1599,12 +1599,14 @@ items = [
 		(cur_item_add_mesh, "@custom_skin"), # for inventory skin color
 	#TATTOO CHANGE
 		(troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-		(gt, ":color", 0),
-		(str_clear, s1),
-		(val_add, ":color", "str_ca_skin"),
-		(str_store_string, s1, ":color"),
-		#(cur_item_set_material, s1, 0),  #Base mesh
-		(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_begin),
+			(is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+			(str_clear, s1),
+			(val_add, ":color", "str_ca_skin"),
+			(str_store_string, s1, ":color"),
+			#(cur_item_set_material, s1, 0),  #Base mesh
+			(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_end),
 	])
   ]
 ],
@@ -1631,12 +1633,14 @@ items = [
 		(try_end),
 	#TATTOO CHANGE
 		(troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-		(gt, ":color", 0),
-		(str_clear, s1),
-		(val_add, ":color", "str_ca_skin"),
-		(str_store_string, s1, ":color"),
-		#(cur_item_set_material, s1, 0),  #Base mesh
-		(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_begin),
+			(is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+			(str_clear, s1),
+			(val_add, ":color", "str_ca_skin"),
+			(str_store_string, s1, ":color"),
+			#(cur_item_set_material, s1, 0),  #Base mesh
+			(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_end),
 	])
   ]
 ],
@@ -1661,12 +1665,14 @@ items = [
 		(try_end),
 	#TATTOO CHANGE
 		(troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-		(gt, ":color", 0),
-		(str_clear, s1),
-		(val_add, ":color", "str_ca_skin"),
-		(str_store_string, s1, ":color"),
-		#(cur_item_set_material, s1, 0),  #Base mesh
-		(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_begin),
+			(is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+			(str_clear, s1),
+			(val_add, ":color", "str_ca_skin"),
+			(str_store_string, s1, ":color"),
+			#(cur_item_set_material, s1, 0),  #Base mesh
+			(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_end),
 	])
   ]
 ],
@@ -1699,12 +1705,14 @@ items = [
 		(try_end),
 	#TATTOO
 		(troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-	    (gt, ":color", 0),
-		(str_clear, s1),
-		(val_add, ":color", "str_ca_skin"),
-		(str_store_string, s1, ":color"),
-		#(cur_item_set_material, s1, 0),  #Base mesh
-		(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+	    (try_begin),
+			(is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+			(str_clear, s1),
+			(val_add, ":color", "str_ca_skin"),
+			(str_store_string, s1, ":color"),
+			#(cur_item_set_material, s1, 0),  #Base mesh
+			(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+	    (try_end),
 	])
   ]
 ],
@@ -1739,12 +1747,14 @@ items = [
 		(cur_item_add_mesh, "@scale_armor_knee"),
 	#TATTOO CHANGE
 		(troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-		(gt, ":color", 0),
-		(str_clear, s1),
-		(val_add, ":color", "str_ca_skin"),
-		(str_store_string, s1, ":color"),
-		#(cur_item_set_material, s1, 0),  #Base mesh
-		(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_begin),
+			(is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+			(str_clear, s1),
+			(val_add, ":color", "str_ca_skin"),
+			(str_store_string, s1, ":color"),
+			#(cur_item_set_material, s1, 0),  #Base mesh
+			(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_end),
 	])
   ],[fac_undeads]
 ],
@@ -1782,12 +1792,14 @@ items = [
 		(cur_item_add_mesh, "@risty_bracer_r"),
 	#TATTOO CHANGE
 		(troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-		(gt, ":color", 0),
-		(str_clear, s1),
-		(val_add, ":color", "str_ca_skin"),
-		(str_store_string, s1, ":color"),
-		#(cur_item_set_material, s1, 0),  #Base mesh
-		(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_begin),
+			(is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+			(str_clear, s1),
+			(val_add, ":color", "str_ca_skin"),
+			(str_store_string, s1, ":color"),
+			#(cur_item_set_material, s1, 0),  #Base mesh
+			(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_end),
 	])
   ],[fac_undeads]
 ],
@@ -1866,12 +1878,14 @@ items = [
 	  (call_script, "script_custom_item_prepare_component", ":agent_no", ":troop_no", ":use_agent_slots", ":item_script_no", 13, 0,1, 0),
 	#TATTOO CHANGE
 	  (troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-	  (gt, ":color", 0),
-      (str_clear, s1),
-      (val_add, ":color", "str_ca_skin"),
-      (str_store_string, s1, ":color"),
-	  #(cur_item_set_material, s1, 0),  #Base mesh
-	  (cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+	  (try_begin),
+	      (is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+	      (str_clear, s1),
+	      (val_add, ":color", "str_ca_skin"),
+	      (str_store_string, s1, ":color"),
+	      #(cur_item_set_material, s1, 0),  #Base mesh
+	      (cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+	  (try_end),
     ])
   ],[fac_undeads]
 ],
@@ -1944,12 +1958,14 @@ items = [
 	  (call_script, "script_custom_item_prepare_component", ":agent_no", ":troop_no", ":use_agent_slots", ":item_script_no", 13, 0,1, 0),
 	#TATTOO CHANGE
 	  (troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-	  (gt, ":color", 0),
-      (str_clear, s1),
-      (val_add, ":color", "str_ca_skin"),
-      (str_store_string, s1, ":color"),
-	  #(cur_item_set_material, s1, 0),  #Base mesh
-	  (cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+	  (try_begin),
+	      (is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+	      (str_clear, s1),
+	      (val_add, ":color", "str_ca_skin"),
+	      (str_store_string, s1, ":color"),
+	      #(cur_item_set_material, s1, 0),  #Base mesh
+	      (cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+	  (try_end),
     ])
   ],[fac_undeads]
 ],
@@ -2022,12 +2038,14 @@ items = [
 	  (call_script, "script_custom_item_prepare_component", ":agent_no", ":troop_no", ":use_agent_slots", ":item_script_no", 13, 0,1, 0),
 	#TATTOO CHANGE
 	  (troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-	  (gt, ":color", 0),
-      (str_clear, s1),
-      (val_add, ":color", "str_ca_skin"),
-      (str_store_string, s1, ":color"),
-	  #(cur_item_set_material, s1, 0),  #Base mesh
-	  (cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+	  (try_begin),
+	      (is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+	      (str_clear, s1),
+	      (val_add, ":color", "str_ca_skin"),
+	      (str_store_string, s1, ":color"),
+	      #(cur_item_set_material, s1, 0),  #Base mesh
+	      (cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+	  (try_end),
     ])
   ],[fac_undeads]
 ],
@@ -2064,12 +2082,14 @@ items = [
 		(cur_item_add_mesh, "@plate_armor_bootleg"),
 	#TATTOO CHANGE
 		(troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-		(gt, ":color", 0),
-		(str_clear, s1),
-		(val_add, ":color", "str_ca_skin"),
-		(str_store_string, s1, ":color"),
-		#(cur_item_set_material, s1, 0),  #Base mesh
-		(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_begin),
+			(is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+			(str_clear, s1),
+			(val_add, ":color", "str_ca_skin"),
+			(str_store_string, s1, ":color"),
+			#(cur_item_set_material, s1, 0),  #Base mesh
+			(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_end),
 	])
   ],[fac_undeads]
 ],
@@ -2110,12 +2130,14 @@ items = [
 		(cur_item_add_mesh, "@plate_bracer_r"),
 	#TATTOO CHANGE
 		(troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-		(gt, ":color", 0),
-		(str_clear, s1),
-		(val_add, ":color", "str_ca_skin"),
-		(str_store_string, s1, ":color"),
-		#(cur_item_set_material, s1, 0),  #Base mesh
-		(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_begin),
+			(is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+			(str_clear, s1),
+			(val_add, ":color", "str_ca_skin"),
+			(str_store_string, s1, ":color"),
+			#(cur_item_set_material, s1, 0),  #Base mesh
+			(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_end),
 	])
   ],[fac_undeads]
 ],
@@ -2152,12 +2174,14 @@ items = [
 		(cur_item_add_mesh, "@sonja_glove_r"),
 	#TATTOO CHANGE
 		(troop_get_slot, ":color", ":troop_no", slot_troop_tattoo),
-		(gt, ":color", 0),
-		(str_clear, s1),
-		(val_add, ":color", "str_ca_skin"),
-		(str_store_string, s1, ":color"),
-		#(cur_item_set_material, s1, 0),  #Base mesh
-		(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_begin),
+			(is_between, ":color", 1, 4),  # only 1=Amazon, 2=Risty, 3=Custom; 0=no_tattoo is not a material
+			(str_clear, s1),
+			(val_add, ":color", "str_ca_skin"),
+			(str_store_string, s1, ":color"),
+			#(cur_item_set_material, s1, 0),  #Base mesh
+			(cur_item_set_material, s1, 1),  #Body - Tatoo? - freez in invetory if no second mesh
+		(try_end),
 	])
   ],[fac_undeads]
 ],

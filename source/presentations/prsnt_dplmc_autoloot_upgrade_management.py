@@ -513,7 +513,6 @@ dplmc_autoloot_upgrade_management = ("dplmc_autoloot_upgrade_management", 0, mes
           (troop_get_slot, ":cur_troop", "trp_temp_array_b", ":trp_slot_prsnt_no"),
           (assign, "$lord_selected", ":cur_troop"),
           (assign, "$temp", ":cur_troop"),
-          (set_player_troop, ":cur_troop"), # SB : set troop here, restore on exit
           (start_presentation, "prsnt_dplmc_autoloot_upgrade_management"),
         (try_end),
     ]),
