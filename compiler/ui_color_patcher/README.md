@@ -27,9 +27,9 @@ Two passes run on every invocation:
 Open `ui_color_patcher.py` and edit the four constants near the top:
 
 ```python
-ESCAPE_TEXT_COLOR         = 0xFFE6D5B8  # cream  (resting)
-ESCAPE_HIGHLIGHT_COLOR    = 0xFFFFD86B  # gold   (mouse hover)
-PARTY_SKILLS_TEXT_COLOR   = 0xFFE6D5B8  # cream  (resting)
+ESCAPE_TEXT_COLOR            = 0xFFE6D5B8  # cream  (resting)
+ESCAPE_HIGHLIGHT_COLOR       = 0xFFFFD86B  # gold   (mouse hover)
+PARTY_SKILLS_TEXT_COLOR      = 0xFFE6D5B8  # cream  (resting)
 PARTY_SKILLS_HIGHLIGHT_COLOR = 0xFFFFD86B  # gold   (mouse hover)
 ```
 
@@ -42,19 +42,35 @@ whatever fits your palette.
 
 ## Usage
 
+### Default: patch in place
+
 `compile.bat` invokes this script automatically at the end of every
-build. Run it manually with:
+build. The active module's `game_variables.txt` is rewritten in place:
 
 ```bat
 python compiler\ui_color_patcher\ui_color_patcher.py
 ```
 
-Pass `--module-dir PATH` to target a module that does not live at the
-default location:
+Output:
+- `Patched` — at least one pass modified the file.
+- `Nothing to patch` — every value was already in sync.
+
+### Parallel file for releases
+
+Use `--source` and `--out` to keep the active module untouched and
+generate a side-by-side file that Warband does **not** read. The user
+can manually copy it over the real `game_variables.txt` if they want
+the custom colors.
 
 ```bat
-python compiler\ui_color_patcher\ui_color_patcher.py --module-dir "C:\path\to\MyMod"
+python compiler\ui_color_patcher\ui_color_patcher.py ^
+    --source "C:\path\to\release-clean-module\game_variables.txt" ^
+    --out    "C:\path\to\active-module\game_variables_pop.txt"
 ```
+
+In this mode the patcher always writes (force mode) so the output
+always reflects the configured palette, regardless of the input's
+current state.
 
 ## Output
 

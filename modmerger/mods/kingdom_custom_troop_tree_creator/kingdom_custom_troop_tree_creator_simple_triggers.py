@@ -89,9 +89,11 @@ new_load_operations.append((call_script, "script_kct_reapply_all_genders"))
 new_load_operations.extend([
 	(call_script, "script_kct_get_template_meta_troop", 0),
 	(assign, ":meta", reg0),
-	(neg|troop_slot_eq, ":meta", kct_slot_template_occupied, 1),
-	(call_script, "script_kct_seed_default_template_slots"),
-	(display_message, "@Default troop tree templates restored for old save", 0x44ff44),
+	(try_begin,),
+		(neg|troop_slot_eq, ":meta", kct_slot_template_occupied, 1),
+		(call_script, "script_kct_seed_default_template_slots"),
+		(display_message, "@Default troop tree templates restored for old save", 0x44ff44),
+	(try_end,),
 ])
 # Migrate v1 (legacy cstm/custom_troops) saves to the KCT shape. Runs after
 # the dummy->real restore above (which would otherwise wipe the v1 save's

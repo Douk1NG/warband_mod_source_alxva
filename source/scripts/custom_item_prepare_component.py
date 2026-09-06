@@ -40,6 +40,16 @@ custom_item_prepare_component_scripts = [
 		(else_try),
 			(agent_get_slot, ":value", ":agent_no", ":agent_item_slot_no"), #
 		(try_end),
+		(try_begin),
+			(neq, ":value", -1),
+			(neg|is_between, ":value", ":random_begin", ":random_end"),
+			(assign, ":value", -1),
+			(try_begin),
+				(eq, ":use_agent_slots", 0),
+				(neg|is_between, ":troop_item_slot_no", dplmc_slot_upgrade_armor, dplmc_slot_upgrade_wpn_3 + 1),
+				(troop_set_slot, ":troop_no", ":troop_item_slot_no", -1),
+			(try_end),
+		(try_end),
       #RANDOMIZE
 		(eq, ":value", -1),
 		(try_begin),

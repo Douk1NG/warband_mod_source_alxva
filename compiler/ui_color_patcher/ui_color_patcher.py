@@ -8,27 +8,16 @@ pipeline does NOT generate these values - the W.R.E.C.K. compiler
 preserves them as-is, but on certain module configurations it drops
 the trailing UI sections entirely.
 
-This script keeps two things in sync with the values configured below:
-  1. The six ESC menu button text colors (escape_*_button_text_color).
-     If W.R.E.C.K. drops the section entirely, the full block is
-     re-injected.
-  2. The party screen skill list color. The block itself exists in
-     the module base but the engine-side text_color and
-     highlight_text_color entries for `party_bo_skills` are missing in
-     the compiled file, so the skill list renders with the default
-     black. We inject both entries right after the
-     `party_bo_skills_size_y` line so the skill names match the ESC
-     menu palette.
+This script reads the active module's `game_variables.txt` and writes
+a sidecar `game_variables_pop.txt` next to it with the configured
+palette applied. The active module file is never touched. Users who
+want the custom colors rename the sidecar over the original.
 
 Prints exactly one line: "Patched" or "Nothing to patch". Nothing else.
-
-Usage:
-    python ui_color_patcher.py [--module-dir PATH]
 """
 
 from __future__ import print_function
 
-import argparse
 import io
 import os
 import re
@@ -49,8 +38,6 @@ ESCAPE_BUTTON_KEYS = [
     "return", "options", "save_exit", "save", "save_as", "exit",
 ]
 
-# Layout constants mirror the original Diplomacy block so an injected
-# section sits flush with the rest of the UI.
 _ESCAPE_LAYOUT = {
     "return":    (0.18, 0.48, 0.25, 0.02),
     "options":   (0.18, 0.42, 0.25, 0.05),
@@ -66,9 +53,6 @@ _ESCAPE_LINE_RE = re.compile(
 )
 _ESCAPE_SECTION_RE = re.compile(r"^\s*#escape\s+window\s*$", re.IGNORECASE)
 
-# Anchor: the line right after which we inject the party_bo_skills
-# colors. The line itself already exists in every Diplomacy-based
-# module; it's the last entry of the `party_bo_skills` geometry block.
 _PARTY_SKILLS_ANCHOR_RE = re.compile(
     u"^party_bo_skills_size_y\s*=\s*0\.75\s*$"
 )
@@ -118,32 +102,17 @@ def _build_escape_block():
     return out
 
 
-def _module_dir(args):
-    if args.module_dir:
-        return os.path.abspath(args.module_dir)
-    return (
-        r"C:/Program Files (x86)/Steam/steamapps/common/"
-        r"MountBlade Warband/Modules/Dickplomacy Reloaded"
-    )
-
-
 def _apply_replace(line, name_regex, expected):
-    """If `line` matches `name_regex` and its hex differs from the expected
-    one in `expected[name]`, return a replaced line. Otherwise return
-    None (no match) or the original line (matched but already correct).
+    """If `line` matches `name_regex`, return a rewritten line with the
+    expected hex. Otherwise return None.
     """
     stripped = line.rstrip(u"\r\n")
     m = name_regex.match(stripped)
     if not m:
         return None
     name = stripped.split(None, 1)[0]
-    new_value = expected[name]
-    old_value_match = re.search(r"0x[0-9A-Fa-f]{1,8}", stripped)
-    old_value = old_value_match.group(0) if old_value_match else None
-    if old_value == new_value:
-        return line  # already correct, keep as-is
     leading = re.match(r"^(\s*)", line).group(1)
-    return u"{0}{1} = {2}\n".format(leading, name, new_value)
+    return u"{0}{1} = {2}\n".format(leading, name, expected[name])
 
 
 def _patch_escape_menu(lines):
@@ -160,24 +129,18 @@ def _patch_escape_menu(lines):
 
     new_lines = []
     in_section = section_start is not None
-    matched_lines = 0
-    changed = False
+    matched = 0
     for line in lines:
         if in_section:
             replaced = _apply_replace(line, _ESCAPE_LINE_RE, expected)
             if replaced is not None:
-                matched_lines += 1
-                if replaced != line:
-                    changed = True
+                matched += 1
                 new_lines.append(replaced)
                 continue
         new_lines.append(line)
 
-    if changed:
+    if matched > 0:
         return new_lines, True
-
-    if matched_lines > 0:
-        return new_lines, False
 
     # Section was dropped by W.R.E.C.K. - re-inject.
     block_lines = [u"{0}\n".format(l) for l in _build_escape_block()]
@@ -206,22 +169,18 @@ def _patch_party_skills(lines):
     }
 
     new_lines = []
-    matched_names = set()
-    changed = False
+    matched = set()
     for line in lines:
         replaced = _apply_replace(line, _PARTY_SKILLS_LINE_RE, expected)
         if replaced is not None:
             name = line.rstrip(u"\r\n").split(None, 1)[0]
-            matched_names.add(name)
-            if replaced != line:
-                changed = True
+            matched.add(name)
             new_lines.append(replaced)
         else:
             new_lines.append(line)
 
-    missing = [name for name in expected if name not in matched_names]
-    if not missing:
-        return new_lines, changed
+    if matched == set(expected):
+        return new_lines, True
 
     out = []
     injected = False
@@ -230,45 +189,38 @@ def _patch_party_skills(lines):
         if not injected and _PARTY_SKILLS_ANCHOR_RE.match(
             line.rstrip(u"\r\n")
         ):
-            for name in missing:
-                out.append(u"{0} = {1}\n".format(name, expected[name]))
+            for name in expected:
+                if name not in matched:
+                    out.append(u"{0} = {1}\n".format(name, expected[name]))
             injected = True
     if not injected:
-        for name in missing:
-            out.append(u"{0} = {1}\n".format(name, expected[name]))
+        for name in expected:
+            if name not in matched:
+                out.append(u"{0} = {1}\n".format(name, expected[name]))
     return out, True
 
 
-def patch(gv_path):
-    with io.open(gv_path, "r", encoding="utf-8") as fh:
-        lines = [_to_unicode(line) for line in fh.readlines()]
-
-    lines, escape_changed = _patch_escape_menu(lines)
-    lines, skills_changed = _patch_party_skills(lines)
-
-    if escape_changed or skills_changed:
-        with io.open(gv_path, "w", encoding="utf-8") as fh:
-            fh.writelines(lines)
-        return True
-
-    return False
-
-
-def main(argv=None):
-    parser = argparse.ArgumentParser(add_help=True)
-    parser.add_argument(
-        "--module-dir",
-        default=None,
-        help="Path to the module directory (containing game_variables.txt).",
+def main():
+    module_dir = (
+        r"C:/Program Files (x86)/Steam/steamapps/common/"
+        r"MountBlade Warband/Modules/Dickplomacy Reloaded"
     )
-    args = parser.parse_args(argv)
+    input_path = os.path.join(module_dir, "game_variables.txt")
+    output_path = os.path.join(module_dir, "game_variables_pop.txt")
 
-    gv_path = os.path.join(_module_dir(args), "game_variables.txt")
-    if not os.path.isfile(gv_path):
+    if not os.path.isfile(input_path):
         sys.exit(1)
 
-    changed = patch(gv_path)
-    sys.stdout.write("Patched\n" if changed else "Nothing to patch\n")
+    with io.open(input_path, "r", encoding="utf-8") as fh:
+        lines = [_to_unicode(line) for line in fh.readlines()]
+
+    lines, _ = _patch_escape_menu(lines)
+    lines, _ = _patch_party_skills(lines)
+
+    with io.open(output_path, "w", encoding="utf-8") as fh:
+        fh.writelines(lines)
+
+    sys.stdout.write("Patched\n")
     sys.stdout.flush()
 
 

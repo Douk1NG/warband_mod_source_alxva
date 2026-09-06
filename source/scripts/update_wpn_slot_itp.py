@@ -19,6 +19,10 @@ update_wpn_slot_itp_scripts = [
       (store_script_param, ":value", 2),
       (troop_get_slot, ":item_type", "trp_temp_array_c", ":value"),
       (troop_get_slot, ":slot_value", "$temp", ":slot"),
+      (try_begin),
+        (lt, ":slot_value", 0),
+        (assign, ":slot_value", 0),
+      (try_end),
       (try_begin), #if new value supports metamods, inherit
         (call_script, "script_cf_item_type_has_advanced_autoloot", ":item_type"),
         (store_mod, ":original_value", ":slot_value", meta_itp_mask),

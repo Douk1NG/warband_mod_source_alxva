@@ -24,6 +24,14 @@ create_wpn_slot_overlay_scripts = [
       (overlay_set_position, ":obj", pos1),
       (assign, ":sub_overlay_id", 0),
       (store_add, ":upgrade_slot", ":slot", dplmc_slot_upgrade_wpn_0),
+      (troop_get_slot, ":raw_value", "$temp", ":upgrade_slot"),
+      (try_begin),
+        (lt, ":raw_value", 0),
+        (assign, ":cur_value", 0),
+      (else_try),
+        (val_mod, ":raw_value", meta_itp_mask),
+        (assign, ":cur_value", ":raw_value"),
+      (try_end),
 
       # #SB : add meta-types
       # (overlay_add_item, ":obj", "str_dplmc_hero_wpn_slot_pikes"),
@@ -43,8 +51,6 @@ create_wpn_slot_overlay_scripts = [
         (store_add, ":out_string", "str_dplmc_hero_wpn_slot_none", ":item_type"),
         (overlay_add_item, ":obj", ":out_string"),
         (try_begin), #find base type
-          (troop_get_slot, ":cur_value", "$temp", ":upgrade_slot"),
-          (val_mod, ":cur_value", meta_itp_mask),
           (eq, ":cur_value", ":item_type"),
           (overlay_set_val, ":obj", ":sub_overlay_id"),
         (try_end),

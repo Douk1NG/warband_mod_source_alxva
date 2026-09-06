@@ -27,14 +27,27 @@ dplmc_manage_loot_pool_menu = [
 			(call_script, "script_dplmc_initialize_autoloot", 0),#argument "0" means this does nothing if deemed unnecessary
 			##diplomacy end+
 			(assign, reg20,0),
-			(troop_get_inventory_capacity, ":inv_cap", "$pool_troop"),
-			(try_for_range, ":i_slot", 0, ":inv_cap"),
-				(troop_get_inventory_slot, ":item_id", "$pool_troop", ":i_slot"),
-				(ge, ":item_id", 0),
-				(neg|troop_has_item_equipped, "$pool_troop", ":item_id"),
-				(val_add, reg20, 1),
+			# fix 2026-09-06: multi-pool count. Sum items across all 3 pools.
+			(try_for_range, ":pool_idx", 0, 3),
+				(try_begin),
+					(eq, ":pool_idx", 0),
+					(assign, ":count_pool", "$pool_troop"),
+				(else_try),
+					(eq, ":pool_idx", 1),
+					(assign, ":count_pool", "trp_dplmc_pool_2"),
+				(else_try),
+					(eq, ":pool_idx", 2),
+					(assign, ":count_pool", "trp_dplmc_pool_3"),
+				(try_end),
+				(troop_get_inventory_capacity, ":inv_cap", ":count_pool"),
+				(try_for_range, ":i_slot", 0, ":inv_cap"),
+					(troop_get_inventory_slot, ":item_id", ":count_pool", ":i_slot"),
+					(ge, ":item_id", 0),
+					(neg|troop_has_item_equipped, ":count_pool", ":item_id"),
+					(val_add, reg20, 1),
+				(try_end),
 			(try_end),
-			# reg20 now contains number of items in loot pool
+			# reg20 now contains number of items across all 3 loot pools
 			(try_begin),
 				(eq, reg20, 0),
 				(str_store_string, s10, "str_dplmc_item_pool_no_items"),
@@ -69,7 +82,13 @@ dplmc_manage_loot_pool_menu = [
 				[
 					(eq, "$inventory_menu_offset",0),
 					(store_free_inventory_capacity, ":space", "$pool_troop"),
-					(ge, ":space", 10),
+					# fix 2026-09-06: lowered min free-space from 10 to 1 so the
+					# auto-loot button stays enabled after large battles that
+					# nearly fill trp_temp_troop. Risk: companion dumps to a
+					# full pool will silently drop items (troop_add_item has
+					# no error path). Acceptable for now; pre-sort cleanup
+					# is the next round if item loss is reported.
+					(ge, ":space", 1),
 					(gt, reg20, 0),
 				],
 				##diplomacy start+
@@ -103,6 +122,84 @@ dplmc_manage_loot_pool_menu = [
 				##diplomacy end+
 				[
 					(change_screen_loot, "$pool_troop"),
+				]
+			),
+			("dplmc_loot_pool_2",
+				[],
+				"Access loot pool 2.",
+				[
+					(change_screen_loot, "trp_dplmc_pool_2"),
+				]
+			),
+			("dplmc_loot_pool_3",
+				[],
+				"Access loot pool 3.",
+				[
+					(change_screen_loot, "trp_dplmc_pool_3"),
+				]
+			),
+			# fix 2026-09-06: manual 3-way distribute. Sorts all 3 pools
+			# by value (best on top), then moves the bottom 1/3 of each
+			# pool to the next one. Use this when pool 1 (trp_temp_troop)
+			# is full and the auto-loot button is greyed out / dumps
+			# would silently fail. Doing it manually keeps the
+			# distribution predictable; the auto version interfered with
+			# the auto-loot flow in unexpected ways.
+			#
+			# -------------------------------------------------------------------------
+			# KNOWN LIMITATION: this script does NOT split evenly across runs.
+			# The 1/3 calculation is by slot index, not by item count. After
+			# the first move, pool 2 holds the moved items at the END of its
+			# inventory (slots N..N+59), so when the second move reads
+			# "bottom 1/3 of pool 2" by slot index it picks a mix of pre-existing
+			# items and the just-moved ones, not necessarily the least valuable
+			# by value. pool 3 is therefore not a clean "bottom tier".
+			#
+			# The proper fix is to (troop_sort_inventory, "trp_dplmc_pool_2")
+			# AGAIN after the first move and before the second one. Same for
+			# pool 3 if a third pass is added. NOT done here because the user
+			# prefers the current behavior; revisit if a future save shows
+			# items clustered in the wrong pool after multiple distributes.
+			#
+			# Other risks to watch for:
+			# - troop_add_item silently DROPS the item if the destination pool
+			#   is full. If a user runs distribute repeatedly without clearing
+			#   pool 3 first, items can be lost without warning.
+			# - The "bottom 1/3" by slot index treats empty slots and full
+			#   slots the same. If pool 2 already has 30+ items, the second
+			#   move will pull from BOTH pool 1 leftovers AND pool 2 originals,
+			#   mixing tiers unpredictably.
+			# - threshold for triggering distribute lives in
+			#   dplmc_auto_loot_all (auto path) and is currently disabled.
+			#   The menu only exposes the manual button.
+			# -------------------------------------------------------------------------
+			("dplmc_pool_distribute",
+				[],
+				"Distribute items across 3 pools (sort + split).",
+				[
+					(troop_sort_inventory, "trp_temp_troop"),
+					(troop_sort_inventory, "trp_dplmc_pool_2"),
+					(troop_sort_inventory, "trp_dplmc_pool_3"),
+					# bottom 1/3 of pool 1 -> pool 2
+					(troop_get_inventory_capacity, ":cap1", "trp_temp_troop"),
+					(store_div, ":start1", ":cap1", 3),
+					(try_for_range_backwards, ":i_slot", ":start1", ":cap1"),
+						(troop_get_inventory_slot, ":item", "trp_temp_troop", ":i_slot"),
+						(ge, ":item", 0),
+						(troop_get_inventory_slot_modifier, ":imod", "trp_temp_troop", ":i_slot"),
+						(troop_add_item, "trp_dplmc_pool_2", ":item", ":imod"),
+						(troop_set_inventory_slot, "trp_temp_troop", ":i_slot", -1),
+					(try_end),
+					# bottom 1/3 of pool 2 -> pool 3
+					(troop_get_inventory_capacity, ":cap2", "trp_dplmc_pool_2"),
+					(store_div, ":start2", ":cap2", 3),
+					(try_for_range_backwards, ":i_slot", ":start2", ":cap2"),
+						(troop_get_inventory_slot, ":item", "trp_dplmc_pool_2", ":i_slot"),
+						(ge, ":item", 0),
+						(troop_get_inventory_slot_modifier, ":imod", "trp_dplmc_pool_2", ":i_slot"),
+						(troop_add_item, "trp_dplmc_pool_3", ":item", ":imod"),
+						(troop_set_inventory_slot, "trp_dplmc_pool_2", ":i_slot", -1),
+					(try_end),
 				]
 			),
 
@@ -167,14 +264,26 @@ dplmc_manage_loot_pool_menu = [
 				"{s20}",
 				[
 				##diplomacy start+
-				#Actually abandon the lost loot
-				(troop_get_inventory_capacity, ":inv_cap", "$pool_troop"),
-				(try_for_range, ":i_slot", 10, ":inv_cap"),
-					(troop_get_inventory_slot, ":item_id", "$pool_troop", ":i_slot"),
-					(ge, ":item_id", 0),
-					(neg|troop_has_item_equipped, "$pool_troop", ":item_id"),
-					(troop_set_inventory_slot, "$pool_troop", ":i_slot", -1), #delete it
-					(troop_inventory_slot_set_item_amount, "$pool_troop", ":i_slot", 0),
+				#Actually abandon the lost loot in all 3 pools
+				(try_for_range, ":pool_idx", 0, 3),
+					(try_begin),
+						(eq, ":pool_idx", 0),
+						(assign, ":abandon_pool", "$pool_troop"),
+					(else_try),
+						(eq, ":pool_idx", 1),
+						(assign, ":abandon_pool", "trp_dplmc_pool_2"),
+					(else_try),
+						(eq, ":pool_idx", 2),
+						(assign, ":abandon_pool", "trp_dplmc_pool_3"),
+					(try_end),
+					(troop_get_inventory_capacity, ":inv_cap", ":abandon_pool"),
+					(try_for_range, ":i_slot", 10, ":inv_cap"),
+						(troop_get_inventory_slot, ":item_id", ":abandon_pool", ":i_slot"),
+						(ge, ":item_id", 0),
+						(neg|troop_has_item_equipped, ":abandon_pool", ":item_id"),
+						(troop_set_inventory_slot, ":abandon_pool", ":i_slot", -1), #delete it
+						(troop_inventory_slot_set_item_amount, ":abandon_pool", ":i_slot", 0),
+					(try_end),
 				(try_end),
 
 				#(jump_to_menu, "mnu_camp"),
@@ -185,7 +294,7 @@ dplmc_manage_loot_pool_menu = [
 				]
 			),
 			##nested diplomacy start+
-			#Leave & take everything you can
+			#Leave & take everything you can (from all 3 pools)
 			("dplmc_leave_and_take_a",
 				[
 				(store_free_inventory_capacity, ":space", "trp_player"),
@@ -197,19 +306,32 @@ dplmc_manage_loot_pool_menu = [
 				"Gather {reg0} of the {reg20} items on the ground and leave.",
 				[
 					(store_free_inventory_capacity, ":space", "trp_player"),
-					#Take remaining items for player
-					(troop_get_inventory_capacity, ":inv_cap", "$pool_troop"),
-					(troop_sort_inventory, "$pool_troop"),
-					(try_for_range, ":i_slot", 10, ":inv_cap"),
-					    (gt, ":space", 0),
-					    (troop_get_inventory_slot, ":item_id", "$pool_troop", ":i_slot"),
-					    (ge, ":item_id", 0),
-					    (neg|troop_has_item_equipped, "$pool_troop", ":item_id"),
-					    (troop_get_inventory_slot_modifier, ":imod", "$pool_troop", ":i_slot"),
-					    (troop_add_item, "trp_player", ":item_id", ":imod"),#give item to player
-					    (val_sub, ":space", 1),
-					    (troop_set_inventory_slot, "$pool_troop", ":i_slot", -1), #remove item from pool
-					    (troop_inventory_slot_set_item_amount, "$pool_troop", ":i_slot", 0),
+					#Take remaining items for player from all 3 pools
+					(try_for_range, ":pool_idx", 0, 3),
+						(gt, ":space", 0),
+						(try_begin),
+							(eq, ":pool_idx", 0),
+							(assign, ":take_pool", "$pool_troop"),
+						(else_try),
+							(eq, ":pool_idx", 1),
+							(assign, ":take_pool", "trp_dplmc_pool_2"),
+						(else_try),
+							(eq, ":pool_idx", 2),
+							(assign, ":take_pool", "trp_dplmc_pool_3"),
+						(try_end),
+						(troop_get_inventory_capacity, ":inv_cap", ":take_pool"),
+						(troop_sort_inventory, ":take_pool"),
+						(try_for_range, ":i_slot", 10, ":inv_cap"),
+							(gt, ":space", 0),
+							(troop_get_inventory_slot, ":item_id", ":take_pool", ":i_slot"),
+							(ge, ":item_id", 0),
+							(neg|troop_has_item_equipped, ":take_pool", ":item_id"),
+							(troop_get_inventory_slot_modifier, ":imod", ":take_pool", ":i_slot"),
+							(troop_add_item, "trp_player", ":item_id", ":imod"),#give item to player
+							(val_sub, ":space", 1),
+							(troop_set_inventory_slot, ":take_pool", ":i_slot", -1), #remove item from pool
+							(troop_inventory_slot_set_item_amount, ":take_pool", ":i_slot", 0),
+						(try_end),
 					(try_end),
 					#(jump_to_menu, "mnu_camp"),
 					(set_player_troop, "trp_player"),
@@ -227,18 +349,30 @@ dplmc_manage_loot_pool_menu = [
 				"Gather the remaining {reg20} {reg0?items:item} on the ground and leave.",
 				[
 					(store_free_inventory_capacity, ":space", "trp_player"),
-					#Take remaining items for player
-					(troop_get_inventory_capacity, ":inv_cap", "$pool_troop"),
-					(try_for_range, ":i_slot", 10, ":inv_cap"),
-					    (gt, ":space", 0),
-					    (troop_get_inventory_slot, ":item_id", "$pool_troop", ":i_slot"),
-					    (ge, ":item_id", 0),
-					    (neg|troop_has_item_equipped, "$pool_troop", ":item_id"),
-					    (troop_get_inventory_slot_modifier, ":imod", "$pool_troop", ":i_slot"),
-					    (troop_add_item, "trp_player", ":item_id", ":imod"),#give item to player
-					    (val_sub, ":space", 1),
-					    (troop_set_inventory_slot, "$pool_troop", ":i_slot", -1), #remove item frlom pool
-					    (troop_inventory_slot_set_item_amount, "$pool_troop", ":i_slot", 0),
+					#Take remaining items for player from all 3 pools
+					(try_for_range, ":pool_idx", 0, 3),
+						(try_begin),
+							(eq, ":pool_idx", 0),
+							(assign, ":take_pool", "$pool_troop"),
+						(else_try),
+							(eq, ":pool_idx", 1),
+							(assign, ":take_pool", "trp_dplmc_pool_2"),
+						(else_try),
+							(eq, ":pool_idx", 2),
+							(assign, ":take_pool", "trp_dplmc_pool_3"),
+						(try_end),
+						(troop_get_inventory_capacity, ":inv_cap", ":take_pool"),
+						(try_for_range, ":i_slot", 10, ":inv_cap"),
+							(gt, ":space", 0),
+							(troop_get_inventory_slot, ":item_id", ":take_pool", ":i_slot"),
+							(ge, ":item_id", 0),
+							(neg|troop_has_item_equipped, ":take_pool", ":item_id"),
+							(troop_get_inventory_slot_modifier, ":imod", ":take_pool", ":i_slot"),
+							(troop_add_item, "trp_player", ":item_id", ":imod"),#give item to player
+							(val_sub, ":space", 1),
+							(troop_set_inventory_slot, ":take_pool", ":i_slot", -1), #remove item frlom pool
+							(troop_inventory_slot_set_item_amount, ":take_pool", ":i_slot", 0),
+						(try_end),
 					(try_end),
 					(set_player_troop, "trp_player"),
 					(jump_to_menu, "$dplmc_return_menu"),

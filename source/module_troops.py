@@ -2695,6 +2695,14 @@ troops = [
    ["coop_companion_equipment_ui_1_f","{!}multiplayer_end","{!}multiplayer_end", tf_female, 0, 0, fac_kingdom_5, [], 0, 0, 0, 0, 0],
    ["coop_companion_equipment_sets_end","{!}multiplayer_end","{!}multiplayer_end", 0, 0, 0, fac_kingdom_5, [], 0, 0, 0, 0, 0],
 
+  # fix 2026-09-06: extra pool troops for multi-pool auto-loot. MUST be at END
+  # of troops list to preserve save-compatibility. Troop IDs are positional;
+  # inserting in the middle (e.g. after trp_temp_troop) shifts every later ID
+  # (bandits 178->180, etc.) and breaks existing saves. Appending here gives
+  # them new highest IDs and leaves forest/desert/mountain/etc. stable.
+  ["dplmc_pool_2","DPLMC Loot Pool 2", "DPLMC Loot Pool 2",tf_hero,no_scene,reserved,fac_commoners,[],def_attrib,0,knows_common|knows_inventory_management_10,0],
+  ["dplmc_pool_3","DPLMC Loot Pool 3", "DPLMC Loot Pool 3",tf_hero,no_scene,reserved,fac_commoners,[],def_attrib,0,knows_common|knows_inventory_management_10,0],
+
    
 ]
 

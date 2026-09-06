@@ -19,6 +19,7 @@ set_custom_armor_slots_scripts = [
 	   #set slots random for everyone
 		(try_for_range, ":npc", 0, "trp_coop_companion_equipment_ui_0"),
 			(try_for_range, ":slot_no", slot_troop_armor_slots_begin, slot_troop_helm_slots_end),
+				(neg|is_between, ":slot_no", dplmc_slot_upgrade_armor, dplmc_slot_upgrade_wpn_3 + 1),
 				(troop_set_slot, ":npc", ":slot_no", -1), # random = -1
 			(try_end),
 		(try_end),
