@@ -61,6 +61,14 @@ dplmc_initialize_autoloot_scripts = [
 		(item_set_slot, itp_type_goods, dplmc_slot_item_type_not_for_sell, 1),
 		(item_set_slot, itp_type_animal, dplmc_slot_item_type_not_for_sell, 1),
 
+		(try_for_range, ":trp", 0, heroes_end),
+			(try_for_range, ":slot", dplmc_slot_upgrade_armor, dplmc_slot_upgrade_wpn_3 + 1),
+				(troop_get_slot, ":val", ":trp", ":slot"),
+				(lt, ":val", 0),
+				(troop_set_slot, ":trp", ":slot", 0),
+			(try_end),
+		(try_end),
+
 		(assign, "$g_autoloot", 2),
 	(try_end),
   ])

@@ -400,13 +400,13 @@ dplmc_auto_loot_troop_scripts = [
               (try_begin),
                 (neq, ":last_change", 1),
                 (eq, ":item_changed", 1),
-                (str_store_string, s1, "@equipped {s10}{s20}"),
+                (str_store_string, s1, "@{s20}"),
               (else_try),
                 (neq, ":last_change", 2),
                 (eq, ":item_changed", 2),
-                (str_store_string, s1, "@discarded {s10}{s20}"),
+                (str_store_string, s1, "@{s20}"),
               (else_try), #same as before, no need to qualify
-                (str_store_string, s1, "@{s10}{s20}"),
+                (str_store_string, s1, "@{s20}"),
               (try_end),
               (str_store_string_reg, s0, ":sreg"),
               (try_begin), #no comma for first part

@@ -42,7 +42,24 @@ dplmc_auto_loot_all_scripts = [
     # for all the NPCs, in order of party listing
 
     (party_get_num_companion_stacks, ":num_stacks","p_main_party"),
-    (try_for_range, ":i_stack", 0, ":num_stacks"),
+    # fix 2026-09-06: multi-pool support. Iterate over 3 pool troops
+    # (trp_temp_troop, trp_dplmc_pool_2, trp_dplmc_pool_3) so the auto-loot
+    # can draw from any of them. The companion's dump-old-items step still
+    # only happens against the first pool that has space (it would be -1 in
+    # the troop slot after the first iteration, so subsequent iterations
+    # are no-ops for the dump). New item picks happen in all 3 pools.
+    (try_for_range, ":pool_idx", 0, 3),
+      (try_begin),
+        (eq, ":pool_idx", 0),
+        (assign, ":pool_troop", "trp_temp_troop"),
+      (else_try),
+        (eq, ":pool_idx", 1),
+        (assign, ":pool_troop", "trp_dplmc_pool_2"),
+      (else_try),
+        (eq, ":pool_idx", 2),
+        (assign, ":pool_troop", "trp_dplmc_pool_3"),
+      (try_end),
+      (try_for_range, ":i_stack", 0, ":num_stacks"),
         (party_stack_get_troop_id, ":this_hero","p_main_party",":i_stack"),
         #Allow your spouse(s) to auto loot if they are in your party
         (assign, ":is_spouse", 0),
@@ -55,16 +72,19 @@ dplmc_auto_loot_all_scripts = [
         (this_or_next|eq, ":is_spouse", 1),
         #Letting claimants loot may be undesirable as they eventually leave, but players can always disable auto loot for them
         (this_or_next|is_between, ":this_hero", pretenders_begin, pretenders_end),
+        (this_or_next|eq, ":this_hero", "trp_player"),
         (is_between, ":this_hero", companions_begin, companions_end),
 
         #SB : show strings for first iteration
         (call_script, "script_dplmc_auto_loot_troop", ":this_hero", ":pool_troop", ":sreg"),
         (val_add, ":sreg", 1),
+      (try_end),
     (try_end),
 
     #SB : get starting index once again
     (store_script_param_2, ":sreg"),
     # pick up any discards and format string
+    (assign, ":pool_troop", "trp_temp_troop"),
     (try_for_range, ":i_stack", 0, ":num_stacks"),
         (party_stack_get_troop_id, ":this_hero","p_main_party",":i_stack"),
         (assign, ":is_spouse", 0),
@@ -92,8 +112,10 @@ dplmc_auto_loot_all_scripts = [
         (val_add, ":sreg", 1), #go to next string register
     (try_end),
 
-    #Done. Now sort the remainder
-    (troop_sort_inventory, ":pool_troop"),
+    #Done. Now sort the remainder in all 3 pools
+    (troop_sort_inventory, "trp_temp_troop"),
+    (troop_sort_inventory, "trp_dplmc_pool_2"),
+    (troop_sort_inventory, "trp_dplmc_pool_3"),
 
 ])
 ]

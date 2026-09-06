@@ -84,6 +84,7 @@ camp_action_menu = [
       ("camp_autoloot",[],"Configure autoloot for heroes.",
         [
           (assign, "$g_selected_troop", "trp_player"),
+          (assign, "$temp", "trp_player"),
           (start_presentation, "prsnt_dplmc_autoloot_upgrade_management"),
         ]),
 
