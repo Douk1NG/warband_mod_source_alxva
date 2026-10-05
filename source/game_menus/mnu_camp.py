@@ -18,52 +18,56 @@ camp_menu = [
 ("camp",mnf_scale_picture|mnf_enable_hot_keys,
    "You set up camp. What do you want to do?",
    "none",
-   [
-     (try_begin),
-       (neq, "$g_player_icon_state", pis_ship),
-     (assign, "$g_player_icon_state", pis_normal),
-        (party_get_slot, ":player_party", "$marshalship"),
-        (ge, ":player_party", 0),
-        (set_fixed_point_multiplier, 100),
-        (position_set_x, pos1, 70),
-        (position_set_y, pos1, 5),
-        (position_set_z, pos1, 75),
-        (set_game_menu_tableau_mesh, "tableau_troop_note_mesh", ":player_party", pos1),
-        (try_end),
-    ],
+    [
+      (try_begin),
+        (neq, "$g_player_icon_state", pis_ship),
+      (assign, "$g_player_icon_state", pis_normal),
+         (party_get_slot, ":player_party", "$marshalship"),
+         (ge, ":player_party", 0),
+         (set_fixed_point_multiplier, 100),
+         (position_set_x, pos1, 70),
+         (position_set_y, pos1, 5),
+         (position_set_z, pos1, 75),
+         (set_game_menu_tableau_mesh, "tableau_troop_note_mesh", ":player_party", pos1),
+         (try_end),
+         # Camp opens directly in Hub (no old menu options)
+         (start_presentation, "prsnt_camp_hub"),
+     ],
     [
 
-      ("camp_cheat",
-       [(ge, "$cheat_mode", 1)
-        ], "Cheat menu.",
+      ("camp_cheat",[(eq, 0, 1)],"Cheat menu.", # SUPPRESSED: now in Camp Hub index 11 (prsnt_camp_hub)
        [(jump_to_menu, "mnu_camp_cheat"),
         ],
        ),
 
-      ("dplmc_camp_preferences",
-        [],
-        "Settings",
+      ("dplmc_camp_preferences",[(eq, 0, 1)],
+        "Settings", # SUPPRESSED: now in Camp Hub (prsnt_camp_hub)
         [
             (jump_to_menu, "mnu_dplmc_preferences"),
             (assign, "$g_presentation_next_presentation", -1),
         ]
       ),
 
-      ("camp_action",[],"Take an action.",
-       [(jump_to_menu, "mnu_camp_action"),
-        ]
-      ),
-
-      ("camp_walk",[],"Walk around the campsite.",
-       [(set_jump_mission,"mt_camp"),
-        (call_script, "script_setup_camp_scene"),
-        (change_screen_mission),
-        ]
+       ("camp_action",[(eq, 0, 1)],"Take an action.", # SUPPRESSED: now in Camp Hub (prsnt_camp_hub)
+        [(jump_to_menu, "mnu_camp_action"),
+         ]
        ),
 
-      ("camp_wait_here",[],"Wait here for some time.",
-       [
-           (assign,"$g_camp_mode", 1),
+        ("camp_hub",[(eq, 0, 1)],"Camp Hub (WIP).", # SUPPRESSED: auto-opened on menu init
+         [(start_presentation, "prsnt_camp_hub"),
+          ]
+        ),
+
+         ("camp_walk",[(eq, 0, 1)],"Walk around the campsite.", # SUPPRESSED: now in Camp Hub (pending mt_camp)
+        [(set_jump_mission,"mt_camp"),
+         (call_script, "script_setup_camp_scene"),
+         (change_screen_mission),
+         ]
+        ),
+
+       ("camp_wait_here",[(eq, 0, 1)],"Wait here for some time.", # SUPPRESSED: now in Camp Hub
+        [
+            (assign,"$g_camp_mode", 1),
            (assign, "$g_infinite_camping", 0),
            (try_begin),
              (neq, "$g_player_icon_state", pis_ship),

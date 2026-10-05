@@ -17,8 +17,9 @@ create_wpn_slot_overlay_scripts = [
 ("create_wpn_slot_overlay", [
       (store_script_param, ":slot", 1),
       (store_script_param, ":pos", 2),
+      (store_script_param, ":is_hub", 3),
       (init_position, pos1),
-      (position_set_x, pos1, 270),
+      (try_begin), (eq, ":is_hub", 1), (position_set_x, pos1, 120), (else_try), (position_set_x, pos1, 270), (try_end),
       (position_set_y, pos1, ":pos"),
       (create_combo_button_overlay, ":obj"),
       (overlay_set_position, ":obj", pos1),

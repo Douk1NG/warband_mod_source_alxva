@@ -13,6 +13,6 @@ prsnt_create_scrollable_container_scripts = [
         (store_script_param, ":size_y", 4),
 
         (str_clear, s0),
-        (call_script, "script_prsnt_create_text_overlay", "str_s0", ":pos_x", ":pos_y", 1000, ":size_x", ":size_y", tf_scrollable_style_2),
+        (call_script, "script_prsnt_create_text_overlay", "str_s0", ":pos_x", ":pos_y", 1000, ":size_x", ":size_y", tf_scrollable),
     ]),
 ]

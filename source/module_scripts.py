@@ -909,6 +909,12 @@ from scripts.prsnt_create_troop_image_size import prsnt_create_troop_image_size_
 from scripts.prsnt_get_grid_position import prsnt_get_grid_position_scripts
 from scripts.prsnt_prsnt_lines import prsnt_prsnt_lines_scripts
 from scripts.prsnt_prsnt_lines_to import prsnt_prsnt_lines_to_scripts
+from scripts.calculate_prisoner_recruit_reject import calculate_prisoner_recruit_reject_scripts
+from scripts.dplmc_autoloot_shared_ui import dplmc_autoloot_shared_ui_scripts
+from scripts.formation_shared_ui import formation_shared_ui_scripts
+from scripts.tournament_shared_ui import tournament_shared_ui_scripts
+from scripts.main_settings_shared_ui import main_settings_shared_ui_scripts
+from scripts.settings_content_ui import settings_content_ui_scripts
 
 scripts = []
 scripts.extend(auto_upgrade_troops_scripts)
@@ -1802,6 +1808,12 @@ scripts.extend(prsnt_create_troop_image_size_scripts)
 scripts.extend(prsnt_get_grid_position_scripts)
 scripts.extend(prsnt_prsnt_lines_scripts)
 scripts.extend(prsnt_prsnt_lines_to_scripts)
+scripts.extend(calculate_prisoner_recruit_reject_scripts)
+scripts.extend(dplmc_autoloot_shared_ui_scripts)
+scripts.extend(formation_shared_ui_scripts)
+scripts.extend(tournament_shared_ui_scripts)
+scripts.extend(main_settings_shared_ui_scripts)
+scripts.extend(settings_content_ui_scripts)
 
 # modmerger_start version=201 type=2
 try:

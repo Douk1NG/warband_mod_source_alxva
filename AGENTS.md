@@ -49,3 +49,7 @@ After moving dplmc slots to 166–171, a **second** collision surfaced: `set_cus
 **Lesson for future slot moves:** when picking new positions for troop slots in this module, run `grep -n "slot_.*_begin\s*=\|slot_.*_end\s*=" source/module_constants.py` and check that the new positions don't fall inside any `*_begin .. *_end` range. Common offenders: `slot_troop_armor_slots_begin..slot_troop_helm_slots_end` (159–176, custom armor), `slot_troop_presentation_slot_*` ranges, any `dplmc_slot_*_begin..dplmc_slot_*_end` range from the diplomacy module.
 
 **Lesson for hero list iterations:** when iterating `p_main_party` companion stacks, always start from `i_stack = 1`, not `0`. The player is always at stack 0; including it in the clickable list will silently overwrite any `$temp` the user just configured. The original Dickplomacy Reloaded2 used `1, :num_stacks` — the fork had been changed to `0, :num_stacks` at some point, which caused confusing "reset" symptoms whenever the user clicked the wrong row.
+
+## Presentations — margins are user-requested, not default (2026-09-08)
+
+This is not CSS or a web page. NEVER add default margins/padding to a presentation. The parchment `mesh_hud`/`hud.dds 1024` frame is the border — content at `X 0`/`Y 0` is already inside. Only add a margin when the user explicitly requests it (e.g. "X20→X680 Y0→Y800"). When defining a grid, store `X_MIN/X_MAX/Y_MIN/Y_MAX` from the user, not from `280,80,700,580` or `700×580` assumptions. Go to the limit the user gave first, then refine -20, never increment +10 to the border.

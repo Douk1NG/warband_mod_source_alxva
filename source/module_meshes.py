@@ -83,6 +83,7 @@ meshes = [
   ("mp_score_b", 0, "mp_score_b", 0, 0, 0, 0, 0, 0, 1, 1, 1),
   ("portrait_blend_out", 0, "portrait_blend_out", 0, 0, 0, 0, 0, 0, 1, 1, 1),
   ("load_window", 0, "load_window", 0, 0, 0, 0, 0, 0, 1, 1, 1),
+  ("hud", 0, "hud", 0, 0, 0, 0, 0, 0, 1, 1, 1),
   ("checkbox_off", render_order_plus_1, "checkbox_off", 0, 0, 0, 0, 0, 0, 1, 1, 1),
   ("checkbox_on", render_order_plus_1, "checkbox_on", 0, 0, 0, 0, 0, 0, 1, 1, 1),
   ("white_plane", 0, "white_plane", 0, 0, 0, 0, 0, 0, 1, 1, 1),
