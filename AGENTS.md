@@ -49,3 +49,22 @@ After moving dplmc slots to 166–171, a **second** collision surfaced: `set_cus
 **Lesson for future slot moves:** when picking new positions for troop slots in this module, run `grep -n "slot_.*_begin\s*=\|slot_.*_end\s*=" source/module_constants.py` and check that the new positions don't fall inside any `*_begin .. *_end` range. Common offenders: `slot_troop_armor_slots_begin..slot_troop_helm_slots_end` (159–176, custom armor), `slot_troop_presentation_slot_*` ranges, any `dplmc_slot_*_begin..dplmc_slot_*_end` range from the diplomacy module.
 
 **Lesson for hero list iterations:** when iterating `p_main_party` companion stacks, always start from `i_stack = 1`, not `0`. The player is always at stack 0; including it in the clickable list will silently overwrite any `$temp` the user just configured. The original Dickplomacy Reloaded2 used `1, :num_stacks` — the fork had been changed to `0, :num_stacks` at some point, which caused confusing "reset" symptoms whenever the user clicked the wrong row.
+
+## Companion horse-loss cascade (2026-10-04, user-reported)
+
+User report: "My heroes don't have horse for the moment, they are in group cavalry, but if I join a battle, heroes I see is on group 4, group 3 is cavalry. I need manual every time to charge them because they just follow me."
+
+This is a **three-stage cascade** — fixing any one in isolation will not fix the user-visible symptom:
+
+1. **`scripts/dplmc_auto_loot_troop.py`** (lines ~117-135) deletes the troop's `ek_horse` when `:upg_horses != 0` and the loot pool doesn't contain a strictly-better horse. The troop's `ek_horse` ends up `-1`.
+
+2. **`scripts/agent_fix_division.py`** (lines 28-29) skips the entire re-division block for agents on the player's team when the player is alive:
+   ```
+   (this_or_next | main_hero_fallen),
+   (neq, ":team", ":player_team"),
+   ```
+   So player companions keep whatever division the engine spawned them with — based on troop class, **not** current horse status.
+
+3. Formation UI (`prsnt_battle.py`) reads the troop's class via `troop_is_guarantee_horse` and shows the companion in the cavalry group (`group 3`). But the agent at battle start has `ek_horse = -1`, so the engine places them in the infantry spawn point and assigns infantry AI behaviour. The user sees group 3 in the UI but the agent behaves as infantry (group 4).
+
+**Root cause to fix: stage 1.** Fix `dplmc_auto_loot_troop` to keep `:ek_horse` if the pool has no strictly-better replacement (capture original score before deletion, baseline `:best_horse_val`). Once stages 1 and 2 are no longer producing horse-less companions, the cascade breaks on its own.
