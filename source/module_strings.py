@@ -4944,6 +4944,25 @@ Even in the last case, the player can make formations up to four lines by orderi
   ("proficiency_crossbows", "Crossbows"),
   ("proficiency_throwing", "Throwing"),
   ("proficiency_firearms", "Firearms"),
+  ("tip_settings_cheat_mode", "Enable cheat mode."),
+  ("tip_settings_sexual_content", "Controls explicit content."),
+  ("tip_settings_polygamy", "Allows taking multiple spouses when applicable."),
+  ("tip_settings_disable_gay", "Disables same-gender romantic/sexual scenes."),
+  ("tip_settings_black_khergits", "Enables Black Khergit and Dark Hunter raiding parties on the map."),
+  ("tip_settings_decapitation", "Enables decapitation effects in combat."),
+  ("tip_settings_realistic_wounding", "Enables more realistic wounding and casualty calculations."),
+  ("tip_settings_terrain_advantage", "Applies terrain-based combat modifiers (forest, hills, mountains, rivers, snow, desert) affecting defense, movement, and combat effectiveness."),
+  ("tip_settings_battle_continuation", "If knocked unconscious in battle, allies continue fighting and you can watch via camera instead of retreating."),
+  ("tip_settings_prejudice", "Affects how some lords/factions respond to gender/cultural differences in dialogue."),
+  ("tip_settings_ai_changes", "Adjusts Diplomacy mod AI decision intensity (Low/Medium/High) for wars, alliances, and peace offers."),
+  ("tip_settings_economy_changes", "Adjusts Diplomacy mod economic effects (Low/Medium/High) on trade, income, and prosperity."),
+  ("tip_settings_disguise", "Enables disguises to reduce suspicion in enemy territory."),
+  ("tip_settings_lord_recycling", "Allows exiled lords to return over time and rejoin their factions when conditions allow."),
+  ("tip_settings_keep_companions", "Helps prevent companions from being lost after certain defeats/captures."),
+  ("tip_settings_companion_bodyguards", "Companions follow you as bodyguards."),
+  ("tip_settings_companion_complaints", "Disables companion complaint messages."),
+  ("tip_settings_auto_upgrade", "Automatically upgrades party troops."),
+
 
 #utility for skill names
 ]+[
@@ -4958,3 +4977,4 @@ try:
 except:
     raise
 # modmerger_end
+

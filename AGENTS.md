@@ -53,3 +53,30 @@ After moving dplmc slots to 166–171, a **second** collision surfaced: `set_cus
 ## Presentations — margins are user-requested, not default (2026-09-08)
 
 This is not CSS or a web page. NEVER add default margins/padding to a presentation. The parchment `mesh_hud`/`hud.dds 1024` frame is the border — content at `X 0`/`Y 0` is already inside. Only add a margin when the user explicitly requests it (e.g. "X20→X680 Y0→Y800"). When defining a grid, store `X_MIN/X_MAX/Y_MIN/Y_MAX` from the user, not from `280,80,700,580` or `700×580` assumptions. Go to the limit the user gave first, then refine -20, never increment +10 to the border.
+
+## `tf_scrollable` Y chain: end at Y=0, not negative (2026-10-20, Main Settings single-col rewrite)
+
+**Symptom:** in `prsnt_camp_hub.py` Main Settings panel (index 12), the bottom items (Battle, Companions) don't render even though the engine compiles clean. The container is `tf_scrollable` with `s0` (empty text), area 690x590. Children rendered with the standard `val_sub, ":cur_y", N` pattern.
+
+**Root cause:** the Warband engine's `tf_scrollable` / `tf_scrollable_style_2` does NOT scroll content rendered at negative Y. The Y chain in `source/scripts/settings_content_ui.py` started at `cur_y = 700` and the last item landed at Y=-490. The engine just clipped everything below Y=0 silently.
+
+**The fix:** follow the XGM real pattern at `modmerger/mods/xgm_mod_options/xgm_mod_options_presentations.py:72-76`:
+1. Before adding children, calculate `total_height = sum of all rows + headers` (here: 1225u for 22 items + 5 headers)
+2. If `total_height < pane_height`, clamp to `pane_height - item_height/2` (so short panels fill the visible area)
+3. Set `cur_y = total_height` � **NOT** a hardcoded high number like 700
+4. The last item lands at exactly Y=0 (or Y > 0 if clamped)
+5. Container `area_size_y` stays at 590; scroll range is `total_height - area_size_y` automatically
+
+**Things that LOOK like fixes but DO NOT work** (verified this session):
+- `tf_scrollable` ? `tf_scrollable_style_2` swap: no effect on scroll range
+- `s0` (empty) ? `str_empty_string` swap (`"str_empty_string"` is `" "` per `module_strings.py:7`): no effect
+- Increasing `area_size_y` from 590 to 1280: content above Y=area_size_y is still cut off
+- Adding a `mesh_white_plane` "scroll anchor" at negative Y: internet myth � those lines are **commented out** in the actual XGM source (`xgm_mod_options_presentations.py:110, 128, 146`)
+
+**Debug checklist when scroll doesn't show items** (in order of likelihood):
+1. Confirm `cur_y` lands at exactly Y=0 for the last item (not negative)
+2. If multiple items missing, check they aren't clipped by the container's `area_size_y` � `overlay_set_area_size` defines the visible window
+3. If using `tf_scrollable_style_2`, confirm `area_size_y >= total_height` or the bottom rows will be clipped regardless of scroll
+4. Working panels to compare: `prsnt_equip_npcs.py:258-260`, `prsnt_manage_inventory.py:135-137`. Both compute `cur_posy` from item count, not hardcoded.
+
+**Applied in:** `source/scripts/settings_content_ui.py` (Main Settings, single-col rewrite). `cur_y = 1225` covers 22 items + 5 headers; container `area_size_y = 590` gives 635u of scroll range.
