@@ -26,10 +26,10 @@ camp_hub = ("camp_hub", 0, mesh_hud, [
         # (call_script, "script_prsnt_create_mesh_overlay", "mesh_white_plane", 260, 0, 50, 37500),
         # (overlay_set_color, reg1, 0x3A3A3A),
 
-        # Ensure selected index valid (0..15 flat - 4 top settings + 11 camp actions grouped)
+        # Index 17 is the hidden welcome panel shown when Camp is first opened.
         (try_begin),
-            (neg|is_between, "$g_camp_hub_selected_index", 0, 16),
-            (assign, "$g_camp_hub_selected_index", 0),
+            (neg|is_between, "$g_camp_hub_selected_index", 0, 18),
+            (assign, "$g_camp_hub_selected_index", 17),
         (try_end),
         (assign, "$g_camp_hub_action_selected", "$g_camp_hub_selected_index"),
 
@@ -238,6 +238,17 @@ camp_hub = ("camp_hub", 0, mesh_hud, [
 
         # Right panel — detail only for selected sidebar action (0..9), parchment
         (try_begin),
+            (eq, "$g_camp_hub_selected_index", 17),
+                (set_container_overlay, -1),
+                (create_mesh_overlay, reg1, "mesh_pic_camp"),
+                (position_set_x, pos1, 274), (position_set_y, pos1, 136), (overlay_set_position, reg1, pos1),
+                (position_set_x, pos1, 550), (position_set_y, pos1, 720), (overlay_set_size, reg1, pos1),
+                (create_text_overlay, reg1, "@The road can wait.^Tend to your companions, prepare your gear, or rest before moving on.", tf_center_justify|tf_vertical_align_center),
+                (position_set_x, pos1, 648), (position_set_y, pos1, 260), (overlay_set_position, reg1, pos1),
+                (position_set_x, pos1, 900), (position_set_y, pos1, 900), (overlay_set_size, reg1, pos1),
+                (position_set_x, pos1, 570), (position_set_y, pos1, 110), (overlay_set_area_size, reg1, pos1),
+                (overlay_set_color, reg1, 0x2B1B14),
+        (else_try),
             (eq, "$g_camp_hub_selected_index", 0),
                 # No inline header — the view name lives on the blue cartouche
                 # Top air: the container pins the highest overlay to the window top,

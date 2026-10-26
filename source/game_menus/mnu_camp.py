@@ -30,7 +30,8 @@ camp_menu = [
          (position_set_z, pos1, 75),
          (set_game_menu_tableau_mesh, "tableau_troop_note_mesh", ":player_party", pos1),
          (try_end),
-         # Camp opens directly in Hub (no old menu options)
+         # Select the hidden welcome panel while keeping all Hub options visible.
+         (assign, "$g_camp_hub_selected_index", 17),
          (start_presentation, "prsnt_camp_hub"),
      ],
     [
