@@ -1,0 +1,115 @@
+# -*- coding: cp1254 -*-
+from header_common import *
+from header_presentations import *
+from header_mission_templates import *
+from ID_meshes import *
+from header_operations import *
+from header_triggers import *
+from module_constants import *
+
+# Tournament shared UI - hub-aware (mirrors mnu_tpe_tournament_config game_menu)
+# is_hub 1 = inside camp_hub container 300,0,650,720 ; 0 = standalone (not used - menu stays menu)
+# Hub style: dark headers (0x2B1B14) + clickable blue text (0x2A5DB0), no framed buttons
+tournament_shared_ui_scripts = [
+  ("tournament_config_create_ui", [
+      (store_script_param, ":is_hub", 1),
+      (set_fixed_point_multiplier, 1000),
+      (assign, ":cur_y", 385),
+      # Top air: the container pins the highest overlay to the window top,
+      # so reserve 170u here — the first row then renders below the title bar
+      (create_mesh_overlay, reg1, "mesh_white_plane"),
+      (position_set_x, pos1, 0), (position_set_y, pos1, 555), (overlay_set_position, reg1, pos1),
+      (position_set_x, pos1, 50), (position_set_y, pos1, 50), (overlay_set_size, reg1, pos1),
+      # Master enable — label + checkbox (view title lives on the blue cartouche)
+      (create_text_overlay, reg1, "@Enable", tf_left_align),
+      (position_set_x, pos1, 30), (position_set_y, pos1, ":cur_y"), (overlay_set_position, reg1, pos1),
+      (position_set_x, pos1, 950), (position_set_y, pos1, 950), (overlay_set_size, reg1, pos1),
+      (overlay_set_color, reg1, 0x2B1B14),
+      (create_check_box_overlay, "$g_tournament_btn_0", "mesh_checkbox_off", "mesh_checkbox_on"),
+      (position_set_x, pos1, 290), (position_set_y, pos1, ":cur_y"), (overlay_set_position, "$g_tournament_btn_0", pos1),
+      (overlay_set_val, "$g_tournament_btn_0", "$g_wp_tpe_active"),
+      (val_sub, ":cur_y", 55),
+      (assign, "$g_tournament_btn_1", -1),
+      (try_begin),
+        (eq, "$g_wp_tpe_active", 1),
+        # Quest — checkbox; the mod auto-offers tournament quests as you travel
+        (create_text_overlay, reg1, "@Enable tournament quest:", tf_left_align),
+        (position_set_x, pos1, 30), (position_set_y, pos1, ":cur_y"), (overlay_set_position, reg1, pos1),
+        (position_set_x, pos1, 950), (position_set_y, pos1, 950), (overlay_set_size, reg1, pos1),
+        (overlay_set_color, reg1, 0x2B1B14),
+        (create_check_box_overlay, "$g_tournament_btn_2", "mesh_checkbox_off", "mesh_checkbox_on"),
+        (position_set_x, pos1, 290), (position_set_y, pos1, ":cur_y"), (overlay_set_position, "$g_tournament_btn_2", pos1),
+        (overlay_set_val, "$g_tournament_btn_2", "$tpe_quests_active"),
+        (val_sub, ":cur_y", 55),
+        (try_begin),
+          (eq, "$tpe_quests_active", 1),
+          # Quest Reactions — how strongly lords react to tournament quest outcomes; dropdown select
+          (val_sub, ":cur_y", 10),
+          (create_text_overlay, reg1, "@Quest Reactions:", tf_left_align),
+          (position_set_x, pos1, 30), (position_set_y, pos1, ":cur_y"), (overlay_set_position, reg1, pos1),
+          (position_set_x, pos1, 950), (position_set_y, pos1, 950), (overlay_set_size, reg1, pos1),
+          (overlay_set_color, reg1, 0x2B1B14),
+          (create_combo_button_overlay, "$g_tournament_btn_3"),
+          (overlay_add_item, "$g_tournament_btn_3", "@Low"),
+          (overlay_add_item, "$g_tournament_btn_3", "@Medium"),
+          (overlay_add_item, "$g_tournament_btn_3", "@High"),
+          (overlay_set_val, "$g_tournament_btn_3", "$tpe_quest_reactions"),
+          # auto-sized combo renders centred on position_set_x; +125u puts its
+          # left edge on the same column as the checkboxes (290)
+          (position_set_x, pos1, 415), (position_set_y, pos1, ":cur_y"), (overlay_set_position, "$g_tournament_btn_3", pos1),
+          (val_sub, ":cur_y", 55),
+        (else_try),
+          (assign, "$g_tournament_btn_3", -1),
+        (try_end),
+        (val_sub, ":cur_y", 10),
+        (create_text_overlay, reg1, "@Options:", tf_left_align),
+        (position_set_x, pos1, 30), (position_set_y, pos1, ":cur_y"), (overlay_set_position, reg1, pos1),
+        (position_set_x, pos1, 1250), (position_set_y, pos1, 1250), (overlay_set_size, reg1, pos1),
+        (overlay_set_color, reg1, 0x2B1B14),
+        (val_sub, ":cur_y", 55),
+        (create_button_overlay, "$g_tournament_btn_4", "@Player Options", tf_left_align),
+        (position_set_x, pos1, 30), (position_set_y, pos1, ":cur_y"), (overlay_set_position, "$g_tournament_btn_4", pos1),
+        (position_set_x, pos1, 950), (position_set_y, pos1, 950), (overlay_set_size, "$g_tournament_btn_4", pos1),
+        (overlay_set_color, "$g_tournament_btn_4", 0x2A5DB0),
+        (val_sub, ":cur_y", 55),
+        (create_button_overlay, "$g_tournament_btn_5", "@Tournament Design Options", tf_left_align),
+        (position_set_x, pos1, 30), (position_set_y, pos1, ":cur_y"), (overlay_set_position, "$g_tournament_btn_5", pos1),
+        (position_set_x, pos1, 950), (position_set_y, pos1, 950), (overlay_set_size, "$g_tournament_btn_5", pos1),
+        (overlay_set_color, "$g_tournament_btn_5", 0x2A5DB0),
+        (val_sub, ":cur_y", 55),
+        (val_sub, ":cur_y", 10),
+      (else_try),
+        (assign, "$g_tournament_btn_2", -1), (assign, "$g_tournament_btn_3", -1),
+        (assign, "$g_tournament_btn_4", -1), (assign, "$g_tournament_btn_5", -1),
+      (try_end),
+      (create_button_overlay, "$g_tournament_btn_6", "@Credits", tf_left_align),
+      (position_set_x, pos1, 30), (position_set_y, pos1, ":cur_y"), (overlay_set_position, "$g_tournament_btn_6", pos1),
+      (position_set_x, pos1, 950), (position_set_y, pos1, 950), (overlay_set_size, "$g_tournament_btn_6", pos1),
+      (overlay_set_color, "$g_tournament_btn_6", 0x2A5DB0),
+      # no Done in hub - hub's Done closes
+  ]),
+  ("tournament_handle_event", [
+      (store_script_param, ":object", 1),
+      (store_script_param, ":value", 2),
+      (try_begin),
+        (eq, ":object", "$g_tournament_btn_0"),
+        (assign, "$g_wp_tpe_active", ":value"),
+        (try_begin), (eq, "$g_wp_tpe_active", 0), (assign, "$tpe_quests_active", 0),
+          (try_begin), (check_quest_active, "qst_floris_active_tournament"), (neg|quest_slot_eq, "qst_floris_active_tournament", slot_quest_current_state, 0), (complete_quest, "qst_floris_active_tournament"), (quest_set_slot, "qst_floris_active_tournament", slot_quest_current_state, 0), (try_end),
+        (try_end),
+        (start_presentation, "prsnt_camp_hub"),
+      (else_try), (eq, ":object", "$g_tournament_btn_2"),
+        (assign, "$tpe_quests_active", ":value"),
+        (try_begin), (eq, "$tpe_quests_active", 0),
+          (try_begin), (check_quest_active, "qst_floris_active_tournament"), (neg|quest_slot_eq, "qst_floris_active_tournament", slot_quest_current_state, 0), (complete_quest, "qst_floris_active_tournament"), (quest_set_slot, "qst_floris_active_tournament", slot_quest_current_state, 0), (try_end),
+        (try_end),
+        (start_presentation, "prsnt_camp_hub"),
+      (else_try), (eq, ":object", "$g_tournament_btn_3"),
+        (assign, "$tpe_quest_reactions", ":value"),
+        (start_presentation, "prsnt_camp_hub"),
+      (else_try), (eq, ":object", "$g_tournament_btn_4"), (assign, "$g_wp_tpe_troop", "trp_player"), (troop_set_slot, "trp_tpe_presobj", tpe_options_display_mode, wp_tpe_combat_settings), (start_presentation, "prsnt_tournament_options_panel"),
+      (else_try), (eq, ":object", "$g_tournament_btn_5"), (assign, "$tournament_town", "p_town_1"), (start_presentation, "prsnt_tpe_design_settings"),
+      (else_try), (eq, ":object", "$g_tournament_btn_6"), (troop_set_slot, tci_objects, tci_val_information_mode, 0), (start_presentation, "prsnt_tpe_credits"),
+      (try_end),
+  ]),
+]

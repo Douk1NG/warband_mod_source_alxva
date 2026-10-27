@@ -70,16 +70,16 @@ dplmc_autoloot_upgrade_management = ("dplmc_autoloot_upgrade_management", 0, mes
 
       # settings 1
       # set 1: wpn slot button
-      (call_script, "script_create_wpn_slot_overlay", 0, 450),
+      (call_script, "script_create_wpn_slot_overlay", 0, 450, 0),
       (assign, "$g_presentation_obj_1", reg1),
 
-      (call_script, "script_create_wpn_slot_overlay", 1, 420),
+      (call_script, "script_create_wpn_slot_overlay", 1, 420, 0),
       (assign, "$g_presentation_obj_2", reg1),
 
-      (call_script, "script_create_wpn_slot_overlay", 2, 390),
+      (call_script, "script_create_wpn_slot_overlay", 2, 390, 0),
       (assign, "$g_presentation_obj_3", reg1),
 
-      (call_script, "script_create_wpn_slot_overlay", 3, 360),
+      (call_script, "script_create_wpn_slot_overlay", 3, 360, 0),
       (assign, "$g_presentation_obj_4", reg1),
 
       # SB : damage types + meta type combo labels
@@ -418,16 +418,16 @@ dplmc_autoloot_upgrade_management = ("dplmc_autoloot_upgrade_management", 0, mes
 
         (try_begin),
           (eq, ":object", "$g_presentation_obj_1"),
-          (call_script, "script_update_wpn_slot_itp", dplmc_slot_upgrade_wpn_0, ":value"),
+          (call_script, "script_update_wpn_slot_itp", dplmc_slot_upgrade_wpn_0, ":value", 0),
         (else_try),
           (eq, ":object", "$g_presentation_obj_2"),
-          (call_script, "script_update_wpn_slot_itp", dplmc_slot_upgrade_wpn_1, ":value"),
+          (call_script, "script_update_wpn_slot_itp", dplmc_slot_upgrade_wpn_1, ":value", 0),
         (else_try),
           (eq, ":object", "$g_presentation_obj_3"),
-          (call_script, "script_update_wpn_slot_itp", dplmc_slot_upgrade_wpn_2, ":value"),
+          (call_script, "script_update_wpn_slot_itp", dplmc_slot_upgrade_wpn_2, ":value", 0),
         (else_try),
           (eq, ":object", "$g_presentation_obj_4"),
-          (call_script, "script_update_wpn_slot_itp", dplmc_slot_upgrade_wpn_3, ":value"),
+          (call_script, "script_update_wpn_slot_itp", dplmc_slot_upgrade_wpn_3, ":value", 0),
         (else_try),
           (eq, ":object", "$g_presentation_obj_10"),
           (presentation_set_duration, 0),

@@ -17,6 +17,7 @@ update_wpn_slot_itp_scripts = [
 ("update_wpn_slot_itp", [
       (store_script_param, ":slot", 1),
       (store_script_param, ":value", 2),
+      (store_script_param, ":is_hub", 3),
       (troop_get_slot, ":item_type", "trp_temp_array_c", ":value"),
       (troop_get_slot, ":slot_value", "$temp", ":slot"),
       (try_begin),
@@ -33,7 +34,7 @@ update_wpn_slot_itp_scripts = [
       (try_end),
       (troop_set_slot, "$temp", ":slot", ":slot_value"),
       (assign, "$temp_2", ":slot"),
-      #restart presentation instead of updating overlay value (because we can't)
-      (start_presentation, "prsnt_dplmc_autoloot_upgrade_management"),
+      #restart presentation instead of updating overlay value (because we can't) — explicit is_hub param
+      (try_begin), (eq, ":is_hub", 1), (start_presentation, "prsnt_camp_hub"), (else_try), (start_presentation, "prsnt_dplmc_autoloot_upgrade_management"), (try_end),
   ])
 ]

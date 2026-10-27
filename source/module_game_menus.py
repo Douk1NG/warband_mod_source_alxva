@@ -31,6 +31,7 @@ from game_menus.mnu_camp_cheat_party import camp_cheat_party_menu
 from game_menus.mnu_camp_cheat_world import camp_cheat_world_menu
 from game_menus.mnu_camp_cheat_player_kingdom import camp_cheat_player_kingdom_menu
 from game_menus.mnu_camp_cheat_debug import camp_cheat_debug_menu
+from game_menus.mnu_camp_hub_walk import camp_hub_walk_menu
 from game_menus.mnu_camp_no_prisoners import camp_no_prisoners_menu
 from game_menus.mnu_camp_recruit_prisoners import camp_recruit_prisoners_menu
 from game_menus.mnu_cannot_enter_court import cannot_enter_court_menu
@@ -333,6 +334,7 @@ game_menus.extend(character_report_menu)                                        
 # game_menus.extend(party_size_report_menu)                                       # 21 (unused - replaced by combined report)
 game_menus.extend(faction_relations_report_menu)                                  # 22
 game_menus.extend(camp_menu)                                                      # 23
+game_menus.extend(camp_hub_walk_menu)
 game_menus.extend(camp_cheat_menu)                                                # 24
 game_menus.extend(camp_cheat_player_stats_menu)                                   # 25
 game_menus.extend(camp_cheat_party_menu)
