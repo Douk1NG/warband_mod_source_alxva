@@ -26,33 +26,91 @@ AUTO_UPGRADE_TROOPS = "scripts/auto_upgrade_troops.py"
 
 
 @pytest.mark.bandit
-def test_game_get_upgrade_cost_uses_assign_reg0_not_set_trigger_result():
-    """`script_game_get_upgrade_cost` is called with `call_script` and must
-    return its value via `(assign, reg0, ...)`.
+def test_game_get_upgrade_cost_uses_set_trigger_result():
+    """`script_game_get_upgrade_cost` is a *game trigger*, not a normal script.
 
-    `set_trigger_result` is reserved for *game triggers* — opcodes the engine
-    invokes directly with a special contract. When a script uses it but is
-    called via `(call_script, ...)` (as auto_upgrade_troops does), the engine
-    raises "Unrecognized opcode 3901" and the result is undefined: subsequent
-    `(assign, ":cpt", reg0)` reads garbage.
+    Game triggers MUST use `(set_trigger_result, reg0)` to return their value.
+    The engine calls them directly (no `call_script`). Calling this script with
+    `call_script` would raise "Unrecognized opcode 3901" because the engine
+    treats the call site as a script reference, not a game-trigger reference.
 
-    Repro: this script is called from auto_upgrade_troops.py:98 with
-    `(call_script, "script_game_get_upgrade_cost", ":troop_id")`.
+    Confirmed correct form: `set_trigger_result` at the end of the body,
+    plus `(assign, reg0, N)` chains inside the body to compute the cost.
+
+    The real bug is in `auto_upgrade_troops.py`, which references this name
+    via `(call_script, "script_game_get_upgrade_cost", ...)`. That call site
+    should be removed entirely — the engine invokes this trigger on its
+    own when a troop upgrade happens. See test below.
     """
     text = read_text(GAME_GET_UPGRADE_COST)
-    assert "set_trigger_result" not in text, (
-        "`game_get_upgrade_cost.py` still uses `set_trigger_result`. "
-        "This opcode is for game-engine triggers only — when called via "
-        "`call_script` (as `auto_upgrade_troops` does) it raises "
-        "`Unrecognized opcode 3901` and reg0 is undefined. "
-        "Replace with `(assign, reg0, <value>)`."
+    body = "\n".join(
+        line for line in text.splitlines() if not line.lstrip().startswith("#")
     )
-    # Confirm at least one (assign, reg0, N) line exists.
+    assert "set_trigger_result" in body, (
+        "`game_get_upgrade_cost.py` lost its `set_trigger_result`. "
+        "This is a game trigger — the engine expects it to return via "
+        "`set_trigger_result`, not `assign reg0`."
+    )
     assigns = re.findall(r"\(assign,\s*reg0,\s*(-?\d+)\)", text)
     assert assigns, (
-        "`game_get_upgrade_cost.py` does not assign to reg0 at all. "
-        "Auto-upgrade reads `reg0` after call_script and gets undefined value."
+        "`game_get_upgrade_cost.py` has no `(assign, reg0, N)` chain."
     )
+
+
+@pytest.mark.bandit
+def test_auto_upgrade_troops_does_not_call_script_game_get_upgrade_cost():
+    """`auto_upgrade_troops.py` must NOT call `script_game_get_upgrade_cost`.
+
+    `game_get_upgrade_cost` is a game trigger invoked by the engine, not a
+    normal script. Calling it via `(call_script, ...)` raises "Unrecognized
+    opcode 3901" because the engine treats the call as a script reference
+    and fails to find the game-trigger signature.
+
+    If `auto_upgrade_troops` needs the upgrade cost, it should either:
+      (a) compute the cost inline (same level-based formula), OR
+      (b) call a separate helper script (not a game trigger).
+
+    Symptom this prevents: "Unrecognized opcode 3901" in rgl_log.txt on
+    every auto-upgrade cycle.
+    """
+    text = read_text("scripts/auto_upgrade_troops.py")
+    body = "\n".join(
+        line for line in text.splitlines() if not line.lstrip().startswith("#")
+    )
+    assert "script_game_get_upgrade_cost" not in body, (
+        "`auto_upgrade_troops.py` calls `script_game_get_upgrade_cost` via "
+        "(call_script, ...). This is a game trigger — the engine calls it "
+        "automatically when a troop upgrades. The (call_script, ...) form "
+        "raises 'Unrecognized opcode 3901' and reg0 becomes undefined.\n"
+        "Fix shape: remove the (call_script, 'script_game_get_upgrade_cost', ...) "
+        "line AND the (assign, ':cpt', reg0) line that follows it. "
+        "Compute the cost inline, OR call a separate helper script."
+    )
+
+
+@pytest.mark.bandit
+def test_auto_upgrade_inline_cost_matches_engine_trigger_levels():
+    """The gold estimate must stay aligned with the engine's level-cost table."""
+    script = read_text(AUTO_UPGRADE_TROOPS)
+    trigger = read_text(GAME_GET_UPGRADE_COST)
+    for low, high, cost in (
+        (0, 6, 10),
+        (6, 11, 20),
+        (11, 16, 40),
+        (16, 21, 80),
+        (21, 26, 120),
+        (26, 31, 160),
+    ):
+        check = r'\(is_between, ":troop_level", %d, %d\)' % (low, high)
+        assign = r'\(assign, ":cpt", %d\)' % cost
+        assert re.search(check, script), "Missing inline level range %d..%d." % (low, high)
+        assert re.search(assign, script), "Missing inline cost %d." % cost
+        assert re.search(check, trigger), "Engine trigger no longer has range %d..%d." % (low, high)
+        assert re.search(r'\(assign, reg0, %d\)' % cost, trigger), (
+            "Engine trigger no longer returns cost %d." % cost
+        )
+    assert '(assign, ":cpt", 200)' in script
+    assert '(assign, reg0, 200)' in trigger
 
 
 # ---------------------------------------------------------------------------
@@ -76,7 +134,7 @@ def test_auto_upgrade_does_not_double_stack_when_to_upgrade_exceeds_size():
     `(party_add_members, ..., negative)` as adding the absolute value,
     which **inflates** the stack instead of shrinking it.
 
-    Repro symptom (per Marlon's screenshot 2026-10-04): a stack of 50
+    Repro symptom (per user screenshot 2026-10-04): a stack of 50
     manhunters was upgraded and ended up with ~400 troops — the script
     effectively *added* `-(:keep)` troops back.
 

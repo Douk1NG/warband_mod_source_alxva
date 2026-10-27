@@ -196,8 +196,25 @@ spawn_bandits_scripts = [
      (try_end),
       (try_begin),
         (set_spawn_radius, 4),
+        # FIX 2026-10-05: scaled deserter cap (early/mid/late game).
+        # Reads player renown and chooses the cap accordingly. The actual
+        # cap check is repeated INSIDE the per-lord loop so a single
+        # cap-full day still spawns other lords' deserters as long as
+        # the cap hasn't been exceeded yet.
+        (troop_get_slot, ":player_renown", "trp_player", slot_troop_renown),
+        (try_begin),
+            (lt, ":player_renown", 50),
+            (assign, ":desert_cap", num_max_deserters_early),
+        (else_try),
+            (lt, ":player_renown", 300),
+            (assign, ":desert_cap", num_max_deserters_mid),
+        (else_try),
+            (assign, ":desert_cap", num_max_deserters_late),
+        (try_end),
        (try_for_range, ":troop_no", active_npcs_begin, active_npcs_end),
 	     (troop_slot_eq, ":troop_no", slot_troop_occupation, slto_kingdom_hero),
+         (store_num_parties_of_template, ":num_deserters", "pt_deserters"),
+         (lt, ":num_deserters", ":desert_cap"),
          (store_random_in_range, ":random_no", 0, 100),
          (lt, ":random_no", 5),
          (troop_get_slot, ":party_no", ":troop_no", slot_troop_leaded_party),

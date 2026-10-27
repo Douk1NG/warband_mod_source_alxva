@@ -128,47 +128,52 @@ def test_horse_inventory_kept_when_no_better_in_pool():
     # sets ":troop"'s ek_horse slot to -1 without checking whether a
     # replacement has been found.
     # Pattern: (troop_set_inventory_slot, ":troop", ":i_slot", -1) AND
-    # a prior (eq, ":i_slot", ek_horse) check. If both appear within ~200
-    # chars without an intervening guard, that's the bug.
+    # a prior (eq, ":i_slot", ek_horse) check. The fix must be SOMEWHERE
+    # in the script (capture the original before the delete, OR baseline
+    # :best_horse_val afterwards) — we accept either.
     delete_re = re.compile(
         r'\(troop_set_inventory_slot,\s*":troop",\s*":i_slot",\s*-1\)'
     )
+    # Read the FULL script (not just the loop block) so we can detect
+    # fixes that live outside the loop body (capture-before + assign-after).
+    full_text = read_text(DPLMC_AUTO_LOOT_TROOP)
     for m in delete_re.finditer(block):
-        # Look backward ~250 chars for an (eq, ":i_slot", ek_horse) check.
-        preceding = block[max(0, m.start() - 250) : m.start()]
+        # Look backward ~600 chars for an (eq, ":i_slot", ek_horse) check.
+        preceding = block[max(0, m.start() - 600) : m.start()]
         if re.search(r'\(eq,\s*":i_slot",\s*ek_horse\)', preceding):
-            # This is the horse deletion. Verify there's NO guard between
-            # the eq and the delete that ensures the troop HAD a horse
-            # that we can re-equip. A guard could be:
-            #   (troop_get_inventory_slot, ":prev", ":troop", ":i_slot"),
-            #   (ge, ":prev", 0),
-            #   ... score lookup ...
-            #   (assign, ":best_horse_val", ":prev_score"),
-            # If none of these patterns appear between the eq and the
-            # delete, the bug is present.
+            # Acceptable guards (any of these):
             guard_patterns = [
-                # Capture-and-keep guard
-                r'\(troop_get_inventory_slot,\s*":prev[_\w]*",\s*":troop",\s*":i_slot"\)',
+                # Capture-and-keep guard inside the loop body
+                r'\(troop_get_inventory_slot,\s*":[a-z_][\w]*",\s*":troop",\s*ek_horse\)',
                 # Score-baseline guard
                 r'\(assign,\s*":best_horse_val",\s*":[a-z_]+\)"',
                 # Negation guard
                 r'\(troop_slot_eq,[^,]+,\s*":i_slot",\s*-1\)',
             ]
-            guarded = any(
+            guarded_near = any(
                 re.search(p, preceding, re.MULTILINE)
                 for p in guard_patterns
             )
-            assert guarded, (
+            # Also accept a baseline that lives OUTSIDE the loop
+            # (capture-before + assign-after).
+            baseline_after_loop = re.search(
+                r'\(assign,\s*":best_horse_val",\s*":[a-z_][a-z0-9_]*"\)',
+                full_text,
+            )
+            assert guarded_near or baseline_after_loop, (
                 "BUG REPRO: The horse slot is being deleted in the "
                 "ek_head..ek_food loop of dplmc_auto_loot_troop.py without "
-                "any guard that captures the original score or skips deletion "
-                "when the troop had no horse. This causes the troop's horse "
-                "to disappear whenever the loot pool has no horse (typical "
-                "for non-cavalry battles). Symptom: 'My horse is gone'.\n"
+                "any guard that captures the original score (inside the "
+                "loop) or baselines `:best_horse_val` after the loop. "
+                "This causes the troop's horse to disappear whenever the "
+                "loot pool has no horse (typical for non-cavalry battles). "
+                "Symptom: 'My horse is gone'.\n"
                 "Fix shape: BEFORE deleting ek_horse, capture the original "
-                "horse's score and seed `:best_horse_val` with it. That way "
-                "the post-pool `best_horse_val > 0` check still passes when "
-                "no pool horse beats it, and the troop keeps its original."
+                "horse's score into a local like `:orig_horse_score`, "
+                "THEN after the loop, seed `:best_horse_val` with it. That "
+                "way the post-pool `best_horse_val > 0` check still passes "
+                "when no pool horse beats it, and the troop keeps its "
+                "original."
             )
 
 
@@ -191,6 +196,75 @@ def test_companion_horse_loss_path_exists():
         "Expected `dplmc_auto_loot_all.py` to call `dplmc_auto_loot_troop` "
         "per companion. If you renamed the script, update this test."
     )
+
+
+@pytest.mark.bandit
+def test_original_horse_is_not_scored_when_equipment_slot_is_empty():
+    """Auto-loot may only ask the item-scoring script to score a real horse.
+
+    Troops without a horse have -1 in ek_horse. Scoring that sentinel can
+    produce a burst of script errors when auto-loot processes the party.
+    """
+    text = read_text(DPLMC_AUTO_LOOT_TROOP)
+    capture = text.index(
+        '(troop_get_inventory_slot, ":orig_horse", ":troop", ek_horse)'
+    )
+    score = text.index(
+        '(call_script, "script_dplmc_get_item_score_with_imod", ":orig_horse", ":orig_imod")',
+        capture,
+    )
+    assert re.search(r'\(ge, ":orig_horse", 0\)', text[capture:score]), (
+        "The original horse score call must be skipped when ek_horse is empty (-1)."
+    )
+
+
+@pytest.mark.bandit
+def test_every_item_score_call_rejects_empty_item_slots():
+    """All autoloot score calls must validate their item ID before scoring."""
+    text = read_text(DPLMC_AUTO_LOOT_TROOP)
+    calls = list(re.finditer(
+        r'\(call_script, "script_dplmc_get_item_score_with_imod",\s*"(:[^\"]+)"',
+        text,
+    ))
+    assert calls, "Expected the autoloot script to score candidate items."
+    for call in calls:
+        item_var = call.group(1)
+        preceding = text[max(0, call.start() - 600):call.start()]
+        assert re.search(
+            r'\(ge,\s*"%s",\s*0\)' % re.escape(item_var), preceding
+        ), "Item score call for %s is not guarded against the -1 empty-slot sentinel." % item_var
+
+
+@pytest.mark.bandit
+def test_original_horse_is_only_returned_to_loot_if_replaced():
+    """Keep the original in its temporary cache unless a better horse wins.
+
+    The previous flow both appended the original horse to the loot inventory
+    and re-equipped it from the cached ek_horse slot, creating a duplicate.
+    """
+    text = read_text(DPLMC_AUTO_LOOT_TROOP)
+    horse_branch_start = text.index(
+        "(eq, \":i_slot\", ek_horse), # it's a horse slot"
+    )
+    horse_branch_end = text.index("(try_end),", horse_branch_start)
+    horse_branch = text[horse_branch_start:horse_branch_end]
+    assert '(troop_set_inventory_slot, ":troop", ":i_slot", -1)' in horse_branch
+    assert '(troop_add_item, ":pool", ":item", ":imod")' not in horse_branch, (
+        "Do not copy the original horse into loot while it is also cached for re-equipping."
+    )
+
+    # A replaced horse still belongs in the pool; the unchanged cached horse
+    # should instead be restored directly to ek_horse and cleared from cache.
+    best_horse_assignment = text.index(
+        '(assign, ":best_slot", ":best_horse_slot")'
+    )
+    end = text.index('# (try_for_range, ":i_slot", ek_item_0, ek_head)', best_horse_assignment)
+    assignment = text[best_horse_assignment:end]
+    assert '(troop_set_inventory_slot, ":troop", ek_horse, ":item")' in assignment
+    assert '(troop_set_inventory_slot, ":pool", ":best_slot", -1)' in assignment
+    assert '(neq, ":best_slot", ek_horse)' in assignment
+    assert '(troop_add_item, ":pool", ":old_horse", ":old_horse_imod")' in assignment
+    assert '(troop_set_inventory_slot, ":pool", ek_horse, -1)' in assignment
 
 
 # ---------------------------------------------------------------------------

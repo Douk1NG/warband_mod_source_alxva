@@ -114,7 +114,28 @@ dplmc_auto_loot_troop_scripts = [
           # (display_message, "@upgrading slot {reg2} with {reg0}, cur score for {s1}: {reg1}"),
         # (try_end),
 
+		(assign, ":orig_horse", -1),
+		(assign, ":orig_horse_score", 0),
+		(assign, ":orig_horse_imod", imod_plain),
 		(try_for_range, ":i_slot", ek_head, ek_food),
+			# FIX 2026-10-05 (horse-loss cascade): capture the troop's
+			# current horse BEFORE the loop deletes it, so we can baseline
+			# `:best_horse_val` afterwards. If the pool has no strictly-
+			# better horse, the troop keeps the original. Without this,
+			# `:best_horse_val = 0` and the troop ends up with
+			# `ek_horse = -1` whenever the pool has no better horse (the
+			# common case for inland battles). See "Companion horse-loss
+			# cascade" in AGENTS.md.
+			(try_begin),
+				(eq, ":i_slot", ek_horse),
+				(neq, ":upg_horses", 0),
+				(troop_get_inventory_slot, ":orig_horse", ":troop", ek_horse),
+				(ge, ":orig_horse", 0),
+				(troop_get_inventory_slot_modifier, ":orig_imod", ":troop", ek_horse),
+				(assign, ":orig_horse_imod", ":orig_imod"),
+				(call_script, "script_dplmc_get_item_score_with_imod", ":orig_horse", ":orig_imod"),
+				(assign, ":orig_horse_score", reg0),
+			(try_end),
 			(troop_get_inventory_slot, ":item", ":troop", ":i_slot"),
             (troop_set_inventory_slot, ":pool", ":i_slot", -1), #delete it
 			(ge, ":item", 0),
@@ -130,7 +151,9 @@ dplmc_auto_loot_troop_scripts = [
 				(neq, ":upg_horses", 0), # we're upgrading horses
 				(eq, ":i_slot", ek_horse), # it's a horse slot
 				(troop_set_inventory_slot, ":troop", ":i_slot", -1), #delete it
-				(troop_add_item, ":pool", ":item", ":imod"), # chuck it in the pool
+				# Keep the original in the cache at ek_horse. If a better
+				# horse replaces it, return this one to the pool then; otherwise
+				# restoring it must not also leave a duplicate in the pool.
 			(try_end),
 		(try_end),
 
@@ -145,6 +168,18 @@ dplmc_auto_loot_troop_scripts = [
 		(assign, ":best_gloves_val", 0),
 		(assign, ":best_horse_slot", -1),
 		(assign, ":best_horse_val", 0),
+
+		# FIX 2026-10-05: if we captured an original horse above, baseline
+		# `:best_horse_val` with its score and `:best_horse_slot` with the
+		# pool slot where the original lives (ek_horse = 8). This ensures
+		# the post-search assignment re-equips the original when no pool
+		# candidate beats it.
+		(try_begin),
+			(neq, ":upg_horses", 0),
+			(ge, ":orig_horse", 0),
+			(assign, ":best_horse_val", ":orig_horse_score"),
+			(assign, ":best_horse_slot", ek_horse),
+		(try_end),
 
 		# Now search through the pool for the best items
 		(troop_get_inventory_capacity, ":inv_cap", ":pool"),
@@ -311,9 +346,17 @@ dplmc_auto_loot_troop_scripts = [
 			(troop_get_inventory_slot, ":item", ":pool", ":best_slot"),
 			(ge, ":item", 0),
 			(troop_get_inventory_slot_modifier, ":imod", ":pool", ":best_slot"),
+			(troop_set_inventory_slot, ":pool", ":best_slot", -1),
+			(try_begin),
+				(neq, ":best_slot", ek_horse), # a better horse replaced the cached original
+				(troop_get_inventory_slot, ":old_horse", ":pool", ek_horse),
+				(ge, ":old_horse", 0),
+				(troop_get_inventory_slot_modifier, ":old_horse_imod", ":pool", ek_horse),
+				(troop_add_item, ":pool", ":old_horse", ":old_horse_imod"),
+				(troop_set_inventory_slot, ":pool", ek_horse, -1),
+			(try_end),
 			(troop_set_inventory_slot, ":troop", ek_horse, ":item"),
 			(troop_set_inventory_slot_modifier, ":troop", ek_horse, ":imod"),
-			(troop_set_inventory_slot, ":pool", ":best_slot", -1),
 		(try_end),
 
 		# (try_for_range, ":i_slot", ek_item_0, ek_head),
@@ -336,12 +379,20 @@ dplmc_auto_loot_troop_scripts = [
           (neq, ":sreg", -1),
           (str_store_troop_name, ":sreg", ":troop"),
           (assign, ":num_changes", 0),
-          (assign, ":last_change", 0),
           #three cases : discarded item -1, no change 0, change 1 (upgraded/swapped depending on item flags)
           (try_for_range, ":i_slot", ek_item_0, ek_food),
+            # Reset per slot so an empty slot cannot inherit a previous change.
+            (assign, ":item_changed", 0),
+            (assign, ":item_no", -1),
+            (assign, ":imod_no", imod_plain),
             (troop_get_inventory_slot, ":old_item", ":pool", ":i_slot"),
             (troop_get_inventory_slot, ":new_item", ":troop", ":i_slot"),
-            (try_begin),
+            (try_begin), # use the saved pre-loot horse; the temporary pool slot may be cleared
+              (eq, ":i_slot", ek_horse),
+              (neq, ":upg_horses", 0),
+              (assign, ":old_item", ":orig_horse"),
+              (assign, ":old_imod", ":orig_horse_imod"),
+            (else_try),
               (gt, ":old_item", -1),
               (troop_get_inventory_slot_modifier, ":old_imod", ":pool", ":i_slot"),
               (store_add, ":imod_no", ":old_imod", "str_imod_plain"),
@@ -372,11 +423,9 @@ dplmc_auto_loot_troop_scripts = [
               (is_between, ":i_slot", ek_item_0, ek_head),
               (store_add, ":upgrade_slot", ":i_slot", dplmc_slot_upgrade_wpn_0),
               (troop_slot_eq, ":troop", ":upgrade_slot", 0),
-              (assign, ":item_changed", 0),
             (else_try), #same
               (eq, ":new_item", ":old_item"),
               (eq, ":old_imod", ":new_imod"),
-              (assign, ":item_changed", 0),
             (else_try), #discarded
               (eq, ":new_item", -1),
               (gt, ":old_item", -1),
@@ -398,27 +447,22 @@ dplmc_auto_loot_troop_scripts = [
               (str_store_item_name, s20, ":item_no"),
 
               (try_begin),
-                (neq, ":last_change", 1),
                 (eq, ":item_changed", 1),
-                (str_store_string, s1, "@{s20}"),
+                (str_store_string, s1, "@equipped: {s20}"),
               (else_try),
-                (neq, ":last_change", 2),
                 (eq, ":item_changed", 2),
-                (str_store_string, s1, "@{s20}"),
-              (else_try), #same as before, no need to qualify
-                (str_store_string, s1, "@{s20}"),
+                (str_store_string, s1, "@returned to loot: {s20}"),
               (try_end),
               (str_store_string_reg, s0, ":sreg"),
               (try_begin), #no comma for first part
                 (eq, ":num_changes", 0),
-                (str_store_string, ":sreg", "str_s0_s1"),
+                (str_store_string, ":sreg", "@{s0}: {s1}"),
               (else_try),
                 (str_store_string, ":sreg", "str_dplmc_s0_comma_s1"),
               (try_end),
               # (assign, reg1, ":num_changes"),
               # (display_message, "@{reg1} : {s1}"),
               (val_add, ":num_changes", ":item_changed"),
-              (assign, ":last_change", ":item_changed"),
             (try_end),
           (try_end),
           (try_begin), #discard if we didn't touch the inventory at all

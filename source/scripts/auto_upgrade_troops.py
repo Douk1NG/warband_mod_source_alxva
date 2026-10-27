@@ -95,8 +95,30 @@ auto_upgrade_troops_scripts = [
           (gt, ":to_upgrade", 0),
 
           # Gold check
-          (call_script, "script_game_get_upgrade_cost", ":troop_id"),
-          (assign, ":cpt", reg0),
+          # Match game_get_upgrade_cost without calling the engine trigger as
+          # a script (that call produces Unrecognized opcode 3901 at runtime).
+          (store_character_level, ":troop_level", ":troop_id"),
+          (try_begin),
+            (is_between, ":troop_level", 0, 6),
+            (assign, ":cpt", 10),
+          (else_try),
+            (is_between, ":troop_level", 6, 11),
+            (assign, ":cpt", 20),
+          (else_try),
+            (is_between, ":troop_level", 11, 16),
+            (assign, ":cpt", 40),
+          (else_try),
+            (is_between, ":troop_level", 16, 21),
+            (assign, ":cpt", 80),
+          (else_try),
+            (is_between, ":troop_level", 21, 26),
+            (assign, ":cpt", 120),
+          (else_try),
+            (is_between, ":troop_level", 26, 31),
+            (assign, ":cpt", 160),
+          (else_try),
+            (assign, ":cpt", 200),
+          (try_end),
           (store_mul, ":cost", ":to_upgrade", ":cpt"),
           (store_add, ":total_after", ":gold_spent", ":cost"),
           (try_begin),
@@ -113,6 +135,8 @@ auto_upgrade_troops_scripts = [
 
             (store_sub, ":wounded_kept", ":wn", ":wounded_removed"),
             (store_sub, ":keep", ":sz", ":to_upgrade"),
+            # FIX 2026-10-05: clamp `:keep` to >= 0.
+            (val_max, ":keep", 0),
 
             # Remove ALL troops from this stack (clears the XP pool)
             (party_remove_members, "p_main_party", ":troop_id", ":sz"),

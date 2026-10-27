@@ -415,9 +415,9 @@ _DESERTER_LOOK_RE = re.compile(
 def _deserter_block(text: str) -> str:
     """Return the slice of spawn_bandits.py that handles deserter spawning.
 
-    The deserter block sits between the line `(try_for_range, ":troop_no",
-    active_npcs_begin, active_npcs_end),` and the next `#deserters ends`
-    comment. We use the comment as a stable end-marker.
+    The block starts at the latest `(set_spawn_radius, ...)` line that
+    precedes the deserter try_for_range, and ends at `#deserters ends`.
+    This covers the cap-check prelude added in 2026-10-05.
     """
     start_re = re.compile(
         r"\(try_for_range,\s*\":troop_no\",\s*active_npcs_begin,\s*active_npcs_end\),"
@@ -425,10 +425,17 @@ def _deserter_block(text: str) -> str:
     s = start_re.search(text)
     if not s:
         return ""
+    # Walk backwards from `s.start()` to find the enclosing `(try_begin)`
+    # that wraps the deserter block, then include the cap prelude that
+    # came after it.
+    prelude_re = re.compile(r"\(try_begin\)")
+    p = prelude_re.search(text[: s.start()])
+    if not p:
+        return text[s.start():]
     e = _DESERTER_LOOK_RE.search(text, s.end())
     if not e:
-        return text[s.start():]
-    return text[s.start():e.end()]
+        return text[p.start():]
+    return text[p.start():e.end()]
 
 
 @pytest.mark.bandit
@@ -514,9 +521,10 @@ def test_deserter_spawn_has_scaled_cap_early_vs_late():
     # The cap check should be within ~600 chars before the spawn call.
     preceding = block[max(0, spawn_match.start() - 600) : spawn_match.start()]
     has_cap_guard = bool(
-        re.search(r'\(lt,\s*":num_des",\s*":cap"\)', preceding)
-        or re.search(r'\(lt,\s*":num_des",\s*num_max_deserters\)', preceding)
-        or re.search(r'\(le,\s*":num_des",\s*":cap"\s*-\s*1\)', preceding)
+        re.search(r'\(lt,\s*":num_des(?:erters?)",\s*":cap"\)', preceding)
+        or re.search(r'\(lt,\s*":num_des(?:erters?)",\s*":desert_cap"\)', preceding)
+        or re.search(r'\(lt,\s*":num_des(?:erters?)",\s*num_max_deserters\)', preceding)
+        or re.search(r'\(le,\s*":num_des(?:erters?)",\s*":cap"\s*-\s*1\)', preceding)
     )
     assert has_cap_guard, (
         "BUG REPRO: The deserter (spawn_around_party, ..., pt_deserters) "

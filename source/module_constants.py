@@ -1875,7 +1875,7 @@ num_sea_raider_spawn_points = 2
 
 #SB : bandit / deserter population control
 num_max_bandit_parties_per_type = 18     #max active parties per bandit type (was 16)
-num_max_deserter_party_size = 50         #max troops in a deserter party (was 20)
+num_max_deserter_party_size = 20         #FIX 2026-10-05: lowered from 50 to match doc + cheat menu (prsnt_spawn_diagnostics.py says "@max 15, 20 troops each")
 num_max_bandit_party_size = 50           #max troops in a roaming bandit/looter party
 num_max_bandit_party_size_debuff = 20    #max troops per party when lair is destroyed
 bandit_lair_respawn_hours = 72           #hours a destroyed lair stays gone (3 days)
@@ -1885,6 +1885,13 @@ num_max_manhunters = 24                  #fixed cap on manhunter parties
 num_max_pirate_ships = 5                 #per-type cap for pirate ships (5 per type, was 5 total)
 num_max_pirate_ship_size = 20            #max troops in a single pirate ship party
 num_max_looters = 50                     #max active looter parties
+# FIX 2026-10-05: scaled deserter cap (early/mid/late). Replaces the
+# unbounded deserter spawn which caused 70+ active deserters in 7 days
+# of gameplay (user report). See `scripts/spawn_bandits.py` and
+# `test_deserter_spawn_has_scaled_cap_early_vs_late` in tests/.
+num_max_deserters_early  = 15            #cap when player renown < 50
+num_max_deserters_mid    = 30            #cap when player renown 50-299
+num_max_deserters_late   = 50            #cap when player renown >= 300
 
 peak_prisoner_trains = 4
 peak_kingdom_caravans = 12

@@ -5,3 +5,9 @@ opencode.json
 tools/
 skills-lock.json
 .opencode/
+
+# pytest cache (only the cache files, not the test source)
+__pycache__/
+*.pyc
+.pytest_cache/
+tests/.pytest_cache/
