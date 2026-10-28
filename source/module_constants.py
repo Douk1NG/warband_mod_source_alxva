@@ -1893,6 +1893,31 @@ num_max_deserters_early  = 15            #cap when player renown < 50
 num_max_deserters_mid    = 30            #cap when player renown 50-299
 num_max_deserters_late   = 50            #cap when player renown >= 300
 
+# Bandit Overhaul defaults (overridable per save in Camp > Main Settings).
+# Party counts are per party-template type; growth setting is in tenths of a
+# percent per player level (5 = 0.5% per level).
+bandit_overhaul_default_growth_per_level_tenths = 5
+bandit_overhaul_default_land_size_lair_inactive = 20
+bandit_overhaul_default_land_parties_per_type = 18
+bandit_overhaul_default_land_respawn_hours = 24
+bandit_overhaul_default_land_respawn_amount = 1
+bandit_overhaul_default_ship_party_size = 20
+bandit_overhaul_default_ship_parties_per_type = 5
+bandit_overhaul_default_ship_respawn_hours = 24
+bandit_overhaul_default_ship_respawn_amount = 1
+bandit_overhaul_default_looter_party_size = 50
+bandit_overhaul_default_looter_parties = 50
+bandit_overhaul_default_looter_respawn_hours = 24
+bandit_overhaul_default_looter_respawn_amount = 1
+bandit_overhaul_default_manhunter_party_size = 50
+bandit_overhaul_default_manhunter_parties = 24
+bandit_overhaul_default_manhunter_respawn_hours = 24
+bandit_overhaul_default_manhunter_respawn_amount = 1
+bandit_overhaul_default_deserter_party_size = 20
+bandit_overhaul_default_deserter_parties = 50
+bandit_overhaul_default_deserter_respawn_hours = 24
+bandit_overhaul_default_deserter_respawn_amount = 60
+
 peak_prisoner_trains = 4
 peak_kingdom_caravans = 12
 peak_kingdom_messengers = 3

@@ -92,6 +92,7 @@ from presentations.prsnt_cc_relations_with_lords_by_faction import cc_relations_
 from presentations.prsnt_cc_color_editor import cc_color_editor
 from presentations.prsnt_party_size_and_morale import party_size_and_morale
 from presentations.prsnt_camp_hub import camp_hub
+from presentations.prsnt_bandit_overhaul_settings import bandit_overhaul_settings
 
 presentations = []
 presentations.append(all_items)
@@ -174,6 +175,7 @@ presentations.append(cc_relations_with_lords_by_faction)
 presentations.append(cc_color_editor)
 presentations.append(party_size_and_morale)
 presentations.append(camp_hub)
+presentations.append(bandit_overhaul_settings)
 
 # modmerger_start version=201 type=2
 try:

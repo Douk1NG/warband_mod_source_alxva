@@ -790,6 +790,8 @@ from scripts.sort_food import sort_food_scripts
 from scripts.sort_player_inventory_by_item_type import sort_player_inventory_by_item_type_scripts
 from scripts.sort_tournament_participant_troops import sort_tournament_participant_troops_scripts
 from scripts.spawn_bandits import spawn_bandits_scripts
+from scripts.bandit_overhaul_adjust_party_size import bandit_overhaul_adjust_party_size_scripts
+from scripts.initialize_bandit_overhaul_settings import initialize_bandit_overhaul_settings_scripts
 from scripts.spawn_looters import spawn_looters_scripts
 from scripts.spawn_one_pirate_ship import spawn_one_pirate_ship_scripts
 from scripts.spawn_party_type_with_cooldown import spawn_party_type_with_cooldown_scripts
@@ -1814,6 +1816,8 @@ scripts.extend(formation_shared_ui_scripts)
 scripts.extend(tournament_shared_ui_scripts)
 scripts.extend(main_settings_shared_ui_scripts)
 scripts.extend(settings_content_ui_scripts)
+scripts.extend(bandit_overhaul_adjust_party_size_scripts)
+scripts.extend(initialize_bandit_overhaul_settings_scripts)
 
 # modmerger_start version=201 type=2
 try:

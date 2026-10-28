@@ -60,6 +60,9 @@ get_spawn_report_line_scripts = [
     (try_end),
     (party_template_get_slot, ":lair_party", ":party_template", slot_party_template_lair_party),
     (gt, ":lair_party", 1),
+    (party_is_active, ":lair_party"),
+    (party_get_slot, ":lair_type", ":lair_party", slot_party_type),
+    (eq, ":lair_type", spt_bandit_lair),
     (assign, ":lair_active", 1),
   (try_end),
 

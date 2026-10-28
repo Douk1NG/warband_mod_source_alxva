@@ -23,7 +23,7 @@ bandit_lair_menu = [
 
            #dckplmc
            (store_current_hours, ":cur_hours"),
-           (val_add, ":cur_hours", bandit_lair_respawn_hours), #spawn again after configured delay
+           (val_add, ":cur_hours", bandit_lair_respawn_hours), #fixed 72-hour respawn delay
            (party_template_set_slot, ":bandit_template", slot_party_template_lair_next_spawn, ":cur_hours"),
 
         (try_end),

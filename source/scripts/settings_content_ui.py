@@ -22,7 +22,7 @@ settings_content_ui_scripts = [
       (set_fixed_point_multiplier, 1000),
       # Single column Y chain (XGM pattern): start at total_height so the last row
       # lands at Y=0 and the engine can scroll within the [0, total_height] range.
-      (assign, ":cur_y", 1800),
+      (assign, ":cur_y", 2700),
       # Top air: this container pins the highest overlay to the window top,
       # so reserve 35u here — the first row then renders below the title bar
       (create_mesh_overlay, reg1, "mesh_white_plane"),
@@ -127,6 +127,27 @@ settings_content_ui_scripts = [
       (assign, reg1, "$g_auto_upgrade_mode"),
       (overlay_set_val, "$g_settings_btn_16", reg1),
       (position_set_x, pos1, 520), (position_set_y, pos1, ":cur_y"), (overlay_set_position, "$g_settings_btn_16", pos1),
+      (val_sub, ":cur_y", 55),
+      # Auto Dungeon Transfer — move prisoners to the player's dungeon on town entry
+      (create_text_overlay, reg1, "@Auto Dungeon Transfer:", tf_left_align),
+      (position_set_x, pos1, 100), (position_set_y, pos1, ":cur_y"), (overlay_set_position, reg1, pos1),
+      (position_set_x, pos1, 950), (position_set_y, pos1, 950), (overlay_set_size, reg1, pos1),
+      (overlay_set_color, reg1, 0x2B1B14),
+      (create_check_box_overlay, "$g_settings_btn_25", "mesh_checkbox_off", "mesh_checkbox_on"),
+      (position_set_x, pos1, 520), (position_set_y, pos1, ":cur_y"), (overlay_set_position, "$g_settings_btn_25", pos1),
+      # 0 preserves the historical default for existing saves; 2 means explicitly disabled.
+      (try_begin),
+        (eq, "$g_auto_dungeon_transfer", 2), (assign, reg1, 0),
+      (else_try),
+        (assign, reg1, 1),
+      (try_end),
+      (overlay_set_val, "$g_settings_btn_25", reg1),
+      (val_sub, ":cur_y", 55),
+      # Bandit Overhaul settings link belongs to Features.
+      (create_button_overlay, "$g_settings_btn_26", "@Configure Bandit Overhaul", tf_left_align),
+      (position_set_x, pos1, 100), (position_set_y, pos1, ":cur_y"), (overlay_set_position, "$g_settings_btn_26", pos1),
+      (position_set_x, pos1, 1150), (position_set_y, pos1, 950), (overlay_set_size, "$g_settings_btn_26", pos1),
+      (overlay_set_color, "$g_settings_btn_26", 0x2A5DB0),
       (val_sub, ":cur_y", 55),
       # --- Dickplomacy (= sexual content) ---
       (create_text_overlay, reg1, "@Dickplomacy", tf_left_align),
@@ -479,6 +500,7 @@ settings_content_ui_scripts = [
       (assign, reg1, "$disable_npc_complaints"),
       (overlay_set_val, "$g_settings_btn_18", reg1),
       (val_sub, ":cur_y", 55),
+      (assign, "$g_camp_hub_settings_cur_y", ":cur_y"),
   ]),
 
   ("settings_content_handle_event", [
@@ -653,6 +675,17 @@ settings_content_ui_scripts = [
         (else_try),
             (overlay_set_display, "$g_camp_hub_btn_cheat", 0),
         (try_end),
+      (else_try),
+        (eq, ":object", "$g_settings_btn_25"),
+        (try_begin),
+          (eq, ":value", 0), (assign, "$g_auto_dungeon_transfer", 2),
+        (else_try),
+          (assign, "$g_auto_dungeon_transfer", 1),
+        (try_end),
+      (else_try),
+        (eq, ":object", "$g_settings_btn_26"),
+        (assign, "$g_camp_hub_selected_index", 12),
+        (start_presentation, "prsnt_bandit_overhaul_settings"),
       (try_end),
   ]),
 ]

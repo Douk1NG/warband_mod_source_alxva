@@ -20,7 +20,7 @@ from compiler import *
   
 
 spawn_bandits_simple_triggers = [
-(24,
+(1,
    [
        (call_script, "script_spawn_bandits"),
     ]),

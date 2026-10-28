@@ -56,7 +56,9 @@ party_templates = [
   ("mountain_bandits","Mountain Bandits",icon_mountain_bandit|carries_goods(2),0,fac_mountain_bandits,bandit_personality,[(trp_mountain_bandit,10,num_max_bandit_party_size)]),
   ("sea_raiders","Sea Raiders",icon_sea_raider|carries_goods(2),0,fac_outlaws,bandit_personality,[(trp_sea_raider,10,num_max_bandit_party_size)]),
 
-  ("deserters","Deserters",icon_vaegir_knight|carries_goods(3),0,fac_deserters,bandit_personality,[]),
+  # Give deserters a cautious profile distinct from roaming bandits: they can
+  # still attack weaker parties but should retreat more readily when outmatched.
+  ("deserters","Deserters",icon_vaegir_knight|carries_goods(3),0,fac_deserters,aggressiveness_3|courage_5,[]),
     
   #SB : fix icon
   ("merchant_caravan","Merchant Caravan",icon_mule|carries_goods(20)|pf_auto_remove_in_town|pf_quest_party,0,fac_commoners,escorted_merchant_personality,[(trp_caravan_master,1,1),(trp_caravan_guard,5,25)]),

@@ -41,6 +41,7 @@ town_menu = [
         (call_script, "script_update_center_recon_notes", "$current_town"),
         #SB : move prisoners to dungeon if we are the lord
         (try_begin),
+          (neq, "$g_auto_dungeon_transfer", 2),
           (party_slot_eq, "$current_town", slot_town_lord, "trp_player"),
           (party_get_num_prisoners, ":num_player_prisoners", "p_main_party"),
           (gt, ":num_player_prisoners", 0),

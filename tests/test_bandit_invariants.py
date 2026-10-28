@@ -117,23 +117,12 @@ def test_lair_spawnpoint_ids_resolve():
 
 @pytest.mark.bandit
 def test_debuff_logic_only_triggers_when_party_size_exceeds_threshold():
-    """The `num_max_bandit_party_size_debuff` block must be guarded by a (gt) check.
-
-    Regression check: in spawn_bandits.py the size-debuff path applies a
-    NEGATIVE member change. If the guard `(gt, ":sz",
-    num_max_bandit_party_size_debuff)` is ever removed, every fresh spawn
-    gets the debuff and party sizes shrink to 0.
-    """
-    text = read_text("scripts/spawn_bandits.py")
-    guards = re.findall(
-        r'\(gt,\s*":sz",\s*num_max_bandit_party_size_debuff\)',
-        text,
-    )
-    assert len(guards) >= 6, (
-        f"Expected at least 6 (gt, :sz, debuff) guards, found {len(guards)}. "
-        "Each bandit template block must guard its debuff path. If you removed "
-        "one, bandit parties will spawn empty."
-    )
+    """All generated parties use the shared, capped party-size adjustment."""
+    spawn = read_text("scripts/spawn_bandits.py")
+    adjust = read_text("scripts/bandit_overhaul_adjust_party_size.py")
+    assert '(call_script, "script_bandit_overhaul_adjust_party_size"' in spawn
+    assert '(gt, ":scaled_total", ":scaled_cap")' in adjust
+    assert '(party_remove_members, ":party_no", ":troop_no", ":stack_size")' in adjust
 
 
 # ---------------------------------------------------------------------------
@@ -142,23 +131,12 @@ def test_debuff_logic_only_triggers_when_party_size_exceeds_threshold():
 
 
 @pytest.mark.bandit
-def test_cooldown_script_reads_exactly_four_params():
-    """`script_spawn_party_type_with_cooldown` must read exactly 4 script params.
-
-    The caller in spawn_bandits.py passes 4 positional params (party_template,
-    base_spawn_point, num_spawn_points, max_parties). If the script reads
-    fewer, the trailing args silently turn into 0s and bandits spawn at
-    party ID 0 (engine sentinel). If it reads more, it consumes past-the-end
-    which is undefined behavior.
-    """
+def test_cooldown_script_reads_all_seven_spawn_settings():
+    """The helper receives cap, cadence, amount and party size as well as location."""
     text = read_text("scripts/spawn_party_type_with_cooldown.py")
     params = re.findall(r"\(store_script_param,\s*\"?:(\w+)\"?,\s*(\d+)\)", text)
-    assert len(params) == 4, (
-        f"Expected exactly 4 store_script_param calls, found {len(params)}: {params}. "
-        "Adding/removing a param is a save-compat break — also update spawn_bandits.py."
-    )
-    # The 4 expected param positions, in order.
-    expected_positions = [1, 2, 3, 4]
+    assert len(params) == 7, f"Expected seven helper inputs, found {len(params)}: {params}."
+    expected_positions = [1, 2, 3, 4, 5, 6, 7]
     actual_positions = [int(p[1]) for p in params]
     assert actual_positions == expected_positions, (
         f"Param slots must be consecutive 1..4. Got {actual_positions}."
@@ -188,21 +166,10 @@ def test_cooldown_script_writes_respawn_cooldown_in_both_branches():
 
 @pytest.mark.bandit
 def test_cooldown_script_initializes_reg0_to_sentinel():
-    """The script must set `reg0 = -1` at the top so callers can detect failure.
-
-    spawn_bandits.py checks `neq, reg0, -1` after every call to know whether
-    a party was actually spawned. If the reg0 init is removed, callers see
-    whatever the previous opcode happened to leave there — silently treating
-    failures as successes.
-    """
+    """Return the last spawned party ID, or -1 if this call spawned nothing."""
     text = read_text("scripts/spawn_party_type_with_cooldown.py")
-    # Find the first 50 lines (rough heuristic for "near the top").
-    head = "\n".join(text.splitlines()[:50])
-    assert "(assign, reg0, -1)" in head, (
-        "Expected `(assign, reg0, -1)` near the top of "
-        "script_spawn_party_type_with_cooldown.py. "
-        "Callers in spawn_bandits.py use `neq, reg0, -1` to detect a failed spawn."
-    )
+    assert '(assign, ":last_spawned_party", -1)' in text
+    assert '(assign, reg0, ":last_spawned_party")' in text
 
 
 # ---------------------------------------------------------------------------
@@ -251,24 +218,16 @@ def test_population_cap_matches_doc(constant_name: str, doc_value: int, doc_ref:
 
 @pytest.mark.bandit
 def test_bandit_caps_match_between_calls_and_constants():
-    """``num_max_bandit_parties_per_type`` and ``num_max_looters`` must be referenced
-    by spawn_bandits.py as the cap argument to ``script_spawn_party_type_with_cooldown``.
-
-    Manhunters do NOT use the cooldown script — they have their own fill-to-cap
-    loop — so they're excluded from the test. If a refactor moves the cap
-    argument to a different constant but doesn't update spawn_bandits.py,
-    the throttle breaks silently.
-    """
+    """Each spawn family passes its own configurable cap into the shared helper."""
     text = read_text("scripts/spawn_bandits.py")
-    for cap in ("num_max_bandit_parties_per_type", "num_max_looters"):
+    for cap in (
+        "$g_bo_land_parties_per_type",
+        "$g_bo_ship_parties_per_type",
+        "$g_bo_looter_parties",
+    ):
         assert re.search(
-            rf"script_spawn_party_type_with_cooldown[^)]*?{re.escape(cap)}",
-            text,
-        ), (
-            f"Expected `script_spawn_party_type_with_cooldown` to be called with "
-            f"`{cap}` somewhere in spawn_bandits.py. "
-            "If you changed the cap constant, update both sides."
-        )
+            rf'script_spawn_party_type_with_cooldown[^\n]*?"{re.escape(cap)}"', text
+        ), f"Expected the shared spawn helper to receive configured cap {cap}."
 
 
 # ---------------------------------------------------------------------------
@@ -439,106 +398,18 @@ def _deserter_block(text: str) -> str:
 
 
 @pytest.mark.bandit
-def test_deserter_spawn_has_scaled_cap_early_vs_late():
-    """The deserter cap must be scaled (different values for early vs late game).
-
-    Design decision (2026-10-04): instead of a single static cap, the cap
-    should grow with player progression so early game stays manageable but
-    late game can sustain chaos.
-
-    A common shape is:
-
-        # Read renown (or any other progression factor)
-        (store_faction_troop, ":player", "fac_player_supporters_faction"),
-        (troop_get_slot, ":renown", ":player", slot_troop_renown),
-
-        # Decide cap based on renown bucket
-        (try_begin),
-            (lt, ":renown", 50),
-            (assign, ":cap", 15),       # early
-        (else_try),
-            (lt, ":renown", 300),
-            (assign, ":cap", 30),       # mid
-        (else_try),
-            (assign, ":cap", 50),       # late
-        (try_end),
-
-    What this test enforces:
-      1. The deserter block reads `store_num_parties_of_template, ...,
-         "pt_deserters"` (otherwise the cap has nothing to compare against).
-      2. The block has a `try_begin`/`else_try` chain that varies the cap
-         based on SOME factor (renown, current hours, faction slots, etc.)
-         — proof that the cap is scaled, not static.
-      3. The block gates `(spawn_around_party, ..., "pt_deserters")` on the
-         current count being below that cap.
-
-    What this test does NOT enforce:
-      - The exact scaling curve (tweak as needed; just keep the shape).
-      - The exact factor (renown vs hours vs anything). As long as the
-        factor varies, this test passes.
-
-    Symptom this prevents (user, 2026-10-04): "Deserters: Active patrols: 70,
-    Limit: max 15" — the cheat menu advertises a cap but the spawn script
-    ignores it, AND there is no early/late scaling.
-    """
+def test_deserter_spawning_uses_cap_respawn_amount_and_eligible_lords():
+    """Normal respawns honor interval amount; zero-cooldown rebuild seeds to cap."""
     text = read_text("scripts/spawn_bandits.py")
-    block = _deserter_block(text)
-    assert block, (
-        "Could not find the deserter block in spawn_bandits.py. "
-        "If you renamed the marker, update `_deserter_block`."
-    )
+    block = text.split("# Deserters still spawn", 1)[1].split("# AC : Dark Hunters", 1)[0]
 
-    # 1) The block must count current deserters.
-    has_count = "store_num_parties_of_template" in block and "pt_deserters" in block
-    assert has_count, (
-        "BUG REPRO: The deserter block does not call "
-        "`(store_num_parties_of_template, ..., \"pt_deserters\")`. "
-        "Without it, no cap can be enforced. Symptom: 70+ active deserters "
-        "after a week of gameplay."
-    )
-
-    # 2) The block must have at least one try_begin/else_try chain that
-    #    varies the cap based on something. We accept any factor — renown,
-    #    current hours, faction slot, etc.
-    branching_count = len(re.findall(r"\(try_begin\)|\(else_try\)", block))
-    assert branching_count >= 2, (
-        "BUG REPRO: The deserter block has no try_begin branching. "
-        "A single static cap doesn't give early/late scaling. "
-        "Add a try_begin/else_try/else_try/try_end that assigns `:cap` "
-        "based on player progression (renown, hours, etc.)."
-    )
-
-    # 3) The block must gate the (spawn_around_party, ..., "pt_deserters")
-    #    call on the count being below cap.
-    spawn_re = re.compile(
-        r"\(spawn_around_party,\s*\":party_no\",\s*\"pt_deserters\"\)"
-    )
-    spawn_match = spawn_re.search(block)
-    assert spawn_match, (
-        "Could not find the deserter spawn_around_party call. "
-        "Did you rename the template?"
-    )
-    # The cap check should be within ~600 chars before the spawn call.
-    preceding = block[max(0, spawn_match.start() - 600) : spawn_match.start()]
-    has_cap_guard = bool(
-        re.search(r'\(lt,\s*":num_des(?:erters?)",\s*":cap"\)', preceding)
-        or re.search(r'\(lt,\s*":num_des(?:erters?)",\s*":desert_cap"\)', preceding)
-        or re.search(r'\(lt,\s*":num_des(?:erters?)",\s*num_max_deserters\)', preceding)
-        or re.search(r'\(le,\s*":num_des(?:erters?)",\s*":cap"\s*-\s*1\)', preceding)
-    )
-    assert has_cap_guard, (
-        "BUG REPRO: The deserter (spawn_around_party, ..., pt_deserters) "
-        "call is NOT guarded by a cap check on `:num_des < :cap` (or "
-        "`num_max_deserters`). The current population is counted but never "
-        "compared before spawning. Symptom: unbounded deserter growth.\n"
-        "Fix shape:\n"
-        "  (try_begin),\n"
-        "    (lt, \":num_des\", \":cap\"),\n"
-        "    (spawn_around_party, \":party_no\", \"pt_deserters\"),\n"
-        "    ...\n"
-        "  (try_end),\n"
-        "right around the existing spawn_around_party call."
-    )
+    assert '(party_template_get_slot, ":next_deserter_spawn", "pt_deserters"' in block
+    assert '(lt, ":deserter_count", "$g_bo_deserter_parties")' in block
+    assert '(lt, ":deserters_spawned", ":deserter_spawn_limit")' in block
+    assert '(store_sub, ":deserter_spawn_limit", "$g_bo_deserter_parties", ":deserter_count")' in block
+    assert '(troop_get_slot, ":lord_party", ":troop_no", slot_troop_leaded_party)' in block
+    assert '(party_is_active, ":lord_party")' in block
+    assert '(spawn_around_party, ":lord_party", "pt_deserters")' in block
 
 
 @pytest.mark.bandit
