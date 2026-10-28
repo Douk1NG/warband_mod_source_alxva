@@ -19,6 +19,20 @@ from custom_troops_header_presentations import *
 # Import cstm_item_type_strings from shared helpers (modmerger adds shared/ to sys.path)
 _item_types = __import__("shared.cstm_item_helpers.item_types", fromlist=["cstm_item_type_strings"])
 cstm_item_type_strings = _item_types.cstm_item_type_strings
+category_entries = list(cstm_item_type_strings.iteritems())
+category_entries.append((itp_type_goods, "Goods"))
+
+def build_category_type_map(index_variable):
+    operations = [(try_begin)]
+    for category_index, (item_type, string) in enumerate(category_entries):
+        if category_index > 0:
+            operations.append((else_try))
+        operations.extend([
+            (eq, index_variable, category_index),
+            (assign, ":selected_item_type", item_type),
+        ])
+    operations.append((try_end))
+    return operations
 
 #######################################################################
 # Presentation
@@ -41,6 +55,7 @@ presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
     (try_begin),
         (eq, "$all_items_items_array", 0),
         (assign, "$all_items_items_array", cstm_items_arrays_begin),
+        (assign, "$all_items_category_index", 0),
         (assign, "$all_items_item_modifier_selected", 0),
         (assign, "$all_items_page_no", 0),
     (try_end),
@@ -66,12 +81,6 @@ presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
         (troop_set_slot, "trp_temp_array_c", ":i", 0),
     (try_end),
 
-    # Background
-    (create_mesh_overlay, reg1, "mesh_note_window"),
-    (position_set_x, pos1, 0),
-    (position_set_y, pos1, 0),
-    (overlay_set_position, reg1, pos1),
-
     ## === TOP BAR: Category selector + Page selector ===
 
     # Page selector combo_label @ (500, 670)
@@ -79,8 +88,22 @@ presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
     (position_set_x, pos1, 500),
     (position_set_y, pos1, 670),
     (overlay_set_position, "$all_items_page_selector", pos1),
-    # Count items in current category
-    (troop_get_slot, ":num_items", "$all_items_items_array", cstm_slot_array_num_items),
+    # Build this category directly from item kinds. This avoids stale or
+    # misaligned per-save troop arrays for item types added late in the list.
+    (assign, ":num_items", 0),
+    (store_add, ":item_list_end", all_items_end, 100),
+    (try_for_range, ":clear_slot", 100, ":item_list_end"),
+        (troop_set_slot, "trp_temp_array_d", ":clear_slot", 0),
+    (try_end),
+    (try_for_range, ":item", all_items_begin, all_items_end),
+        (call_script, "script_cstm_cf_item_is_eligible_equipment_option", ":item"),
+        (item_get_type, ":item_type", ":item"),
+        (eq, ":item_type", ":selected_item_type"),
+        (store_add, ":item_slot", ":num_items", 100),
+        (troop_set_slot, "trp_temp_array_d", ":item_slot", ":item"),
+        (val_add, ":num_items", 1),
+    (try_end),
+    (assign, "$all_items_browser_num_items", ":num_items"),
     (store_add, ":num_pages", ":num_items", 55),
     (val_div, ":num_pages", 56),
     (try_for_range, ":page_no", 0, ":num_pages"),
@@ -108,8 +131,8 @@ presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
     (try_for_range, ":i", 0, 56),
         (store_mul, ":offset", "$all_items_page_no", 56),
         (store_add, ":item_index", ":i", ":offset"),
-        (call_script, "script_cstm_get_item_from_array", "$all_items_items_array", ":item_index"),
-        (assign, ":item", reg0),
+        (store_add, ":item_slot", ":item_index", 100),
+        (troop_get_slot, ":item", "trp_temp_array_d", ":item_slot"),
         (gt, ":item", 0),
         (val_add, ":grid_count", 1),
     (try_end),
@@ -129,8 +152,8 @@ presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
     (try_for_range, ":i", 0, 56),
         (store_mul, ":offset", "$all_items_page_no", 56),
         (store_add, ":item_index", ":i", ":offset"),
-        (call_script, "script_cstm_get_item_from_array", "$all_items_items_array", ":item_index"),
-        (assign, ":item", reg0),
+        (store_add, ":item_slot", ":item_index", 100),
+        (troop_get_slot, ":item", "trp_temp_array_d", ":item_slot"),
         (try_begin),
             (eq, ":first_item", 0),
             (assign, ":first_item", ":item"),
@@ -270,6 +293,12 @@ presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
     (overlay_set_position, "$all_items_done_button", pos1),
 ])
 
+# Resolve the type and build the matching list before the presentation reads
+# it to draw the grid.
+load_operations = presentations["all_items"].triggers[ti_on_presentation_load][0]
+load_insert_at = load_operations.index((assign, "$all_items_item_details_overlay", -1))
+load_operations[load_insert_at:load_insert_at] = build_category_type_map("$all_items_category_index")
+
 presentations["all_items"].triggers[ti_on_presentation_event_state_change][0].extend([
     (store_trigger_param_1, ":object"),
     (store_trigger_param_2, ":value"),
@@ -278,7 +307,7 @@ presentations["all_items"].triggers[ti_on_presentation_event_state_change][0].ex
     (try_begin),
         ## TYPE SELECTOR CHANGED
         (eq, ":object", "$all_items_type_selector"),
-        (store_add, "$all_items_items_array", cstm_items_arrays_begin, ":value"),
+        (assign, "$all_items_category_index", ":value"),
         (assign, "$all_items_item_modifier_selected", 0),
         (assign, "$all_items_page_no", 0),
         (start_presentation, "prsnt_all_items"),
@@ -354,7 +383,7 @@ presentations["all_items"].triggers[ti_on_presentation_mouse_enter_leave][0].ext
         (try_for_range, ":sn", 1, 57),
             (troop_slot_eq, "trp_temp_array_a", ":sn", ":object"),
             (troop_get_slot, ":item_no", "trp_temp_array_c", ":sn"),
-            (neq, ":item_no", 0),
+            (gt, ":item_no", 0),
             (close_item_details),
             (troop_get_slot, ":target_obj", "trp_temp_array_b", ":sn"),
             (overlay_get_position, pos0, ":target_obj"),
@@ -379,14 +408,13 @@ presentations["all_items"].triggers[ti_on_presentation_mouse_enter_leave][0].ext
 ])
 
 # Populate type selector from shared cstm_item_type_strings
-for item_type, string in cstm_item_type_strings.iteritems():
+for category_index, (item_type, string) in enumerate(category_entries):
     presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
         (str_store_string, s0, "@" + string),
         (overlay_add_item, "$all_items_type_selector", s0),
     ])
 presentations["all_items"].triggers[ti_on_presentation_load][0].extend([
-    (store_sub, reg0, "$all_items_items_array", cstm_items_arrays_begin),
-    (overlay_set_val, "$all_items_type_selector", reg0),
+    (overlay_set_val, "$all_items_type_selector", "$all_items_category_index"),
 ])
 
 del orig_presentations[:]

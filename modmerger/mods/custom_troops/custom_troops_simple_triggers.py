@@ -22,9 +22,10 @@ from custom_troops_constants import *
 # Build comprehensive save-game fix operations (runs once on first load after mod update)
 fix_operations = [
 	(try_begin),
-		(neq, "$g_cstm_save_fix_applied_2", 1),
+	(neq, "$g_cstm_save_fix_applied_5", 1),
 		
-		# Rebuild item arrays from scratch (fixes invalid item IDs like 1938 in old saves)
+		# Rebuild item arrays from scratch (fixes invalid item IDs like 1938 and
+		# stale item/category mappings retained by saves after module compiles).
 		(call_script, "script_cstm_setup_item_arrays"),
 ]
 
@@ -50,7 +51,7 @@ for i in xrange(max(cstm_proficiency_requirements.keys()) + 1):
 for item_type in cstm_item_type_strings.keys():
 	fix_operations.append((troop_set_slot, "trp_" + cstm_items_array_id(item_type), cstm_slot_array_item_type, item_type))
 
-fix_operations.append((assign, "$g_cstm_save_fix_applied_2", 1))
+fix_operations.append((assign, "$g_cstm_save_fix_applied_5", 1))
 fix_operations.append((try_end,))
 
 new_simple_triggers = [

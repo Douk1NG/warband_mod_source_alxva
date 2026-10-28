@@ -17,7 +17,7 @@ from header_items import *
 ##diplomacy end
 from compiler import *
 
-all_items = ("all_items", 0, 0, [
+all_items = ("all_items", 0, mesh_load_window, [
     (ti_on_presentation_load,
       [
         # Commented out - modmerge takes over
