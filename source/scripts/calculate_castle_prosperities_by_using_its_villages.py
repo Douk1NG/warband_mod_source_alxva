@@ -33,6 +33,7 @@ calculate_castle_prosperities_by_using_its_villages_scripts = [
       (try_end),
 
       (try_begin),
+        (gt, ":total_villages", 0),
         (store_div, ":castle_prosperity", ":total_prosperity", ":total_villages"),
       (else_try),
         (assign, ":castle_prosperity", 50),

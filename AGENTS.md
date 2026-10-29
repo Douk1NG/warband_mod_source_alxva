@@ -95,3 +95,7 @@ This is not CSS or a web page. NEVER add default margins/padding to a presentati
 4. Working panels to compare: `prsnt_equip_npcs.py:258-260`, `prsnt_manage_inventory.py:135-137`. Both compute `cur_posy` from item count, not hardcoded.
 
 **Applied in:** `source/scripts/settings_content_ui.py` (Main Settings, single-col rewrite). `cur_y = 1225` covers 22 items + 5 headers; container `area_size_y = 590` gives 635u of scroll range.
+
+## Debugging stalled fixes
+
+After two consecutive attempts that do not produce a verified fix, do not ask the user to repeat the same manual test. Add targeted debug logging at the failing boundary and an automated regression test for the expected code path. Run the test and required build, inspect generated output, and only then ask for another user-side test. Keep useful regression tests and diagnostics in the repository; remove temporary noisy logging once the failure is understood unless it remains useful to maintainers.

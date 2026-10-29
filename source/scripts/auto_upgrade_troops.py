@@ -12,119 +12,126 @@ from header_music import *
 from header_map_icons import *
 from ID_animations import *
 
-# g_auto_upgrade_mode:
-# 0 = Off, 1 = Balanced, 2 = Infantry, 3 = Archers, 4 = Cavalry
-
+# 0 = Off, 1 = Balanced, 2 = Infantry, 3 = Archers, 4 = Cavalry.
+# KCT's is_vanilla_warband guard selects the runtime backend in one build.
 auto_upgrade_troops_scripts = [
-("auto_upgrade_troops",
-    [
-      (try_begin),
-        (neq, "$g_auto_upgrade_mode", 0),
-        (store_troop_gold, ":player_gold", "trp_player"),
-        (gt, ":player_gold", 0),
-
-        (assign, ":total_upgraded", 0),
-        (assign, ":gold_spent", 0),
-        (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
-
-        (try_for_range_backwards, ":i_stack", 0, ":num_stacks"),
-          (party_stack_get_troop_id, ":troop_id", "p_main_party", ":i_stack"),
-          (neg|troop_is_hero, ":troop_id"),
-
-          (troop_get_upgrade_troop, ":upg0", ":troop_id", 0),
-          (gt, ":upg0", 0),
-
-          (party_stack_get_num_upgradeable, ":num_ready", "p_main_party", ":i_stack"),
-          (gt, ":num_ready", 0),
-
-          (party_stack_get_size, ":sz", "p_main_party", ":i_stack"),
-          (party_stack_get_num_wounded, ":wn", "p_main_party", ":i_stack"),
-          (store_sub, ":avail", ":sz", ":wn"),
-          (gt, ":num_ready", 0),
-
-          (troop_get_upgrade_troop, ":upg1", ":troop_id", 1),
-          (assign, ":has_two", 0),
+    ("auto_upgrade_troops", [
+        (try_begin),
+          (is_vanilla_warband),
           (try_begin),
-            (gt, ":upg1", 0),
-            (assign, ":has_two", 1),
-          (try_end),
-
-          # Determine counts per path
-          (assign, ":cnt0", 0),
-          (assign, ":cnt1", 0),
-          (try_begin),
-            (eq, "$g_auto_upgrade_mode", 1),
+            (neq, "$g_auto_upgrade_mode", 0),
+            (store_sub, ":native_upgrade_path", "$g_auto_upgrade_mode", 1),
+            # Native only scans for promotions when this operation is given XP.
+            # One party XP point is the smallest non-zero value.
+            (party_upgrade_with_xp, "p_main_party", 1, ":native_upgrade_path"),
             (try_begin),
-              (eq, ":has_two", 1),
-              (store_div, ":cnt0", ":num_ready", 2),
-              (store_sub, ":cnt1", ":num_ready", ":cnt0"),
+              (eq, "$g_auto_upgrade_mode", 1),
+              (display_message, "@Auto-upgrade checked the party (random path)."),
             (else_try),
-              (assign, ":cnt0", ":num_ready"),
-            (try_end),
-          (else_try),
-            (try_begin),
               (eq, "$g_auto_upgrade_mode", 2),
-              (assign, ":target_class", grc_infantry),
+              (display_message, "@Auto-upgrade checked the party (first path priority)."),
             (else_try),
-              (eq, "$g_auto_upgrade_mode", 3),
-              (assign, ":target_class", grc_archers),
-            (else_try),
-              (assign, ":target_class", grc_cavalry),
-            (try_end),
-            (assign, ":matched", 0),
-            (try_begin),
-              (call_script, "script_cf_troop_is_class", ":target_class", ":upg0"),
-              (assign, ":cnt0", ":num_ready"),
-              (assign, ":matched", 1),
-            (try_end),
-            (try_begin),
-              (eq, ":matched", 0),
-              (eq, ":has_two", 1),
-              (call_script, "script_cf_troop_is_class", ":target_class", ":upg1"),
-              (assign, ":cnt1", ":num_ready"),
-              (assign, ":matched", 1),
-            (try_end),
-            (try_begin),
-              (eq, ":matched", 0),
-              (assign, ":cnt0", ":num_ready"),
+              (display_message, "@Auto-upgrade checked the party (second path priority)."),
             (try_end),
           (try_end),
+        (else_try),
+        (try_begin),
+          (neq, "$g_auto_upgrade_mode", 0),
+          (store_troop_gold, ":player_gold", "trp_player"),
+          (gt, ":player_gold", 0),
 
-          # Total to upgrade this stack
-          (store_add, ":to_upgrade", ":cnt0", ":cnt1"),
-          (gt, ":to_upgrade", 0),
+          (assign, ":total_upgraded", 0),
+          (assign, ":gold_spent", 0),
+          (party_get_num_companion_stacks, ":num_stacks", "p_main_party"),
 
-          # Gold check
-          # Match game_get_upgrade_cost without calling the engine trigger as
-          # a script (that call produces Unrecognized opcode 3901 at runtime).
-          (store_character_level, ":troop_level", ":troop_id"),
-          (try_begin),
-            (is_between, ":troop_level", 0, 6),
-            (assign, ":cpt", 10),
-          (else_try),
-            (is_between, ":troop_level", 6, 11),
-            (assign, ":cpt", 20),
-          (else_try),
-            (is_between, ":troop_level", 11, 16),
-            (assign, ":cpt", 40),
-          (else_try),
-            (is_between, ":troop_level", 16, 21),
-            (assign, ":cpt", 80),
-          (else_try),
-            (is_between, ":troop_level", 21, 26),
-            (assign, ":cpt", 120),
-          (else_try),
-            (is_between, ":troop_level", 26, 31),
-            (assign, ":cpt", 160),
-          (else_try),
-            (assign, ":cpt", 200),
-          (try_end),
-          (store_mul, ":cost", ":to_upgrade", ":cpt"),
-          (store_add, ":total_after", ":gold_spent", ":cost"),
-          (try_begin),
+          (try_for_range_backwards, ":i_stack", 0, ":num_stacks"),
+            (party_stack_get_troop_id, ":troop_id", "p_main_party", ":i_stack"),
+            (neg|troop_is_hero, ":troop_id"),
+
+            (troop_get_upgrade_troop, ":upg0", ":troop_id", 0),
+            (gt, ":upg0", 0),
+            (party_stack_get_num_upgradeable, ":num_ready", "p_main_party", ":i_stack"),
+            (gt, ":num_ready", 0),
+
+            (party_stack_get_size, ":sz", "p_main_party", ":i_stack"),
+            (party_stack_get_num_wounded, ":wn", "p_main_party", ":i_stack"),
+            (store_sub, ":avail", ":sz", ":wn"),
+            (troop_get_upgrade_troop, ":upg1", ":troop_id", 1),
+            (assign, ":has_two", 0),
+            (try_begin),
+              (gt, ":upg1", 0),
+              (assign, ":has_two", 1),
+            (try_end),
+
+            # Select upgrades independently for each troop stack.
+            (assign, ":cnt0", 0),
+            (assign, ":cnt1", 0),
+            (try_begin),
+              (eq, "$g_auto_upgrade_mode", 1),
+              (try_begin),
+                (eq, ":has_two", 1),
+                (store_div, ":cnt0", ":num_ready", 2),
+                (store_sub, ":cnt1", ":num_ready", ":cnt0"),
+              (else_try),
+                (assign, ":cnt0", ":num_ready"),
+              (try_end),
+            (else_try),
+              (try_begin),
+                (eq, "$g_auto_upgrade_mode", 2),
+                (assign, ":target_class", grc_infantry),
+              (else_try),
+                (eq, "$g_auto_upgrade_mode", 3),
+                (assign, ":target_class", grc_archers),
+              (else_try),
+                (assign, ":target_class", grc_cavalry),
+              (try_end),
+              (assign, ":matched", 0),
+              (try_begin),
+                (call_script, "script_cf_troop_is_class", ":target_class", ":upg0"),
+                (assign, ":cnt0", ":num_ready"),
+                (assign, ":matched", 1),
+              (try_end),
+              (try_begin),
+                (eq, ":matched", 0),
+                (eq, ":has_two", 1),
+                (call_script, "script_cf_troop_is_class", ":target_class", ":upg1"),
+                (assign, ":cnt1", ":num_ready"),
+                (assign, ":matched", 1),
+              (try_end),
+              # If this troop tree has no requested-class path, use its first
+              # available upgrade instead of leaving the stack unpromoted.
+              (try_begin),
+                (eq, ":matched", 0),
+                (assign, ":cnt0", ":num_ready"),
+              (try_end),
+            (try_end),
+
+            (store_add, ":to_upgrade", ":cnt0", ":cnt1"),
+            (gt, ":to_upgrade", 0),
+
+            # Native upgrade-cost table, calculated per troop level.
+            (store_character_level, ":troop_level", ":troop_id"),
+            (try_begin),
+              (is_between, ":troop_level", 0, 6), (assign, ":cpt", 10),
+            (else_try),
+              (is_between, ":troop_level", 6, 11), (assign, ":cpt", 20),
+            (else_try),
+              (is_between, ":troop_level", 11, 16), (assign, ":cpt", 40),
+            (else_try),
+              (is_between, ":troop_level", 16, 21), (assign, ":cpt", 80),
+            (else_try),
+              (is_between, ":troop_level", 21, 26), (assign, ":cpt", 120),
+            (else_try),
+              (is_between, ":troop_level", 26, 31), (assign, ":cpt", 160),
+            (else_try),
+              (assign, ":cpt", 200),
+            (try_end),
+            (store_mul, ":cost", ":to_upgrade", ":cpt"),
+            (store_add, ":total_after", ":gold_spent", ":cost"),
             (le, ":total_after", ":player_gold"),
 
-            # Compute how many wounded will be removed (party_remove_members removes healthy first)
+            # Transfer healthy and wounded counts without allowing negative
+            # counts to be passed to party_add_members.
             (try_begin),
               (le, ":to_upgrade", ":avail"),
               (assign, ":wounded_removed", 0),
@@ -132,40 +139,26 @@ auto_upgrade_troops_scripts = [
               (store_sub, ":wounded_removed", ":to_upgrade", ":avail"),
               (val_min, ":wounded_removed", ":wn"),
             (try_end),
-
             (store_sub, ":wounded_kept", ":wn", ":wounded_removed"),
             (store_sub, ":keep", ":sz", ":to_upgrade"),
-            # FIX 2026-10-05: clamp `:keep` to >= 0.
             (val_max, ":keep", 0),
-
-            # Remove ALL troops from this stack (clears the XP pool)
             (party_remove_members, "p_main_party", ":troop_id", ":sz"),
-
-            # Add back the non-upgraded ones (fresh, 0 XP, no flag)
             (try_begin),
               (gt, ":keep", 0),
               (party_add_members, "p_main_party", ":troop_id", ":keep"),
             (try_end),
-
-            # Re-wound the ones that WEREN'T upgraded
             (try_begin),
               (gt, ":wounded_kept", 0),
               (party_wound_members, "p_main_party", ":troop_id", ":wounded_kept"),
             (try_end),
-
-            # Add upgraded path 0
             (try_begin),
               (gt, ":cnt0", 0),
               (party_add_members, "p_main_party", ":upg0", ":cnt0"),
             (try_end),
-
-            # Add upgraded path 1
             (try_begin),
               (gt, ":cnt1", 0),
               (party_add_members, "p_main_party", ":upg1", ":cnt1"),
             (try_end),
-
-            # Re-wound the upgraded troops that came from wounded
             (try_begin),
               (gt, ":wounded_removed", 0),
               (assign, ":wnd_rem", ":wounded_removed"),
@@ -182,19 +175,17 @@ auto_upgrade_troops_scripts = [
                 (party_wound_members, "p_main_party", ":upg1", ":wounded_removed"),
               (try_end),
             (try_end),
-
             (val_add, ":gold_spent", ":cost"),
             (val_add, ":total_upgraded", ":to_upgrade"),
           (try_end),
+          (try_begin),
+            (gt, ":total_upgraded", 0),
+            (troop_remove_gold, "trp_player", ":gold_spent"),
+            (assign, reg6, ":total_upgraded"),
+            (assign, reg7, ":gold_spent"),
+            (display_message, "@Auto-upgrade complete: {reg6} troops upgraded for {reg7} denars."),
+          (try_end),
         (try_end),
-
-        (try_begin),
-          (gt, ":total_upgraded", 0),
-          (troop_remove_gold, "trp_player", ":gold_spent"),
-          (assign, reg6, ":total_upgraded"),
-          (assign, reg7, ":gold_spent"),
-          (display_message, "@Auto-upgrade complete: {reg6} troops upgraded for {reg7} denars."),
         (try_end),
-      (try_end),
-  ])
+    ])
 ]

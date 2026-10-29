@@ -731,9 +731,9 @@ camp_hub = ("camp_hub", 0, mesh_hud, [
         # container scroll here and restore it on load — else it jumps to top.
         # View-switch branches below reset it to 0 for the new view.
         (try_begin),
-            (ge, "$g_camp_hub_container", 0),
-            (overlay_get_val, ":scroll_pos", "$g_camp_hub_container"),
-            (assign, "$g_camp_hub_scroll", ":scroll_pos"),
+            (eq, ":object", "$g_camp_hub_container"),
+            # Native supplies the new container value as event param 2.
+            (assign, "$g_camp_hub_scroll", ":value"),
         (try_end),
         (try_begin),
             (neq, "$g_presentation_food_start", -1),

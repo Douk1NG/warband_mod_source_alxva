@@ -7,6 +7,32 @@ from header_operations import *
 from header_triggers import *
 from module_constants import *
 
+auto_upgrade_selector_ops = [
+    (try_begin),
+      (is_vanilla_warband),
+      (overlay_add_item, "$g_settings_btn_16", "@Random path"),
+      (overlay_add_item, "$g_settings_btn_16", "@Prioritize first path"),
+      (overlay_add_item, "$g_settings_btn_16", "@Prioritize second path"),
+      (assign, reg1, "$g_auto_upgrade_mode"),
+      (try_begin),
+        (is_between, reg1, 0, 4),
+      (else_try),
+        (assign, reg1, 0),
+      (try_end),
+    (else_try),
+      (overlay_add_item, "$g_settings_btn_16", "@Balanced"),
+      (overlay_add_item, "$g_settings_btn_16", "@Infantry"),
+      (overlay_add_item, "$g_settings_btn_16", "@Archers"),
+      (overlay_add_item, "$g_settings_btn_16", "@Cavalry"),
+      (assign, reg1, "$g_auto_upgrade_mode"),
+      (try_begin),
+        (is_between, reg1, 0, 5),
+      (else_try),
+        (assign, reg1, 0),
+      (try_end),
+    (try_end),
+]
+
 # Settings, hub style (fully migrated out of XGM mod_option field by field)
 # Single column, all-positive Y (chain starts 1800, bottom lands at 0)
 # inside the index-12 classic-style tf_scrollable container: native wheel scroll,
@@ -111,7 +137,7 @@ settings_content_ui_scripts = [
       (store_sub, reg1, 1, "$g_dplmc_battle_continuation"),
       (overlay_set_val, "$g_settings_btn_8", reg1),
       (val_sub, ":cur_y", 55),
-      # Auto Upgrade — dropdown select
+      # Auto Upgrade — mode selector
       (create_text_overlay, reg1, "@Auto Upgrade:", tf_left_align),
       (overlay_set_tooltip, reg1, "str_tip_settings_auto_upgrade"),
       (position_set_x, pos1, 100), (position_set_y, pos1, ":cur_y"), (overlay_set_position, reg1, pos1),
@@ -120,11 +146,7 @@ settings_content_ui_scripts = [
       (create_combo_button_overlay, "$g_settings_btn_16"),
       (overlay_set_tooltip, "$g_settings_btn_16", "str_tip_settings_auto_upgrade"),
       (overlay_add_item, "$g_settings_btn_16", "@Off"),
-      (overlay_add_item, "$g_settings_btn_16", "@Balanced"),
-      (overlay_add_item, "$g_settings_btn_16", "@Infantry"),
-      (overlay_add_item, "$g_settings_btn_16", "@Archers"),
-      (overlay_add_item, "$g_settings_btn_16", "@Cavalry"),
-      (assign, reg1, "$g_auto_upgrade_mode"),
+  ] + auto_upgrade_selector_ops + [
       (overlay_set_val, "$g_settings_btn_16", reg1),
       (position_set_x, pos1, 520), (position_set_y, pos1, ":cur_y"), (overlay_set_position, "$g_settings_btn_16", pos1),
       (val_sub, ":cur_y", 55),

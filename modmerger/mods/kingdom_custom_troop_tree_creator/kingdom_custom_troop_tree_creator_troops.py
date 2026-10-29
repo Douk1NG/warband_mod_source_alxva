@@ -107,3 +107,13 @@ def modmerge(var_set):
 
 	for troop in build_template_storage_troops():
 		orig_troops.append(troop)
+
+	# Preserve the troop count used by saves from a local build that had one
+	# additional troop. Keep this after every other generated troop so no
+	# existing troop IDs shift; the placeholder is intentionally unused.
+	_compat_id = "dplmc_save_compat_placeholder_1712"
+	if not any(troop[0] == _compat_id for troop in orig_troops):
+		orig_troops.append([
+			_compat_id, "", "", tf_hero, 0, 0,
+			fac_player_supporters_faction, [], level(1)|def_attrib, 0, 0, 0, 0
+		])
