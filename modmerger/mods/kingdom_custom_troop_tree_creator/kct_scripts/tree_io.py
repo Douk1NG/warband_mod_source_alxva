@@ -453,6 +453,7 @@ WSE_DEFAULT_SLOT_TEMPLATES = [
 ]
 
 DEFAULT_SLOT_TEMPLATES = NATIVE_DEFAULT_SLOT_TEMPLATES + WSE_DEFAULT_SLOT_TEMPLATES
+CUSTOM_TREE_DEFAULT_SLOT_BEGIN = len(NATIVE_DEFAULT_SLOT_TEMPLATES)
 
 def _seed_default_slot_ops(slot_index, name, selected_tree, budget, source_troops):
 	ops = [
@@ -484,15 +485,119 @@ def _seed_default_slot_ops(slot_index, name, selected_tree, budget, source_troop
 			])
 	return ops
 
-def _build_seed_default_slots_ops():
-	ops = []
+def _unpack_default_slot_template(template):
+	if len(template) == 3:
+		name, selected_tree, source_troops = template
+		budget = 3
+	else:
+		name, selected_tree, budget, source_troops = template
+	return name, selected_tree, budget, source_troops
+
+def _build_seed_default_slot_ops():
+	ops = [(store_script_param, ":slot", 1)]
 	for slot_index, template in enumerate(DEFAULT_SLOT_TEMPLATES):
-		if len(template) == 3:
-			name, selected_tree, source_troops = template
-			budget = 3
-		else:
-			name, selected_tree, budget, source_troops = template
+		name, selected_tree, budget, source_troops = _unpack_default_slot_template(template)
+		ops.append((try_begin,) if slot_index == 0 else (else_try,))
+		ops.append((eq, ":slot", slot_index))
 		ops.extend(_seed_default_slot_ops(slot_index, name, selected_tree, budget, source_troops))
+	ops.append((try_end,))
+	return ops
+
+def _build_seed_default_slots_ops():
+	return [
+		(call_script, "script_kct_seed_default_template_slot", slot_index)
+		for slot_index in xrange(len(DEFAULT_SLOT_TEMPLATES))
+	]
+
+def _build_seed_missing_default_slots_ops():
+	ops = []
+	for slot_index, template in enumerate(DEFAULT_SLOT_TEMPLATES[:CUSTOM_TREE_DEFAULT_SLOT_BEGIN]):
+		name, _, _, _ = _unpack_default_slot_template(template)
+		ops.extend([
+			(call_script, "script_kct_get_template_meta_troop", slot_index),
+			(assign, ":meta", reg0),
+			(try_begin,),
+				(neg|troop_slot_eq, ":meta", kct_slot_template_occupied, 1),
+				(display_debug_message, "@[KCT_DIAG] seeding missing default slot %d: %s" % (slot_index, name)),
+				(call_script, "script_kct_seed_default_template_slot", slot_index),
+			(try_end,),
+		])
+	return ops
+
+def _build_restore_custom_tree_default_slots_ops():
+	ops = []
+	for slot_index in xrange(CUSTOM_TREE_DEFAULT_SLOT_BEGIN, len(DEFAULT_SLOT_TEMPLATES)):
+		template = DEFAULT_SLOT_TEMPLATES[slot_index]
+		name, selected_tree, budget, source_troops = _unpack_default_slot_template(template)
+		ops.extend([
+			(call_script, "script_kct_get_template_meta_troop", slot_index),
+			(assign, ":meta", reg0),
+			(assign, ":needs_seed", 0),
+			(try_begin,),
+				(neg|troop_slot_eq, ":meta", kct_slot_template_occupied, 1),
+				(assign, ":needs_seed", 1),
+			(else_try,),
+				(neg|troop_slot_eq, ":meta", kct_slot_template_tree, selected_tree),
+				(assign, ":needs_seed", 1),
+			(else_try,),
+				(neg|troop_slot_eq, ":meta", kct_slot_template_count, len(source_troops)),
+				(assign, ":needs_seed", 1),
+			(try_end,),
+		])
+		for node_index in xrange(len(source_troops)):
+			ops.extend([
+				(call_script, "script_kct_get_template_node_troop", slot_index, node_index),
+				(assign, ":template_node", reg0),
+				(try_begin,),
+					(neg|troop_slot_eq, ":template_node", cstm_slot_troop_configured, 1),
+					(assign, ":needs_seed", 1),
+				(try_end,),
+			])
+		ops.extend([
+			(try_begin,),
+				(eq, ":needs_seed", 1),
+				(display_message, "@[KCT] Repairing missing built-in tree template: %s" % name, 0x44ff44),
+				(call_script, "script_kct_seed_default_template_slot", slot_index),
+			(try_end,),
+		])
+	return ops
+
+def _build_restore_calradian_missing_troops_ops():
+	ops = [(assign, ":restored_calradian_count", 0)]
+	for node_index, (label, _, _) in enumerate(PRESET_4_UNITS):
+		real_troop = "trp_" + kct_custom_preset_troop_id(4, 0, node_index)
+		dummy_troop = real_troop + "_dummy"
+		placeholder_name = "@Unit %s" % label
+		ops.extend([
+			(str_store_string, s1, placeholder_name),
+			(str_store_troop_name, s0, real_troop),
+			(str_compare, ":real_name_is_placeholder", s0, s1, 1),
+			(str_store_troop_name, s0, dummy_troop),
+			(str_compare, ":dummy_name_is_placeholder", s0, s1, 1),
+			(try_begin,),
+				(this_or_next|eq, ":real_name_is_placeholder", 0),
+				(eq, ":dummy_name_is_placeholder", 0),
+				(call_script, "script_kct_get_template_node_troop", 7, node_index),
+				(assign, ":template_node", reg0),
+		])
+		ops.extend(_copy_troop_record_ops(":template_node", ":template_node", real_troop))
+		ops.extend([
+			(str_store_troop_name, s0, ":template_node"),
+			(troop_set_name, dummy_troop, s0),
+			(str_store_troop_name_plural, s0, ":template_node"),
+			(troop_set_plural_name, dummy_troop, s0),
+			(call_script, "script_kct_copy_custom_troop_to_dummy", real_troop),
+			(call_script, "script_kct_replace_custom_troop_with_dummy", real_troop),
+			(val_add, ":restored_calradian_count", 1),
+			(try_end,),
+		])
+	ops.extend([
+		(try_begin,),
+			(gt, ":restored_calradian_count", 0),
+			(assign, reg0, ":restored_calradian_count"),
+			(display_message, "@[KCT] Initialized {reg0} Calradian troops", 0x44ff44),
+		(try_end,),
+	])
 	return ops
 
 TREE_IO_SCRIPTS = [
@@ -503,6 +608,10 @@ TREE_IO_SCRIPTS = [
 
 	("kct_get_template_meta_troop", _build_template_meta_resolver_ops()),
 	("kct_get_template_node_troop", _build_template_node_resolver_ops()),
+	("kct_seed_default_template_slot", _build_seed_default_slot_ops()),
+	("kct_seed_missing_default_template_slots", _build_seed_missing_default_slots_ops()),
+	("kct_restore_custom_tree_default_slots", _build_restore_custom_tree_default_slots_ops()),
+	("kct_restore_calradian_missing_troops", _build_restore_calradian_missing_troops_ops()),
 	("kct_seed_default_template_slots", _build_seed_default_slots_ops()),
 
 # script_kct_export_tree_to_slot_quiet - same storage copy as export, but

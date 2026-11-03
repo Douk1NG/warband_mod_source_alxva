@@ -17,5 +17,9 @@ from module_factions import dplmc_factions_begin, dplmc_factions_end, dplmc_non_
 
 wse_game_saved_scripts = [
 ("wse_game_saved", [
-])
+]),
+("wse_savegame_loaded", [
+    # WSE calls this callback after a savegame has loaded successfully.
+    (call_script, "script_kct_restore_troops_after_load", "p_main_party", 1),
+]),
 ]
