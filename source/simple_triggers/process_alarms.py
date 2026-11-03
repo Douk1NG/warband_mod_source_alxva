@@ -32,7 +32,6 @@ process_alarms_simple_triggers = [
         (gt, ":besieger_party", 0),
         (party_is_active, ":besieger_party"),
         (store_faction_of_party, ":besieger_faction", ":besieger_party"),
-        (party_slot_ge, ":center_no", slot_center_is_besieged_by, 1),
         (party_get_slot, ":siege_begin_hours", ":center_no", slot_center_siege_begin_hours),
         (store_sub, ":siege_begin_hours", ":cur_hours", ":siege_begin_hours"),
         (assign, ":launch_attack", 0),

@@ -76,7 +76,8 @@ process_hero_ai_scripts = [
           (eq, ":ai_state", spai_raiding_around_center),
           (party_slot_eq, ":party_no", slot_party_ai_substate, 0),
           (assign, ":selected_village", 0),
-          (try_for_range, ":enemy_village_no", villages_begin, villages_end),
+          (assign, ":enemy_village_end", villages_end),
+          (try_for_range, ":enemy_village_no", villages_begin, ":enemy_village_end"),
             (eq, ":selected_village", 0),
             (store_faction_of_party, ":enemy_village_faction", ":enemy_village_no"),
             (try_begin),
@@ -91,6 +92,8 @@ process_hero_ai_scripts = [
             (party_slot_eq, ":enemy_village_no", slot_village_state, svs_normal), #village is not already raided
             #CHANGE STATE TO RAID THIS VILLAGE
             (assign, ":selected_village", ":enemy_village_no"),
+            # Keep the original first-match choice, but stop scanning villages.
+            (assign, ":enemy_village_end", ":enemy_village_no"),
           (try_end),
           (try_begin),
             (eq, ":selected_village", 0),

@@ -87,14 +87,19 @@ auto_upgrade_troops_scripts = [
               (try_end),
               (assign, ":matched", 0),
               (try_begin),
-                (call_script, "script_cf_troop_is_class", ":target_class", ":upg0"),
+                # :upg0 is already known to be a valid upgrade troop above;
+                # read its class directly instead of dispatching a helper.
+                (troop_get_class, ":upg0_class", ":upg0"),
+                (eq, ":target_class", ":upg0_class"),
                 (assign, ":cnt0", ":num_ready"),
                 (assign, ":matched", 1),
               (try_end),
               (try_begin),
                 (eq, ":matched", 0),
                 (eq, ":has_two", 1),
-                (call_script, "script_cf_troop_is_class", ":target_class", ":upg1"),
+                # :has_two is set only when :upg1 is a valid troop ID.
+                (troop_get_class, ":upg1_class", ":upg1"),
+                (eq, ":target_class", ":upg1_class"),
                 (assign, ":cnt1", ":num_ready"),
                 (assign, ":matched", 1),
               (try_end),

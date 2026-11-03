@@ -25,9 +25,24 @@ process_alarms_scripts = [
         (assign, "$g_alarm_modula", 0),
       (try_end),
 
-      (try_for_range, ":center_no", centers_begin, centers_end),
-        (store_mod, ":center_modula", ":center_no", 3),
-        (eq, ":center_modula", ":current_modula"),
+      # Visit only the center IDs assigned to this modulo pass. The previous
+      # range scanned every center and rejected two thirds inside the loop.
+      (store_mod, ":first_center_modula", centers_begin, 3),
+      (store_sub, ":first_center_offset", ":current_modula", ":first_center_modula"),
+      (val_add, ":first_center_offset", 3),
+      (store_mod, ":first_center_offset", ":first_center_offset", 3),
+      (store_add, ":first_center", centers_begin, ":first_center_offset"),
+      (store_sub, ":remaining_center_count", centers_end, ":first_center"),
+      (assign, ":center_iteration_count", 0),
+      (try_begin),
+        (gt, ":remaining_center_count", 0),
+        (store_add, ":center_iteration_count", ":remaining_center_count", 2),
+        (val_div, ":center_iteration_count", 3),
+      (try_end),
+
+      (try_for_range, ":center_index", 0, ":center_iteration_count"),
+        (store_mul, ":center_offset", ":center_index", 3),
+        (store_add, ":center_no", ":first_center", ":center_offset"),
 
         (party_set_slot, ":center_no", slot_center_last_spotted_enemy, -1),
         (party_set_slot, ":center_no", slot_center_sortie_strength, 0),
@@ -105,9 +120,9 @@ process_alarms_scripts = [
         (try_end),
       (try_end),
 
-      (try_for_range, ":center_no", centers_begin, centers_end),
-        (store_mod, ":center_modula", ":center_no", 3),
-        (eq, ":center_modula", ":current_modula"),
+      (try_for_range, ":center_index", 0, ":center_iteration_count"),
+        (store_mul, ":center_offset", ":center_index", 3),
+        (store_add, ":center_no", ":first_center", ":center_offset"),
 
         (try_begin), #eligible units sortie out of castle
           (is_between, ":center_no", walled_centers_begin, walled_centers_end),
