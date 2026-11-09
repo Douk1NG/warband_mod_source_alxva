@@ -22,7 +22,7 @@ load_restore_operations = [
 		(eq, ":force_restore", 1),
 		(assign, ":should_restore", 1),
 	(else_try,),
-		(neq, ":restore_marker_class", grc_cavalry),
+		(neq, ":restore_marker_class", grc_archers),
 		(assign, ":should_restore", 1),
 	(try_end,),
 	(eq, ":should_restore", 1),
@@ -75,11 +75,11 @@ load_restore_operations.append((call_script, "script_kct_seed_missing_default_te
 load_restore_operations.append((call_script, "script_kct_restore_custom_tree_default_slots"))
 load_restore_operations.append((call_script, "script_kct_restore_calradian_missing_troops"))
 load_restore_operations.append((call_script, "script_kct_migrate_legacy_v1"))
-# cstm_load_check is a non-hero sentinel; Native resets its runtime class on
-# every load. Mark it only after all copies and migrations finish, so the
-# zero-interval trigger retries if restoration is interrupted.
-load_restore_operations.append((troop_set_class, "trp_cstm_load_check", grc_cavalry))
-load_restore_operations.append((troop_set_class, "trp_kct_template_slot_0_meta", grc_cavalry))
+# Use a new completion class so saves from earlier attempts (which marked the
+# sentinel cavalry before Native restoration actually completed) retry once.
+# The zero-interval trigger exits cheaply on later frames after this marker.
+load_restore_operations.append((troop_set_class, "trp_cstm_load_check", grc_archers))
+load_restore_operations.append((troop_set_class, "trp_kct_template_slot_0_meta", grc_archers))
 load_restore_operations.extend([
 	(assign, reg0, ":restored_troops"),
 	(display_message, "@[KCT] Restore complete: {reg0} troops updated from saved data.", 0x44ff44),

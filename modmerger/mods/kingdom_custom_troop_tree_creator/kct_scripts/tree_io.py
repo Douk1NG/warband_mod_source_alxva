@@ -775,6 +775,7 @@ TREE_IO_SCRIPTS = [
 				(assign, "$kct_manage_from_picker", 1),
 			(try_end,),
 			(troop_get_slot, "$cstm_selected_tree", ":meta", kct_slot_template_tree),
+			(troop_get_slot, "$cstm_selected_gender", ":meta", kct_slot_template_gender),
 			(call_script, "script_kct_compute_tree_range"),
 			(store_sub, ":range_count", "$cstm_troops_end", "$cstm_troops_begin"),
 			(troop_get_slot, ":file_count", ":meta", kct_slot_template_count),

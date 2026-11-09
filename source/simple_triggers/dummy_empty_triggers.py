@@ -14,10 +14,10 @@ from module_constants import *
 
 from compiler import *
 
+from kingdom_custom_troop_tree_creator_simple_triggers import native_template_health_ops
+
 dummy_empty_triggers_simple_triggers = [
-(24,
-   [
-   ]),
+(0, native_template_health_ops),
 (24,
    []),
 (24,

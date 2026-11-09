@@ -127,7 +127,6 @@ from simple_triggers.captive_party_cleanup import captive_party_cleanup_simple_t
 from simple_triggers.dplmc_daily_updates import dplmc_daily_updates_simple_triggers
 from simple_triggers.food_bonus_reset import food_bonus_reset_simple_triggers
 from simple_triggers.dummy_empty_triggers import dummy_empty_triggers_simple_triggers
-from simple_triggers.dummy_96_save import dummy_96_save_simple_triggers
 from simple_triggers.spouse_ai_thinking import spouse_ai_thinking_simple_triggers
 from simple_triggers.recruiter_ai import recruiter_ai_simple_triggers
 from simple_triggers.village_reservation import village_reservation_simple_triggers
@@ -255,7 +254,6 @@ simple_triggers.extend(captive_party_cleanup_simple_triggers)
 simple_triggers.extend(dplmc_daily_updates_simple_triggers)
 simple_triggers.extend(food_bonus_reset_simple_triggers)
 simple_triggers.extend(dummy_empty_triggers_simple_triggers)
-simple_triggers.extend(dummy_96_save_simple_triggers)
 simple_triggers.extend(spouse_ai_thinking_simple_triggers)
 simple_triggers.extend(recruiter_ai_simple_triggers)
 simple_triggers.extend(village_reservation_simple_triggers)
@@ -286,3 +284,10 @@ try:
 except:
     raise
 # modmerger_end
+
+# Keep the two historical save-compatibility entries after every merged
+# simple trigger so older saves retain their expected trigger count.
+simple_triggers.extend([
+    (96, []),
+    (96, []),
+])
