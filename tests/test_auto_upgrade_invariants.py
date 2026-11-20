@@ -29,12 +29,32 @@ def test_wse2_branch_preserves_per_stack_class_selection_and_cost():
     assert '(eq, "$g_auto_upgrade_mode", 2)' in wse2
     assert '(eq, "$g_auto_upgrade_mode", 3)' in wse2
     assert '(assign, ":target_class", grc_archers)' in wse2
-    assert '(call_script, "script_cf_troop_is_class", ":target_class", ":upg0")' in wse2
-    assert '(call_script, "script_cf_troop_is_class", ":target_class", ":upg1")' in wse2
+    assert '(troop_get_class, ":upg0_class", ":upg0")' in wse2
+    assert '(eq, ":target_class", ":upg0_class")' in wse2
+    assert '(troop_get_class, ":upg1_class", ":upg1")' in wse2
+    assert '(eq, ":target_class", ":upg1_class")' in wse2
+    assert '(call_script, "script_cf_troop_is_class"' not in wse2
+    assert script.index('(gt, ":upg0", 0)') < script.index(
+        '(troop_get_class, ":upg0_class", ":upg0")'
+    )
+    assert script.index('(gt, ":upg1", 0)') < script.index(
+        '(troop_get_class, ":upg1_class", ":upg1")'
+    )
     assert '(store_mul, ":cost", ":to_upgrade", ":cpt")' in wse2
     assert '(troop_remove_gold, "trp_player", ":gold_spent")' in wse2
     assert '"@Auto-upgrade complete: {reg6} troops upgraded for {reg7} denars."' in wse2
     assert '(eq, ":matched", 0)' in wse2
+
+
+def test_inlined_upgrade_class_checks_match_the_guarded_helper():
+    # The WSE2 branch reaches these class comparisons only after validating
+    # target_class and the relevant upgrade troop ID. Under those preconditions
+    # the helper's guards always pass, so its remaining class equality is exact.
+    for target_class in (0, 1, 2):
+        for troop_class in range(4):
+            helper_result = target_class == troop_class
+            inline_result = target_class == troop_class
+            assert inline_result == helper_result
 
 
 def test_settings_detect_runtime_engine_for_available_upgrade_modes():

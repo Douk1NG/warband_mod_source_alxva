@@ -99,3 +99,7 @@ This is not CSS or a web page. NEVER add default margins/padding to a presentati
 ## Debugging stalled fixes
 
 After two consecutive attempts that do not produce a verified fix, do not ask the user to repeat the same manual test. Add targeted debug logging at the failing boundary and an automated regression test for the expected code path. Run the test and required build, inspect generated output, and only then ask for another user-side test. Keep useful regression tests and diagnostics in the repository; remove temporary noisy logging once the failure is understood unless it remains useful to maintainers.
+
+## Stateful runtime debugging
+
+For runtime failures involving triggers, callbacks, save data, or performance, trace the complete path and the state controlling each gate before editing. Verify the deciding runtime value, distinguish setup messages from the final user-visible result, change one causal variable per trial, and measure correctness separately from recurring cost. See [docs/updates/optimizations/kct-native-load-marker-retrospective.md](docs/updates/optimizations/kct-native-load-marker-retrospective.md) for a reusable investigation process and a concrete KCT example.
