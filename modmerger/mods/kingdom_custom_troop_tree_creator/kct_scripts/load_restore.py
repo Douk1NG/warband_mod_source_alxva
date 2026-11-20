@@ -14,9 +14,6 @@ load_restore_operations = [
 	(store_script_param_2, ":force_restore"),
 	(eq, ":party_no", "p_main_party"),
 	(troop_get_class, ":restore_marker_class", "trp_kct_template_slot_0_meta"),
-	(assign, reg0, ":restore_marker_class"),
-	(assign, reg1, ":force_restore"),
-	(display_debug_message, "@[KCT_DIAG] restore entered; force={reg1}, marker_class={reg0}"),
 	(assign, ":should_restore", 0),
 	(try_begin,),
 		(eq, ":force_restore", 1),
@@ -26,7 +23,6 @@ load_restore_operations = [
 		(assign, ":should_restore", 1),
 	(try_end,),
 	(eq, ":should_restore", 1),
-	(display_message, "@[KCT] Restoring troop trees after load...", 0x44ff44),
 	(assign, ":restored_troops", 0),
 	(try_for_range, ":troop", cstm_troops_begin, cstm_troops_end),
 		(try_begin,),
@@ -74,6 +70,7 @@ load_restore_operations.append((call_script, "script_kct_reapply_all_genders"))
 load_restore_operations.append((call_script, "script_kct_seed_missing_default_template_slots"))
 load_restore_operations.append((call_script, "script_kct_restore_custom_tree_default_slots"))
 load_restore_operations.append((call_script, "script_kct_restore_calradian_missing_troops"))
+load_restore_operations.append((val_add, ":restored_troops", reg0))
 load_restore_operations.append((call_script, "script_kct_migrate_legacy_v1"))
 # Use a new completion class so saves from earlier attempts (which marked the
 # sentinel cavalry before Native restoration actually completed) retry once.
@@ -81,8 +78,8 @@ load_restore_operations.append((call_script, "script_kct_migrate_legacy_v1"))
 load_restore_operations.append((troop_set_class, "trp_cstm_load_check", grc_archers))
 load_restore_operations.append((troop_set_class, "trp_kct_template_slot_0_meta", grc_archers))
 load_restore_operations.extend([
-	(assign, reg0, ":restored_troops"),
-	(display_message, "@[KCT] Restore complete: {reg0} troops updated from saved data.", 0x44ff44),
+	(str_store_troop_name, s0, cstm_troop_tree_prefix),
+	(display_message, "@kingdom custom troop tree initialized {s0}", 0x44ff44),
 ])
 
 LOAD_RESTORE_SCRIPTS.append(("kct_restore_troops_after_load", load_restore_operations))

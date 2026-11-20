@@ -192,8 +192,6 @@ MIGRATE_LEGACY_V1_SCRIPTS = [
 				# One-shot flag. Persisted as a global; Warband globals
 				# survive save/load.
 				(assign, "$cstm_migration_v1_done", 1),
-
-				(display_message, "@Custom troop tree migrated from legacy save. Visit the capital to view it.", 0x44ff44),
 			(try_end),
 		(try_end),
 	]),

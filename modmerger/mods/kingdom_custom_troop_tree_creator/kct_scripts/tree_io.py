@@ -512,13 +512,11 @@ def _build_seed_default_slots_ops():
 def _build_seed_missing_default_slots_ops():
 	ops = []
 	for slot_index, template in enumerate(DEFAULT_SLOT_TEMPLATES[:CUSTOM_TREE_DEFAULT_SLOT_BEGIN]):
-		name, _, _, _ = _unpack_default_slot_template(template)
 		ops.extend([
 			(call_script, "script_kct_get_template_meta_troop", slot_index),
 			(assign, ":meta", reg0),
 			(try_begin,),
 				(neg|troop_slot_eq, ":meta", kct_slot_template_occupied, 1),
-				(display_debug_message, "@[KCT_DIAG] seeding missing default slot %d: %s" % (slot_index, name)),
 				(call_script, "script_kct_seed_default_template_slot", slot_index),
 			(try_end,),
 		])
@@ -528,7 +526,7 @@ def _build_restore_custom_tree_default_slots_ops():
 	ops = []
 	for slot_index in xrange(CUSTOM_TREE_DEFAULT_SLOT_BEGIN, len(DEFAULT_SLOT_TEMPLATES)):
 		template = DEFAULT_SLOT_TEMPLATES[slot_index]
-		name, selected_tree, budget, source_troops = _unpack_default_slot_template(template)
+		_, selected_tree, _, source_troops = _unpack_default_slot_template(template)
 		ops.extend([
 			(call_script, "script_kct_get_template_meta_troop", slot_index),
 			(assign, ":meta", reg0),
@@ -556,7 +554,6 @@ def _build_restore_custom_tree_default_slots_ops():
 		ops.extend([
 			(try_begin,),
 				(eq, ":needs_seed", 1),
-				(display_message, "@[KCT] Repairing missing built-in tree template: %s" % name, 0x44ff44),
 				(call_script, "script_kct_seed_default_template_slot", slot_index),
 			(try_end,),
 		])
@@ -591,13 +588,7 @@ def _build_restore_calradian_missing_troops_ops():
 			(val_add, ":restored_calradian_count", 1),
 			(try_end,),
 		])
-	ops.extend([
-		(try_begin,),
-			(gt, ":restored_calradian_count", 0),
-			(assign, reg0, ":restored_calradian_count"),
-			(display_message, "@[KCT] Initialized {reg0} Calradian troops", 0x44ff44),
-		(try_end,),
-	])
+	ops.append((assign, reg0, ":restored_calradian_count"))
 	return ops
 
 TREE_IO_SCRIPTS = [
