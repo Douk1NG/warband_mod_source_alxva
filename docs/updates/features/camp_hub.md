@@ -9,6 +9,10 @@ A redesigned Camp menu (`mnu_camp` → `prsnt_camp_hub`) that replaces the overw
 
 Background is `mesh_hud` / `hud.dds 1024` — already provides the sidebar+parchment look, no overlay hacks required.
 
+The sidebar's **Customize your armor** action opens the existing custom-armor
+presentation for the player. It resolves the equipped customizable item at
+click time and reports when no compatible item is equipped.
+
 ## How to extend
 
 Add a new sidebar entry in `source/presentations/prsnt_camp_hub.py:38-148` (the `:`pos_y` chain under "Sidebar list starts below the blue cartouche"). Set the selected index, then add the corresponding right-panel branch in the `try_begin` chain that starts at `:185` (the right-panel container block).
