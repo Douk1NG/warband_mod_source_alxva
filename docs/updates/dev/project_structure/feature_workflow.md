@@ -75,9 +75,16 @@ Create a documentation file in the appropriate folder:
 
 | Type | Folder |
 |------|--------|
-| Gameplay feature | `docs/updates/features/<name>.md` |
-| Fix | `docs/updates/fixes/<name>.md` |
-| Cheat | `docs/updates/cheats/<name>.md` |
+| Gameplay feature | `docs/updates/dev/features/<name>.md` |
+| Fix | `docs/updates/dev/fixes/<name>.md` |
+| Cheat | `docs/updates/dev/cheats/<name>.md` |
+
+For the development history, add a concise entry to the relevant
+`docs/updates/dev/<category>/changelog.md`. This history is independent of
+Nexus versions. For player-facing release notes, create
+`docs/updates/nexus/<version>/changelog.md` containing only the changes in that
+Nexus release. Technical feature documentation and Nexus release notes serve
+different audiences; keep both when a feature needs detailed reference.
 
 ## 7. Player Guide (optional)
 
